@@ -76,7 +76,7 @@ func (h *Client) Login() error {
 		"password":          {h.password},
 		"newLogin":          {"1"},
 		"phoneType":         {"android"},
-		"shinephoneVersion": {"8.1.8.1"},
+		"shinephoneVersion": {"8.2.6.0"},
 		"phoneSn":           {uuid.New().String()},
 		"ipvcpc":            {ipvcpc(h.username)},
 		"language":          {"1"},

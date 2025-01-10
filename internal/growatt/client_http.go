@@ -20,7 +20,7 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.
 	if len(h.token) > 0 {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", h.token))
 	}
-	req.Header.Set("User-Agent", "Dalvik/2.1.0 (Linux; U; Android 9; Mi A1 MIUI/V10.0.24.0.PDHMIXM)")
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36")
 	resp, err := h.client.Do(req)
 	if err != nil {
 		return nil, err
