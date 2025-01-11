@@ -43,6 +43,7 @@ type BinarySensor struct {
 	UniqueId      string      `json:"unique_id,omitempty"`
 	PayloadOff    string      `json:"payload_off,omitempty"`
 	PayloadOn     string      `json:"payload_on,omitempty"`
+	PayloadHeating     string      `json:"payload_heating,omitempty"`
 	StateTopic    string      `json:"state_topic"`
 	Device        Device      `json:"device,omitempty"`
 	Origin        Origin      `json:"origin,omitempty"`

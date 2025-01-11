@@ -7,6 +7,7 @@ const (
 	WorkModeBatteryFirst = "battery_first"
 	Online               = "online"
 	Offline              = "offline"
+	Heating              = "heating"
 )
 
 type DevicePayload struct {

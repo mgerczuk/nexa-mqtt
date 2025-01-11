@@ -14,6 +14,7 @@ func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []
 			ValueTemplate: "{{ value_json.status }}",
 			PayloadOff:    "offline",
 			PayloadOn:     "online",
+			PayloadHeating:"heating",
 			UniqueId:      fmt.Sprintf("%s_connectivity", info.SerialNumber),
 			StateTopic:    info.StateTopic,
 			Device:        device,

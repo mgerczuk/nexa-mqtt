@@ -25,6 +25,9 @@ func onlineFromString(s string) string {
 	if s == "1" {
 		return models.Online
 	}
+	if s == "5" {
+		return models.Heating
+	}	
 	return models.Offline
 }
 
