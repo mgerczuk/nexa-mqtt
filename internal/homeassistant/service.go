@@ -6,6 +6,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
 	"strings"
+	"time"
 )
 
 type Options struct {
@@ -26,8 +27,17 @@ func NewService(opts Options) *Service {
 		options: opts,
 	}
 	s.statusChangeToken = opts.MqttClient.Subscribe(fmt.Sprintf("%s/status", opts.TopicPrefix), 0, s.haStatusChange)
-
+	go s.discoveryLooper()
 	return s
+}
+
+func (s *Service) discoveryLooper() {
+	for {
+		<-time.After(6 * time.Hour)
+		if len(s.devices) > 0 {
+			s.sendDiscovery()
+		}
+	}
 }
 
 func (s *Service) haStatusChange(client mqtt.Client, message mqtt.Message) {
