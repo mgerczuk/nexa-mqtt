@@ -1,3 +1,5 @@
+FROM alpine AS builder
+
 FROM scratch
 COPY noah-mqtt /
 COPY LICENSE /

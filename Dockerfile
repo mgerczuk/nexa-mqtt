@@ -15,7 +15,7 @@ RUN go mod download
 COPY . .
 RUN go build -o noah-mqtt cmd/noah-mqtt/main.go
 
-# Alpine image to run
+# scratch image to run
 FROM scratch
 
 # Copy built binaries
