@@ -1,6 +1,9 @@
 package homeassistant
 
-import "fmt"
+import (
+	"fmt"
+	"noah-mqtt/pkg/models"
+)
 
 func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []BinarySensor {
 	device := generateDevice(info)
@@ -11,11 +14,22 @@ func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []
 			Name:          "Connectivity",
 			Icon:          "",
 			DeviceClass:   DeviceClassConnectivity,
-			ValueTemplate: "{{ value_json.status }}",
+			ValueTemplate: fmt.Sprintf("{{ 'offline' if value_json.status == '%s' else 'online' }}", models.Offline),
 			PayloadOff:    "offline",
 			PayloadOn:     "online",
-			PayloadHeating:"heating",
 			UniqueId:      fmt.Sprintf("%s_connectivity", info.SerialNumber),
+			StateTopic:    info.StateTopic,
+			Device:        device,
+			Origin:        origin,
+		},
+		{
+			Name:          "Heating",
+			Icon:          IconHeatWave,
+			DeviceClass:   DeviceClassNone,
+			ValueTemplate: fmt.Sprintf("{{ 'heating' if value_json.status == '%s' else 'not-heating' }}", models.Heating),
+			PayloadOff:    "not-heating",
+			PayloadOn:     "heating",
+			UniqueId:      fmt.Sprintf("%s_heating", info.SerialNumber),
 			StateTopic:    info.StateTopic,
 			Device:        device,
 			Origin:        origin,
