@@ -16,7 +16,7 @@ COPY . .
 RUN go build -o noah-mqtt cmd/noah-mqtt/main.go
 
 # Alpine image to run
-FROM alpine:latest
+FROM scratch
 
 # Copy built binaries
 COPY --from=builder /app/noah-mqtt /noah-mqtt
@@ -25,6 +25,5 @@ COPY passwd /etc/passwd
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 # Set permissions and entry point
-RUN chmod +x /noah-mqtt
 USER gouser
 ENTRYPOINT ["/noah-mqtt"]
