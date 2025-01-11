@@ -21,4 +21,5 @@
 go.work
 go.work.sum
 .idea
+dist
 /noah-mqtt

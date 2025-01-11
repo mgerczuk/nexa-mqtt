@@ -40,6 +40,7 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
+    dockerfile: Dockerfile_goreleaser
   - use: buildx
     goos: linux
     goarch: arm
@@ -59,6 +60,7 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
+    dockerfile: Dockerfile_goreleaser
   - use: buildx
     goos: linux
     goarch: amd64
@@ -77,7 +79,7 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
-      
+    dockerfile: Dockerfile_goreleaser
 docker_manifests:
   - name_template: "ghcr.io/mtrossbach/{{ .ProjectName }}:{{ .Version }}"
     image_templates:
