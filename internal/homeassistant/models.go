@@ -30,11 +30,13 @@ const (
 type Icon string
 
 const (
-	IconSolarPower   Icon = "mdi:solar-power"
-	IconBatteryPlus  Icon = "mdi:battery-plus"
-	IconBatteryMinus Icon = "mdi:battery-minus"
-	IconCarBattery   Icon = "mdi:car-battery"
-	IconHeatWave     Icon = "mdi:heat-wave"
+	IconSolarPower              Icon = "mdi:solar-power"
+	IconBatteryPlus             Icon = "mdi:battery-plus"
+	IconBatteryMinus            Icon = "mdi:battery-minus"
+	IconCarBattery              Icon = "mdi:car-battery"
+	IconHeatWave                Icon = "mdi:heat-wave"
+	IconBatteryArrowUpOutline   Icon = "mdi:battery-arrow-up-outline"
+	IconBatteryArrowDownOutline Icon = "mdi:battery-arrow-down-outline"
 )
 
 type BinarySensor struct {
