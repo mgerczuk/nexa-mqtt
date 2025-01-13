@@ -238,7 +238,6 @@ You can update the device's configuration settings by posting a message to the f
 
 - **Topic:** `noah2mqtt/{DEVICE_SERIAL}/parameters/set`
 - **Description:** Send configuration settings to this topic to update the device's parameters. 
-- **Note:** If you want to change the charging limit you always have to set `charging_limit` and `discharge_limit`. 
 - **Example:** `noah2mqtt/1234567890/parameters/set`
 - **Example Payload:**
 ```json
