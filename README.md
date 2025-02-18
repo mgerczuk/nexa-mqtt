@@ -1,3 +1,6 @@
+> [!CAUTION]
+> ⚠️ Growatt is currently deploying IP blocking measures.  Using this application is not recommended at this time. If you must use it, significantly reduce your request interval. Stay tuned for updates.
+
 # noah-mqtt
 ![License](https://img.shields.io/github/license/mtrossbach/noah-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mtrossbach/noah-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mtrossbach/noah-mqtt)
 
