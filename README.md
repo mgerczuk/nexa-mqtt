@@ -1,5 +1,14 @@
 > [!IMPORTANT]  
-> 🎉 noah-mqtt has been updated to (hopefully!) mitigate Growatt IP bans for most users!  A new `web` API mode using Growatt's website APIs is now available via the `GROWATT_API_MODE` configuration parameter. The default mode is `web+app` (web API for data, app API for parameters). The default fetch frequency has also been increased to 30 seconds. The default fetch frequency for detail data has been increased to 180 seconds.
+> TLDR; 🎉 noah-mqtt has been updated to (hopefully!) mitigate Growatt IP bans for most users with v0.0.29!  A new `web` API mode using Growatt's website APIs is now available via the `GROWATT_API_MODE` configuration parameter. The default mode is `web+app` (web API for data, app API for parameters). The default fetch frequency has also been increased to 30 seconds. The default fetch frequency for detail data has been increased to 180 seconds.
+
+> [!NOTE] 
+> Previously, noah-mqtt relied solely on Growatt's App APIs for data retrieval and parameter settings. Growatt has implemented IP blocking measures that significantly impact access to these App APIs.
+> 
+> This update (v0.0.29) introduces the web API mode, which fetches data through Growatt's website APIs. While these Web APIs are currently less strictly affected by IP blocking, it's important to understand that this update DOES NOT directly unblock existing IP bans.
+> 
+> Crucially, parameter settings (like changing output power and SoC limits) are still performed via the App APIs, as these functionalities are not supported by the Web APIs. Therefore, if your IP is currently blocked, this update will not enable parameter changes until your IP block is lifted.
+> 
+> In summary, this update offers a workaround for data retrieval in the face of IP blocks, but parameter settings remain dependent on the App APIs and will only function when your IP is not blocked.
 
 # noah-mqtt
 ![License](https://img.shields.io/github/license/mtrossbach/noah-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mtrossbach/noah-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mtrossbach/noah-mqtt)
