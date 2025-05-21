@@ -134,7 +134,7 @@ func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, pow
 		slog.Error("unable to set default power (app)", slog.String("device", device.Serial))
 		return false
 	}
-	if err := g.client.SetDefaultPower(device.Serial, power); err != nil {
+	if err := g.client.SetSystemOutputPower(device.Serial, 0, power); err != nil {
 		slog.Error("unable to set default power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
 		return false
 	} else {

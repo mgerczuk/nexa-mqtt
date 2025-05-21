@@ -28,10 +28,10 @@ func batteryPayload(n *BatteryDetails) models.BatteryPayload {
 	}
 }
 
-func parameterPayload(n *NoahInfo) models.ParameterPayload {
+func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	chargingLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocHighLimit)
 	dischargeLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocLowLimit)
-	outputPower := misc.ParseFloat(n.Obj.Noah.DefaultPower)
+	outputPower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
 
 	return models.ParameterPayload{
 		ChargingLimit:  &chargingLimit,

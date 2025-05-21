@@ -1,8 +1,8 @@
 package growatt_app
 
 import (
+	"errors"
 	"fmt"
-	"github.com/google/uuid"
 	"log/slog"
 	"math"
 	"net/http"
@@ -10,6 +10,8 @@ import (
 	"net/url"
 	"noah-mqtt/internal/misc"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type Client struct {
@@ -72,11 +74,11 @@ func (h *Client) Login() error {
 		"password":          {h.password},
 		"newLogin":          {"1"},
 		"phoneType":         {"android"},
-		"shinephoneVersion": {"8.2.6.0"},
+		"shinephoneVersion": {"8.3.0.2"},
 		"phoneSn":           {uuid.New().String()},
 		"ipvcpc":            {ipvcpc(h.username)},
 		"language":          {"1"},
-		"systemVersion":     {"9"},
+		"systemVersion":     {"15"},
 		"phoneModel":        {"Mi A1"},
 		"loginTime":         {time.Now().Format(time.DateTime)},
 		"appType":           {"ShinePhone"},
@@ -114,12 +116,19 @@ func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 	}, &data); err != nil {
 		return nil, err
 	}
+
+	if !data.Obj.IsPlantHaveNexa {
+		err := errors.New("No NEXA device")
+		slog.Error(err.Error())
+		misc.Panic(err)
+	}
+
 	return &data, nil
 }
 
 func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	var data NoahStatus
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getSystemStatus", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getSystemStatus", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -127,9 +136,9 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	return &data, nil
 }
 
-func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
-	var data NoahInfo
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getNoahInfoBySn", url.Values{
+func (h *Client) GetNoahInfo(serialNumber string) (*NexaInfo, error) {
+	var data NexaInfo
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getNexaInfoBySn", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -140,7 +149,7 @@ func (h *Client) GetNoahInfo(serialNumber string) (*NoahInfo, error) {
 
 func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	var data BatteryInfo
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/getBatteryData", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getBatteryData", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -149,13 +158,14 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	return &data, nil
 }
 
-func (h *Client) SetDefaultPower(serialNumber string, power float64) error {
+func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
 	p := math.Max(0, math.Min(800, power))
 	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/set", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
-		"type":      {"default_power"},
-		"param1":    {fmt.Sprintf("%.0f", p)},
+		"type":      {"system_out_put_power"},
+		"param1":    {fmt.Sprintf("%d", mode)},
+		"param2":    {fmt.Sprintf("%.0f", p)},
 	}, &data); err != nil {
 		return err
 	}
@@ -167,7 +177,7 @@ func (h *Client) SetSocLimit(serialNumber string, chargingLimit float64, dischar
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
 	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/set", url.Values{
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"charging_soc"},
 		"param1":    {fmt.Sprintf("%.0f", c)},
