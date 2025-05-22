@@ -105,23 +105,27 @@ func (g *GrowattService) poll() {
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),
 		slog.Int("history-interval", int(historyInterval/time.Second)))
 
-	go func() {
-		for {
+	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	tickerHistory := time.NewTicker(historyInterval)
+
+	for _, device := range g.devices {
+		g.pollStatus(device)
+		g.pollHistory(device)
+	}
+
+	for {
+		select {
+		case <-tickerPolling.C:
 			for _, device := range g.devices {
 				g.pollStatus(device)
 			}
-			<-time.After(g.opts.PollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerHistory.C:
 			for _, device := range g.devices {
 				g.pollHistory(device)
 			}
-			<-time.After(historyInterval)
 		}
-	}()
+	}
 }
 
 func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {

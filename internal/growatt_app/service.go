@@ -197,30 +197,32 @@ func (g *GrowattAppService) poll() {
 		slog.Int("battery-details-interval", int(g.opts.BatteryDetailsPollingInterval/time.Second)),
 		slog.Int("parameter-interval", int(g.opts.ParameterPollingInterval/time.Second)))
 
-	go func() {
-		for {
+	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	tickerBatteryDetails := time.NewTicker(g.opts.BatteryDetailsPollingInterval)
+	tickerParameter := time.NewTicker(g.opts.ParameterPollingInterval)
+
+	for _, device := range g.devices {
+		g.pollStatus(device)
+		g.pollBatteryDetails(device)
+		g.pollParameterData(device)
+	}
+
+	for {
+		select {
+		case <-tickerPolling.C:
 			for _, device := range g.devices {
 				g.pollStatus(device)
 			}
-			<-time.After(g.opts.PollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerBatteryDetails.C:
 			for _, device := range g.devices {
 				g.pollBatteryDetails(device)
 			}
-			<-time.After(g.opts.BatteryDetailsPollingInterval)
-		}
-	}()
 
-	go func() {
-		for {
+		case <-tickerParameter.C:
 			for _, device := range g.devices {
 				g.pollParameterData(device)
 			}
-			<-time.After(g.opts.ParameterPollingInterval)
 		}
-	}()
+	}
 }

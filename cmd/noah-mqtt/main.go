@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
 	"noah-mqtt/internal/config"
 	"noah-mqtt/internal/endpoint_mqtt"
@@ -16,6 +15,8 @@ import (
 	"os/user"
 	"strings"
 	"syscall"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 var (
@@ -137,12 +138,10 @@ func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
 
 	opts.OnConnect = func(client mqtt.Client) {
 		slog.Info("connected to mqtt broker")
-		onConnected(client)
 	}
 
 	opts.OnConnectionLost = func(client mqtt.Client, err error) {
-		slog.Error("lost connection to mqtt broker", slog.String("error", err.Error()))
-		misc.Panic(err)
+		slog.Warn("lost connection to mqtt broker", slog.String("error", err.Error()))
 	}
 
 	c := mqtt.NewClient(opts)
@@ -150,5 +149,7 @@ func connectMqtt(mqttCfg config.Mqtt, onConnected func(client mqtt.Client)) {
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
 		slog.Error("could not connect to mqtt broker", slog.String("error", token.Error().Error()))
 		misc.Panic(token.Error())
+	} else {
+		onConnected(c)
 	}
 }
