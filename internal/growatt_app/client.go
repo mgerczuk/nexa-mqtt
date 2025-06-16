@@ -188,3 +188,42 @@ func (h *Client) SetSocLimit(serialNumber string, chargingLimit float64, dischar
 
 	return nil
 }
+
+func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
+	var data map[string]any
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"allow_grid_charging"},
+		"param1":    {fmt.Sprintf("%d", allow)},
+	}, &data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
+	var data map[string]any
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"grid_connection_control"},
+		"param1":    {fmt.Sprintf("%d", offlineEnable)},
+	}, &data); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
+	var data map[string]any
+	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"ac_couple_power_control"},
+		"param1":    {fmt.Sprintf("%d", _1000WEnable)},
+	}, &data); err != nil {
+		return err
+	}
+
+	return nil
+}
