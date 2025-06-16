@@ -11,7 +11,7 @@ build-job:
     - apt-get update -y -qq
     - apt-get install fakeroot -y
   script:
-    - build_package.sh
+    - bash ./build_package.sh
   artifacts:
     paths:
       - build/*.deb
