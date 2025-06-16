@@ -69,7 +69,7 @@ func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
 					slog.Error("could not get device history", slog.String("device", dev.Sn), slog.String("error", err.Error()))
 				} else {
 					if len(history.Obj.Datas) == 0 {
-						slog.Error("could not get device history, data empty", slog.String("device", dev.Sn))
+						slog.Info("could not get device history, data empty", slog.String("device", dev.Sn))
 					} else {
 						var batCount = history.Obj.Datas[0].BatteryPackageQuantity
 						var batteries []models.NoahDeviceBatteryPayload
@@ -193,7 +193,7 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 		slog.Error("could not get device history", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		if len(history.Obj.Datas) == 0 {
-			slog.Error("could not get device history, data empty", slog.String("device", device.Serial))
+			slog.Info("could not get device history, data empty", slog.String("device", device.Serial))
 		} else {
 			historyData := history.Obj.Datas[0]
 

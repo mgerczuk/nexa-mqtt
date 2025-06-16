@@ -4,7 +4,7 @@ Default: none
 Description: Enter openapi.growatt.com user name
 
 Template: nexa-mqtt/growatt_password
-Type: string
+Type: password
 Default: secret
 Description: Enter openapi.growatt.com user password
 

@@ -2,7 +2,7 @@
 set -e
 . /usr/share/debconf/confmodule
 
-echo "postinst '$1' '$2'"
+#echo "postinst '$1' '$2'"
 
 OVERRIDE_FILE="/etc/systemd/system/nexa-mqtt.service.d/override.conf"
 

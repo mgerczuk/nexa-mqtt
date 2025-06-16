@@ -13,7 +13,6 @@ BUILD_DIR=$(pwd)/build
 DEB_DIR=$BUILD_DIR/deb
 
 for arch in $ARCHS; do
-        rm -rf $DEB_DIR
 		mkdir -p $DEB_DIR/usr/bin;
 
 		echo "Building for $arch...";
@@ -26,13 +25,14 @@ for arch in $ARCHS; do
 		fi;
 		echo "Creating DEB package for $arch (DEB arch: $deb_arch)...";
 		mkdir -p $DEB_DIR/DEBIAN;
-        cp -r package/* $DEB_DIR/;
+		cp -r package/* $DEB_DIR/;
 		echo "Version: $VERSION" >> $DEB_DIR/DEBIAN/control;
 		echo "Architecture: $deb_arch" >> $DEB_DIR/DEBIAN/control;
 		chmod 755 $DEB_DIR/DEBIAN/config;
 		chmod 755 $DEB_DIR/DEBIAN/postinst;
 		chmod 755 $DEB_DIR/DEBIAN/prerm;
 		chmod 755 $DEB_DIR/DEBIAN/postrm;
-        echo "Creating $BUILD_DIR/${APP_NAME}_${VERSION}_$arch.deb";
+		echo "Creating $BUILD_DIR/${APP_NAME}_${VERSION}_$arch.deb";
 		fakeroot dpkg-deb --build $DEB_DIR $BUILD_DIR/${APP_NAME}_${VERSION}_$arch.deb;
+		rm -rf $DEB_DIR
 done

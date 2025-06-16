@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "prerm '$1' '$2'"
+#echo "prerm '$1' '$2'"
 
 if [ "$1" = "remove" ] || [ "$1" = "upgrade" ]; then
     systemctl stop nexa-mqtt || true
