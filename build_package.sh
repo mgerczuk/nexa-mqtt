@@ -5,6 +5,7 @@ APP_NAME=nexa-mqtt
 ARCHS="amd64 arm"
 LDFLAGS="-s -w"
 
+GITCOMMIT=$(git rev-parse HEAD)
 GITVERSION=$(git describe --tags --long)
 # replace v1.2.3-4-gxxxxx with 1.2.3.4 or v1.2-3-gxx with 1.2.3
 VERSION=$(echo $GITVERSION | sed -E 's/v([0-9]+\.[0-9]+\.?[0-9]*)-([0-9]+)-g.*/\1.\2/')
@@ -16,7 +17,7 @@ for arch in $ARCHS; do
 		mkdir -p $DEB_DIR/usr/bin;
 
 		echo "Building for $arch...";
-		GOOS=linux GOARCH=$arch go build -o $DEB_DIR/usr/bin/${APP_NAME} -ldflags "$LDFLAGS -X main.version=$GITVERSION" cmd/noah-mqtt/main.go;
+		GOOS=linux GOARCH=$arch go build -o $DEB_DIR/usr/bin/${APP_NAME} -ldflags "$LDFLAGS -X main.version=$GITVERSION -X main.commit=$GITCOMMIT" cmd/noah-mqtt/main.go;
 
 		if [ "$arch" = "arm" ]; then
 			deb_arch="armhf";

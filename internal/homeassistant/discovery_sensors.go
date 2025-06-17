@@ -97,6 +97,15 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 			Device:        device,
 			Origin:        origin,
 		},
+		{
+			Name:          "Working Mode",
+			StateClass:    StateClassMeasurement,
+			StateTopic:    info.StateTopic,
+			ValueTemplate: "{{ value_json.work_mode }}",
+			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "work_mode"),
+			Device:        device,
+			Origin:        origin,
+		},
 	}
 
 	for _, b := range info.Batteries {

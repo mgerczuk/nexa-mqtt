@@ -1,5 +1,7 @@
 package models
 
+import "fmt"
+
 type WorkMode string
 
 const (
@@ -8,16 +10,32 @@ const (
 	Online               = "online"
 	Offline              = "offline"
 	Heating              = "heating"
+	SmartSelfUse         = "smart_self_use"
+	Fault                = "fault"
+	OnGrid               = "on_grid"
+	OffGrid              = "off_grid"
 )
 
 func StatusFromString(s string) string {
-	if s == "1" {
-		return Online
-	}
-	if s == "5" {
+	switch s {
+	case "-1":
+		return Offline
+	case "0":
+		return WorkModeLoadFirst
+	case "1":
+		return WorkModeBatteryFirst
+	case "2":
+		return SmartSelfUse
+	case "4":
+		return Fault
+	case "5":
 		return Heating
+	case "6":
+		return OnGrid
+	case "7":
+		return OffGrid
 	}
-	return Offline
+	return fmt.Sprintf("invalid_%s", s)
 }
 
 func WorkModeFromString(s string) WorkMode {
