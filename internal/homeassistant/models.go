@@ -9,6 +9,7 @@ const (
 	DeviceClassTemperature  DeviceClass = "temperature"
 	DeviceClassPower        DeviceClass = "power"
 	DeviceClassConnectivity DeviceClass = "connectivity"
+	DeviceClassEnum         DeviceClass = "enum"
 )
 
 type StateClass string
@@ -63,6 +64,7 @@ type Sensor struct {
 	UniqueId          string      `json:"unique_id,omitempty"`
 	Device            Device      `json:"device,omitempty"`
 	Origin            Origin      `json:"origin,omitempty"`
+	Options           []string    `json:"options,omitempty"`
 }
 
 type Device struct {

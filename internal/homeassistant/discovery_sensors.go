@@ -1,6 +1,9 @@
 package homeassistant
 
-import "fmt"
+import (
+	"fmt"
+	"noah-mqtt/pkg/models"
+)
 
 func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor {
 	device := generateDevice(info)
@@ -94,6 +97,26 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 			Icon:          IconCarBattery,
 			ValueTemplate: "{{ value_json.battery_num }}",
 			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "battery_num"),
+			Device:        device,
+			Origin:        origin,
+		},
+		{
+			Name:          "Working Mode",
+			DeviceClass:   DeviceClassEnum,
+			Options:       []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
+			StateTopic:    info.StateTopic,
+			ValueTemplate: "{{ value_json.work_mode }}",
+			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "work_mode"),
+			Device:        device,
+			Origin:        origin,
+		},
+		{
+			Name:          "Status",
+			DeviceClass:   DeviceClassEnum,
+			Options:       []string{models.Offline, models.WorkModeLoadFirst, models.WorkModeBatteryFirst, models.SmartSelfUse, models.Fault, models.Heating, models.OnGrid, models.OffGrid},
+			StateTopic:    info.StateTopic,
+			ValueTemplate: "{{ value_json.status }}",
+			UniqueId:      fmt.Sprintf("%s_%s", info.SerialNumber, "status"),
 			Device:        device,
 			Origin:        origin,
 		},

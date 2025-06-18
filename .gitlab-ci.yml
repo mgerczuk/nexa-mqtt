@@ -1,0 +1,17 @@
+image: golang:1.24.0
+
+stages:
+ - build
+
+build-job:
+  rules:
+    - if: '$CI_COMMIT_REF_NAME == "nexa"'
+  stage: build
+  before_script:
+    - apt-get update -y -qq
+    - apt-get install fakeroot -y
+  script:
+    - bash ./build_package.sh
+  artifacts:
+    paths:
+      - build/*.deb

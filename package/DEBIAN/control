@@ -1,0 +1,6 @@
+Package: nexa-mqtt
+Depends: systemd, debconf
+Maintainer: Martin Gerczuk <martin@mgsoftware.de>
+Description: NEXA 2000 MQTT Publisher
+Section: admin
+Priority: optional
