@@ -34,8 +34,9 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	outputPower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
 
 	return models.ParameterPayload{
-		ChargingLimit:  &chargingLimit,
-		DischargeLimit: &dischargeLimit,
-		OutputPower:    &outputPower,
+		ChargingLimit:        &chargingLimit,
+		DischargeLimit:       &dischargeLimit,
+		DefaultACCouplePower: &outputPower,
+		DefaultMode:          models.WorkModeFromString(n.Obj.Noah.DefaultMode),
 	}
 }

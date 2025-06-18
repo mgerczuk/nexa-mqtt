@@ -65,9 +65,10 @@ type BatteryPayload struct {
 }
 
 type ParameterPayload struct {
-	ChargingLimit  *float64 `json:"charging_limit,omitempty"`
-	DischargeLimit *float64 `json:"discharge_limit,omitempty"`
-	OutputPower    *float64 `json:"output_power_w,omitempty"`
+	ChargingLimit        *float64 `json:"charging_limit,omitempty"`
+	DischargeLimit       *float64 `json:"discharge_limit,omitempty"`
+	DefaultACCouplePower *float64 `json:"default_output_w,omitempty"`
+	DefaultMode          WorkMode `json:"default_mode,omitempty"`
 }
 
 type NoahDevicePayload struct {

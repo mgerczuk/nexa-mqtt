@@ -3,11 +3,12 @@ package endpoint_mqtt
 import (
 	"encoding/json"
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
 	"noah-mqtt/internal/endpoint"
 	"noah-mqtt/internal/homeassistant"
 	"noah-mqtt/pkg/models"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Options struct {
@@ -111,8 +112,8 @@ func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(cli
 			slog.Error("unable to unmarshal parameter command payload", slog.String("error", err.Error()))
 		}
 
-		if payload.OutputPower != nil {
-			e.param_applier.SetOutputPowerW(dev, *payload.OutputPower)
+		if payload.DefaultACCouplePower != nil {
+			e.param_applier.SetOutputPowerW(dev, *payload.DefaultACCouplePower)
 		}
 
 		if payload.ChargingLimit != nil {

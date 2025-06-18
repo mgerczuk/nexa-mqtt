@@ -9,8 +9,8 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 	numbers := []Number{
 		{
 			Name:              "System Output Power",
-			UniqueId:          fmt.Sprintf("%s_system_output_power", info.SerialNumber),
-			CommandTemplate:   "{\"output_power_w\": {{ value }}}",
+			UniqueId:          fmt.Sprintf("%s_default_output_w", info.SerialNumber),
+			CommandTemplate:   "{\"default_output_w\": {{ value }}}",
 			CommandTopic:      info.ParameterCommandTopic,
 			Device:            device,
 			Origin:            origin,
@@ -23,7 +23,7 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 			Min:               0,
 			Max:               800,
 			UnitOfMeasurement: UnitWatt,
-			ValueTemplate:     "{{ value_json.output_power_w }}",
+			ValueTemplate:     "{{ value_json.default_output_w }}",
 		},
 		{
 			Name:              "Charging Limit",

@@ -178,9 +178,10 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 			dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
 			op := misc.ParseFloat(detailsData.DefaultACCouplePower)
 			paramPayload := models.ParameterPayload{
-				ChargingLimit:  &cl,
-				DischargeLimit: &dl,
-				OutputPower:    &op,
+				ChargingLimit:        &cl,
+				DischargeLimit:       &dl,
+				DefaultACCouplePower: &op,
+				DefaultMode:          models.WorkModeFromString(detailsData.DefaultMode),
 			}
 
 			for _, e := range g.endpoints {

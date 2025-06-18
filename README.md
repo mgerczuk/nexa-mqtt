@@ -105,7 +105,7 @@ The following MQTT topics are used by `noah-mqtt` to publish data:
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "output_power_w": 800 // system output power in watts, between 0 and 800 
+   "default_output_w": 800 // system output power in watts, between 0 and 800 
 }
 ```
 
@@ -121,7 +121,7 @@ You can update the device's parameter settings by posting a message to the follo
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "output_power_w": 800 // system output power in watts, between 0 and 800 
+   "default_output_w": 800 // system output power in watts, between 0 and 800 
 }
 ```
 
