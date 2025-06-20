@@ -23,3 +23,6 @@ go.work.sum
 .idea
 dist
 /noah-mqtt
+
+build/
+cmd/noah-mqtt/__debug_bin*

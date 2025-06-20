@@ -79,7 +79,7 @@ The following MQTT topics are used by `noah-mqtt` to publish data:
   "generation_total_kwh": 319.8, // total energy generation
   "generation_today_kwh": 3.1, // engery generation today
   "work_mode": "load_first", // current work mode: load_first or battery_first
-  "status": "online" // connectivity status: online or offline
+  "status": "on_grid" // connectivity status: offline, smart_self_use, fault, on_grid or off_grid
 }
 ```
 
@@ -105,7 +105,8 @@ The following MQTT topics are used by `noah-mqtt` to publish data:
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 800 // system output power in watts, between 0 and 800 
+   "default_output_w": 800, // system output power in watts, between 0 and 800
+   "default_mode": "load_first" // or battery_first
 }
 ```
 
@@ -121,7 +122,8 @@ You can update the device's parameter settings by posting a message to the follo
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 800 // system output power in watts, between 0 and 800 
+   "default_output_w": 800, // system output power in watts, between 0 and 800 
+   "default_mode": "load_first" // or battery_first
 }
 ```
 

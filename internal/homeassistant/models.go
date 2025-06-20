@@ -67,6 +67,23 @@ type Sensor struct {
 	Options           []string    `json:"options,omitempty"`
 }
 
+type Select struct {
+	Name              string      `json:"name"`
+	Icon              Icon        `json:"icon,omitempty"`
+	DeviceClass       DeviceClass `json:"device_class,omitempty"`
+	StateTopic        string      `json:"state_topic"`
+	StateClass        StateClass  `json:"state_class,omitempty"`
+	UnitOfMeasurement Unit        `json:"unit_of_measurement,omitempty"`
+	ValueTemplate     string      `json:"value_template,omitempty"`
+	UniqueId          string      `json:"unique_id,omitempty"`
+	Device            Device      `json:"device,omitempty"`
+	Origin            Origin      `json:"origin,omitempty"`
+	Options           []string    `json:"options,omitempty"`
+	CommandTemplate   string      `json:"command_template,omitempty"`
+	CommandTopic      string      `json:"command_topic,omitempty"`
+	Component         string      `json:"component,omitempty"`
+}
+
 type Device struct {
 	Identifiers  []string `json:"identifiers,omitempty"`
 	Name         string   `json:"name,omitempty"`

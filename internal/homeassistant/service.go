@@ -3,10 +3,11 @@ package homeassistant
 import (
 	"encoding/json"
 	"fmt"
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"log/slog"
 	"strings"
 	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 type Options struct {
@@ -61,6 +62,16 @@ func (s *Service) sendDiscovery() {
 			}
 		}
 
+		selects := generateSelectDiscoveryPayload(s.options.Version, d)
+		for _, sel := range selects {
+			if b, err := json.Marshal(sel); err != nil {
+				slog.Error("could not marshal select discovery payload", slog.Any("select", sel))
+			} else {
+				topic := s.selectTopic(sel)
+				s.options.MqttClient.Publish(topic, 0, false, string(b))
+			}
+		}
+
 		numbers := generateNumberDiscoveryPayload(s.options.Version, d)
 		for _, number := range numbers {
 			if b, err := json.Marshal(number); err != nil {
@@ -85,6 +96,10 @@ func (s *Service) sendDiscovery() {
 
 func (s *Service) sensorTopic(sensor Sensor) string {
 	return fmt.Sprintf("%s/sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+}
+
+func (s *Service) selectTopic(sensor Select) string {
+	return fmt.Sprintf("%s/select/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
 }
 
 func (s *Service) binarySensorTopic(sensor BinarySensor) string {

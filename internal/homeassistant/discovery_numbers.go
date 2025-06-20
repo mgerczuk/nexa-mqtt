@@ -8,7 +8,7 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 
 	numbers := []Number{
 		{
-			Name:              "System Output Power",
+			Name:              "Default AC Output Power",
 			UniqueId:          fmt.Sprintf("%s_default_output_w", info.SerialNumber),
 			CommandTemplate:   "{\"default_output_w\": {{ value }}}",
 			CommandTopic:      info.ParameterCommandTopic,

@@ -141,7 +141,8 @@ func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mod
 			return false
 		} else {
 			if mode == nil {
-				mode = (*models.WorkMode)(&data.Obj.Noah.DefaultMode)
+				m := models.WorkModeFromString(data.Obj.Noah.DefaultMode)
+				mode = &m
 			}
 			if power == nil {
 				p := misc.ParseFloat(data.Obj.Noah.DefaultACCouplePower)
@@ -151,6 +152,10 @@ func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mod
 	}
 
 	modeAsInt := models.IntFromWorkMode(*mode)
+	if modeAsInt < 0 {
+		slog.Error("unable to set default power (app). Invalid mode", slog.String("device", device.Serial), slog.String("mode", (string)(*mode)))
+		return false
+	}
 
 	slog.Info("trying to set default power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", *power))
 	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, *power); err != nil {
