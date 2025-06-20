@@ -128,66 +128,72 @@ func (g *GrowattAppService) ensureParameterLogin() bool {
 	return true
 }
 
-func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, power float64) bool {
-	slog.Info("trying to set default power (app)", slog.String("device", device.Serial), slog.Int("power", int(power)))
+func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode *models.WorkMode, power *float64) bool {
+	slog.Info("trying to set default power (app)", slog.String("device", device.Serial))
 	if !g.ensureParameterLogin() {
 		slog.Error("unable to set default power (app)", slog.String("device", device.Serial))
 		return false
 	}
-	if err := g.client.SetSystemOutputPower(device.Serial, 0, power); err != nil {
+
+	if mode == nil || power == nil {
+		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
+			slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
+			return false
+		} else {
+			if mode == nil {
+				mode = (*models.WorkMode)(&data.Obj.Noah.DefaultMode)
+			}
+			if power == nil {
+				p := misc.ParseFloat(data.Obj.Noah.DefaultACCouplePower)
+				power = &p
+			}
+		}
+	}
+
+	modeAsInt := models.IntFromWorkMode(*mode)
+
+	slog.Info("trying to set default power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", *power))
+	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, *power); err != nil {
 		slog.Error("unable to set default power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
 		return false
 	} else {
 		go g.pollParameterData(device)
-		slog.Info("set default power (app)", slog.String("device", device.Serial), slog.Int("power", int(power)))
+		slog.Info("set default power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", *power))
 		return true
 	}
 }
-func (g *GrowattAppService) SetChargingLimit(device models.NoahDevicePayload, limit float64) bool {
-	slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial), slog.Float64("limit", limit))
+
+func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit *float64, dischargeLimit *float64) bool {
+	slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial))
 	if !g.ensureParameterLogin() {
-		slog.Error("unable to set charging limit (app)", slog.String("device", device.Serial))
+		slog.Error("unable to set charging limits (app)", slog.String("device", device.Serial))
 		return false
 	}
-	if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-		slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
-		return false
-	} else {
-		dl := misc.ParseFloat(data.Obj.Noah.ChargingSocLowLimit)
 
-		slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", limit), slog.Float64("dischargeLimit", dl))
-		if err := g.client.SetSocLimit(device.Serial, limit, dl); err != nil {
-			slog.Error("unable to set charging limit (app)", slog.String("error", err.Error()))
+	if chargingLimit == nil || dischargeLimit == nil {
+		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
+			slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
 			return false
 		} else {
-			go g.pollParameterData(device)
-			slog.Info("set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", limit), slog.Float64("dischargeLimit", dl))
-			return true
+			if chargingLimit == nil {
+				cl := misc.ParseFloat(data.Obj.Noah.ChargingSocHighLimit)
+				chargingLimit = &cl
+			}
+			if dischargeLimit == nil {
+				dl := misc.ParseFloat(data.Obj.Noah.ChargingSocLowLimit)
+				dischargeLimit = &dl
+			}
 		}
 	}
-}
 
-func (g *GrowattAppService) SetDischargeLimit(device models.NoahDevicePayload, limit float64) bool {
-	slog.Info("trying to set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("limit", limit))
-	if !g.ensureParameterLogin() {
-		slog.Error("unable to set discharge limit (app)", slog.String("device", device.Serial))
-		return false
-	}
-	if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-		slog.Error("unable to get parameter status (app)", slog.String("error", err.Error()))
+	slog.Info("trying to set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", *chargingLimit), slog.Float64("dischargeLimit", *dischargeLimit))
+	if err := g.client.SetChargingSoc(device.Serial, *chargingLimit, *dischargeLimit); err != nil {
+		slog.Error("unable to set charging limits (app)", slog.String("error", err.Error()))
 		return false
 	} else {
-		cl := misc.ParseFloat(data.Obj.Noah.ChargingSocHighLimit)
-
-		slog.Info("trying to set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", cl), slog.Float64("dischargeLimit", limit))
-		if err := g.client.SetSocLimit(device.Serial, cl, limit); err != nil {
-			slog.Error("unable to set discharge limit (app)", slog.String("error", err.Error()))
-			return false
-		} else {
-			slog.Info("set discharge limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", cl), slog.Float64("dischargeLimit", limit))
-			go g.pollParameterData(device)
-			return true
-		}
+		go g.pollParameterData(device)
+		slog.Info("set charging limits (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", *chargingLimit), slog.Float64("dischargeLimit", *dischargeLimit))
+		return true
 	}
 }
 

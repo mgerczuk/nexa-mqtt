@@ -121,6 +121,7 @@ func runApp(cfg config.Config, client mqtt.Client) {
 			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
 		})
+		growattApp.AddEndpoint(mqttEndpoint)
 
 		mqttEndpoint.SetParameterApplier(growattApp)
 		growattService.StartPolling()

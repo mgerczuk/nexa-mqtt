@@ -173,7 +173,7 @@ func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 	return nil
 }
 
-func (h *Client) SetSocLimit(serialNumber string, chargingLimit float64, dischargeLimit float64) error {
+func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, dischargeLimit float64) error {
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
 	var data map[string]any

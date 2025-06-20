@@ -112,16 +112,12 @@ func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(cli
 			slog.Error("unable to unmarshal parameter command payload", slog.String("error", err.Error()))
 		}
 
-		if payload.DefaultACCouplePower != nil {
-			e.param_applier.SetOutputPowerW(dev, *payload.DefaultACCouplePower)
+		if payload.DefaultACCouplePower != nil || payload.DefaultMode != nil {
+			e.param_applier.SetOutputPowerW(dev, payload.DefaultMode, payload.DefaultACCouplePower)
 		}
 
-		if payload.ChargingLimit != nil {
-			e.param_applier.SetChargingLimit(dev, *payload.ChargingLimit)
-		}
-
-		if payload.DischargeLimit != nil {
-			e.param_applier.SetDischargeLimit(dev, *payload.DischargeLimit)
+		if payload.ChargingLimit != nil || payload.DischargeLimit != nil {
+			e.param_applier.SetChargingLimits(dev, payload.ChargingLimit, payload.DischargeLimit)
 		}
 	}
 }
