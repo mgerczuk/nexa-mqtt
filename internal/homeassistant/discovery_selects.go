@@ -11,17 +11,23 @@ func generateSelectDiscoveryPayload(appVersion string, info DeviceInfo) []Select
 
 	selects := []Select{
 		{
-			Name:            "Default Mode",
-			UniqueId:        fmt.Sprintf("%s_%s", info.SerialNumber, "default_mode"),
-			CommandTemplate: "{\"default_mode\": \"{{ value }}\"}",
-			CommandTopic:    info.ParameterCommandTopic,
-			Device:          device,
-			Origin:          origin,
-			DeviceClass:     DeviceClassEnum,
-			Options:         []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
-			StateTopic:      info.ParameterStateTopic,
-			ValueTemplate:   "{{ value_json.default_mode }}",
-			Component:       "select",
+			CommonConfig: CommonConfig{
+				Name:        "Default Mode",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "default_mode"),
+				DeviceClass: DeviceClassEnum,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.ParameterStateTopic,
+				ValueTemplate: "{{ value_json.default_mode }}",
+			},
+			CommandConfig: CommandConfig{
+				CommandTopic:    info.ParameterCommandTopic,
+				CommandTemplate: "{\"default_mode\": \"{{ value }}\"}",
+			},
+			Options:   []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
+			Component: "select",
 		},
 	}
 
