@@ -76,7 +76,7 @@ func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
 	}
 
 	if len(devices) == 0 {
-		slog.Info("no noah devices found")
+		slog.Info("no nexa devices found")
 		<-time.After(60 * time.Second)
 		os.Exit(0)
 	}
@@ -89,7 +89,7 @@ func (g *GrowattAppService) enumerateDevices() {
 
 	for i, device := range devices {
 		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
-			slog.Error("could not noah status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
+			slog.Error("could not get nexa status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
 		} else {
 			batCount := len(data.Obj.Noah.BatSns)
 			var batteries []models.NoahDeviceBatteryPayload

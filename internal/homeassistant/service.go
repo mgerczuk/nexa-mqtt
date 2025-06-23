@@ -95,18 +95,18 @@ func (s *Service) sendDiscovery() {
 }
 
 func (s *Service) sensorTopic(sensor Sensor) string {
-	return fmt.Sprintf("%s/sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+	return fmt.Sprintf("%s/sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
 }
 
 func (s *Service) selectTopic(sensor Select) string {
-	return fmt.Sprintf("%s/select/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+	return fmt.Sprintf("%s/select/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
 }
 
 func (s *Service) binarySensorTopic(sensor BinarySensor) string {
-	return fmt.Sprintf("%s/binary_sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
+	return fmt.Sprintf("%s/binary_sensor/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", sensor.Device.SerialNumber), strings.ReplaceAll(sensor.Name, " ", ""))
 }
 
 func (s *Service) numberTopic(number Number) string {
-	return fmt.Sprintf("%s/number/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("noah_%s", number.Device.SerialNumber), strings.ReplaceAll(number.Name, " ", ""))
+	return fmt.Sprintf("%s/number/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", number.Device.SerialNumber), strings.ReplaceAll(number.Name, " ", ""))
 
 }
