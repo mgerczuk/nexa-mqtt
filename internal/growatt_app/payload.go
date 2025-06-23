@@ -1,8 +1,8 @@
 package growatt_app
 
 import (
-	"noah-mqtt/internal/misc"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/misc"
+	"nexa-mqtt/pkg/models"
 )
 
 func devicePayload(n *NoahStatus) models.DevicePayload {

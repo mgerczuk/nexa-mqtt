@@ -2,7 +2,7 @@ package homeassistant
 
 import (
 	"fmt"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/pkg/models"
 )
 
 func generateSelectDiscoveryPayload(appVersion string, info DeviceInfo) []Select {

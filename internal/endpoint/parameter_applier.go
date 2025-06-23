@@ -1,6 +1,6 @@
 package endpoint
 
-import "noah-mqtt/pkg/models"
+import "nexa-mqtt/pkg/models"
 
 type ParameterApplier interface {
 	SetOutputPowerW(device models.NoahDevicePayload, mode *models.WorkMode, power *float64) bool

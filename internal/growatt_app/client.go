@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
-	"noah-mqtt/internal/misc"
+	"nexa-mqtt/internal/misc"
 	"time"
 
 	"github.com/google/uuid"

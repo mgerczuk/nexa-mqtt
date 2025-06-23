@@ -2,7 +2,7 @@ package growatt_app
 
 import (
 	"log/slog"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/pkg/models"
 )
 
 func (g *GrowattAppService) pollStatus(device models.NoahDevicePayload) {

@@ -3,9 +3,9 @@ package growatt_app
 import (
 	"fmt"
 	"log/slog"
-	"noah-mqtt/internal/endpoint"
-	"noah-mqtt/internal/misc"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/endpoint"
+	"nexa-mqtt/internal/misc"
+	"nexa-mqtt/pkg/models"
 	"os"
 	"time"
 )

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"noah-mqtt/internal/endpoint"
-	"noah-mqtt/internal/homeassistant"
-	"noah-mqtt/pkg/models"
+	"nexa-mqtt/internal/endpoint"
+	"nexa-mqtt/internal/homeassistant"
+	"nexa-mqtt/pkg/models"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
