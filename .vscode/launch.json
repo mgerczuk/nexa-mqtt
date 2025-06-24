@@ -9,7 +9,7 @@
             "type": "go",
             "request": "launch",
             "mode": "debug",
-            "program": "cmd/noah-mqtt/main.go",
+            "program": "cmd/nexa-mqtt/main.go",
             "env": {
                 "GROWATT_USERNAME": "nexa_user",
                 "GROWATT_PASSWORD": "secret",

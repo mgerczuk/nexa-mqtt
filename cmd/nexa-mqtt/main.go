@@ -32,7 +32,7 @@ func main() {
 		misc.Panic(err)
 	}
 
-	slog.Info("noah-mqtt started", slog.String("version", version), slog.String("commit", commit))
+	slog.Info("nexa-mqtt started", slog.String("version", version), slog.String("commit", commit))
 
 	if currentUser, err := user.Current(); err == nil {
 		slog.Info("running as", slog.String("username", currentUser.Username), slog.String("uid", currentUser.Uid))
