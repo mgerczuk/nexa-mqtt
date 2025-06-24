@@ -16,16 +16,18 @@ type Options struct {
 	PollingInterval time.Duration
 }
 type GrowattService struct {
-	opts      Options
-	client    *Client
-	devices   []models.NoahDevicePayload
-	endpoints []endpoint.Endpoint
+	opts     Options
+	client   *Client
+	devices  []models.NoahDevicePayload
+	endpoint endpoint.Endpoint
+	stop     chan bool
 }
 
 func NewGrowattService(options Options) *GrowattService {
 	return &GrowattService{
 		opts:   options,
 		client: newClient(options.ServerUrl, options.Username, options.Password),
+		stop:   make(chan bool),
 	}
 }
 
@@ -39,15 +41,17 @@ func (g *GrowattService) Login() error {
 
 func (g *GrowattService) StartPolling() {
 	g.devices = g.enumerateDevices()
-	for _, e := range g.endpoints {
-		e.SetDevices(g.devices)
-	}
+	g.endpoint.SetDevices(g.devices)
 
 	go g.poll()
 }
 
-func (g *GrowattService) AddEndpoint(e endpoint.Endpoint) {
-	g.endpoints = append(g.endpoints, e)
+func (g *GrowattService) StopPolling() {
+	g.stop <- true
+}
+
+func (g *GrowattService) SetEndpoint(e endpoint.Endpoint) {
+	g.endpoint = e
 }
 
 func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
@@ -106,7 +110,9 @@ func (g *GrowattService) poll() {
 		slog.Int("history-interval", int(historyInterval/time.Second)))
 
 	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	defer tickerPolling.Stop()
 	tickerHistory := time.NewTicker(historyInterval)
+	defer tickerHistory.Stop()
 
 	for _, device := range g.devices {
 		g.pollStatus(device)
@@ -124,6 +130,9 @@ func (g *GrowattService) poll() {
 			for _, device := range g.devices {
 				g.pollHistory(device)
 			}
+		case <-g.stop:
+			slog.Info("stop polling growatt (web)")
+			return
 		}
 	}
 }
@@ -158,10 +167,7 @@ func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
 				Status:                models.StatusFromString(status.Obj.Status),
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishDeviceStatus(device, payload)
-			}
-
+			g.endpoint.PublishDeviceStatus(device, payload)
 		}
 	}
 }
@@ -185,9 +191,7 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 				DefaultMode:          &mode,
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishParameterData(device, paramPayload)
-			}
+			g.endpoint.PublishParameterData(device, paramPayload)
 		}
 	}
 
@@ -229,9 +233,7 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 				}
 			}
 
-			for _, e := range g.endpoints {
-				e.PublishBatteryDetails(device, batteries)
-			}
+			g.endpoint.PublishBatteryDetails(device, batteries)
 		}
 	}
 }

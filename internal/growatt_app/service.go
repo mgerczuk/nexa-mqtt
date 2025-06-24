@@ -19,11 +19,12 @@ type Options struct {
 	ParameterPollingInterval      time.Duration
 }
 type GrowattAppService struct {
-	opts      Options
-	client    *Client
-	devices   []models.NoahDevicePayload
-	endpoints []endpoint.Endpoint
-	loggedIn  bool
+	opts     Options
+	client   *Client
+	devices  []models.NoahDevicePayload
+	endpoint endpoint.Endpoint
+	loggedIn bool
+	stop     chan bool
 }
 
 func NewGrowattAppService(options Options) *GrowattAppService {
@@ -31,6 +32,7 @@ func NewGrowattAppService(options Options) *GrowattAppService {
 		opts:     options,
 		client:   newClient(options.ServerUrl, options.Username, options.Password),
 		loggedIn: false,
+		stop:     make(chan bool),
 	}
 }
 
@@ -47,6 +49,10 @@ func (g *GrowattAppService) Login() error {
 func (g *GrowattAppService) StartPolling() {
 	g.enumerateDevices()
 	go g.poll()
+}
+
+func (g *GrowattAppService) StopPolling() {
+	g.stop <- true
 }
 
 func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
@@ -108,14 +114,11 @@ func (g *GrowattAppService) enumerateDevices() {
 
 	g.devices = devices
 
-	for _, e := range g.endpoints {
-		e.SetDevices(devices)
-	}
+	g.endpoint.SetDevices(devices)
 }
 
-func (g *GrowattAppService) AddEndpoint(e endpoint.Endpoint) {
-	g.endpoints = append(g.endpoints, e)
-	e.SetParameterApplier(g)
+func (g *GrowattAppService) SetEndpoint(e endpoint.Endpoint) {
+	g.endpoint = e
 }
 
 func (g *GrowattAppService) ensureParameterLogin() bool {
@@ -209,8 +212,11 @@ func (g *GrowattAppService) poll() {
 		slog.Int("parameter-interval", int(g.opts.ParameterPollingInterval/time.Second)))
 
 	tickerPolling := time.NewTicker(g.opts.PollingInterval)
+	defer tickerPolling.Stop()
 	tickerBatteryDetails := time.NewTicker(g.opts.BatteryDetailsPollingInterval)
+	defer tickerBatteryDetails.Stop()
 	tickerParameter := time.NewTicker(g.opts.ParameterPollingInterval)
+	defer tickerParameter.Stop()
 
 	for _, device := range g.devices {
 		g.pollStatus(device)
@@ -234,6 +240,9 @@ func (g *GrowattAppService) poll() {
 			for _, device := range g.devices {
 				g.pollParameterData(device)
 			}
+		case <-g.stop:
+			slog.Info("stop polling growatt (app)")
+			return
 		}
 	}
 }
