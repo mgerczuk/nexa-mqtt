@@ -81,6 +81,35 @@ type ParameterPayload struct {
 	DefaultMode          *WorkMode `json:"default_mode,omitempty"`
 }
 
+func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
+	if src.ChargingLimit != nil {
+		p.ChargingLimit = src.ChargingLimit
+	}
+	if src.DischargeLimit != nil {
+		p.DischargeLimit = src.DischargeLimit
+	}
+	if src.DefaultACCouplePower != nil {
+		p.DefaultACCouplePower = src.DefaultACCouplePower
+	}
+	if src.DefaultMode != nil {
+		p.DefaultMode = src.DefaultMode
+	}
+}
+
+func EmptyParameterPayload() ParameterPayload {
+	chargingLimit := 100.0
+	dischargeLimit := 10.0
+	defaultACCouplePower := 150.0
+	var defaultMode WorkMode = WorkModeLoadFirst
+
+	return ParameterPayload{
+		ChargingLimit:        &chargingLimit,
+		DischargeLimit:       &dischargeLimit,
+		DefaultACCouplePower: &defaultACCouplePower,
+		DefaultMode:          &defaultMode,
+	}
+}
+
 type NoahDevicePayload struct {
 	PlantId   int                        `json:"plant_id"`
 	Serial    string                     `json:"serial"`

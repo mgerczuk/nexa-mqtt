@@ -7,6 +7,8 @@ import (
 	"nexa-mqtt/internal/endpoint"
 	"nexa-mqtt/internal/homeassistant"
 	"nexa-mqtt/pkg/models"
+	"sync"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -21,11 +23,16 @@ type Endpoint struct {
 	opts          Options
 	devs          []models.NoahDevicePayload
 	param_applier endpoint.ParameterApplier
+	stateLock     sync.Mutex
+	lastParameter models.ParameterPayload
+	newParameter  models.ParameterPayload
+	publishTimer  *time.Timer
 }
 
 func NewEndpoint(options Options) *Endpoint {
 	return &Endpoint{
-		opts: options,
+		opts:          options,
+		lastParameter: models.EmptyParameterPayload(),
 	}
 }
 
@@ -97,8 +104,15 @@ func (e *Endpoint) PublishParameterData(device models.NoahDevicePayload, param m
 	} else {
 		e.opts.MqttClient.Publish(parameterStateTopic(e.opts.TopicPrefix, device.Serial), 0, false, string(b))
 		slog.Debug("parameter data sent to mqtt", slog.String("data", string(b)), slog.String("device", device.Serial))
+
+		e.stateLock.Lock()
+		defer e.stateLock.Unlock()
+
+		e.lastParameter = param
 	}
 }
+
+const debounceDelay = 500 * time.Millisecond
 
 func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(client mqtt.Client, message mqtt.Message) {
 	return func(client mqtt.Client, message mqtt.Message) {
@@ -112,12 +126,37 @@ func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(cli
 			slog.Error("unable to unmarshal parameter command payload", slog.String("error", err.Error()))
 		}
 
-		if payload.DefaultACCouplePower != nil || payload.DefaultMode != nil {
-			e.param_applier.SetOutputPowerW(dev, payload.DefaultMode, payload.DefaultACCouplePower)
+		e.stateLock.Lock()
+		defer e.stateLock.Unlock()
+
+		e.newParameter.UpdateFrom(payload)
+
+		if e.publishTimer != nil {
+			e.publishTimer.Stop()
 		}
 
-		if payload.ChargingLimit != nil || payload.DischargeLimit != nil {
-			e.param_applier.SetChargingLimits(dev, payload.ChargingLimit, payload.DischargeLimit)
-		}
+		e.publishTimer = time.AfterFunc(debounceDelay, func() {
+			e.debouncedParametersSubscription(dev)
+		})
 	}
+}
+
+func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload) {
+	e.stateLock.Lock()
+	defer e.stateLock.Unlock()
+
+	e.lastParameter.UpdateFrom(e.newParameter)
+
+	if e.newParameter.DefaultACCouplePower != nil || e.newParameter.DefaultMode != nil {
+		e.param_applier.SetOutputPowerW(dev, *e.lastParameter.DefaultMode, *e.lastParameter.DefaultACCouplePower)
+	}
+
+	if e.newParameter.ChargingLimit != nil || e.newParameter.DischargeLimit != nil {
+		e.param_applier.SetChargingLimits(dev, *e.lastParameter.ChargingLimit, *e.lastParameter.DischargeLimit)
+	}
+
+	e.newParameter = models.ParameterPayload{}
+	e.publishTimer = nil
+
+	go e.PublishParameterData(dev, e.lastParameter)
 }

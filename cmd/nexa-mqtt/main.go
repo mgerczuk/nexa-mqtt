@@ -81,8 +81,8 @@ func (a *App) onMqttConnect(client mqtt.Client) {
 	switch a.mode {
 	case "app":
 		a.growattApp.SetEndpoint(mqttEndpoint)
-		mqttEndpoint.SetParameterApplier(a.growattApp)
 		a.growattApp.StartPolling()
+		mqttEndpoint.SetParameterApplier(a.growattApp)
 
 	case "web":
 		a.growattService.SetEndpoint(mqttEndpoint)
@@ -91,8 +91,6 @@ func (a *App) onMqttConnect(client mqtt.Client) {
 	case "web+app":
 		a.growattService.SetEndpoint(mqttEndpoint)
 		a.growattService.StartPolling()
-
-		a.growattApp.SetEndpoint(mqttEndpoint)
 		mqttEndpoint.SetParameterApplier(a.growattApp)
 	}
 }
