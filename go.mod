@@ -1,4 +1,4 @@
-module noah-mqtt
+module nexa-mqtt
 
 go 1.24.0
 

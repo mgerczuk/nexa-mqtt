@@ -45,6 +45,16 @@ func WorkModeFromString(s string) WorkMode {
 	return WorkModeBatteryFirst
 }
 
+func IntFromWorkMode(s WorkMode) int {
+	if s == WorkModeLoadFirst {
+		return 0
+	}
+	if s == WorkModeBatteryFirst {
+		return 1
+	}
+	return -1
+}
+
 type DevicePayload struct {
 	OutputPower           float64  `json:"output_w"`
 	SolarPower            float64  `json:"solar_w"`
@@ -65,9 +75,39 @@ type BatteryPayload struct {
 }
 
 type ParameterPayload struct {
-	ChargingLimit  *float64 `json:"charging_limit,omitempty"`
-	DischargeLimit *float64 `json:"discharge_limit,omitempty"`
-	OutputPower    *float64 `json:"output_power_w,omitempty"`
+	ChargingLimit        *float64  `json:"charging_limit,omitempty"`
+	DischargeLimit       *float64  `json:"discharge_limit,omitempty"`
+	DefaultACCouplePower *float64  `json:"default_output_w,omitempty"`
+	DefaultMode          *WorkMode `json:"default_mode,omitempty"`
+}
+
+func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
+	if src.ChargingLimit != nil {
+		p.ChargingLimit = src.ChargingLimit
+	}
+	if src.DischargeLimit != nil {
+		p.DischargeLimit = src.DischargeLimit
+	}
+	if src.DefaultACCouplePower != nil {
+		p.DefaultACCouplePower = src.DefaultACCouplePower
+	}
+	if src.DefaultMode != nil {
+		p.DefaultMode = src.DefaultMode
+	}
+}
+
+func EmptyParameterPayload() ParameterPayload {
+	chargingLimit := 100.0
+	dischargeLimit := 10.0
+	defaultACCouplePower := 150.0
+	var defaultMode WorkMode = WorkModeLoadFirst
+
+	return ParameterPayload{
+		ChargingLimit:        &chargingLimit,
+		DischargeLimit:       &dischargeLimit,
+		DefaultACCouplePower: &defaultACCouplePower,
+		DefaultMode:          &defaultMode,
+	}
 }
 
 type NoahDevicePayload struct {

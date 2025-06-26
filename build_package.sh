@@ -17,7 +17,7 @@ for arch in $ARCHS; do
 		mkdir -p $DEB_DIR/usr/bin;
 
 		echo "Building for $arch...";
-		GOOS=linux GOARCH=$arch go build -o $DEB_DIR/usr/bin/${APP_NAME} -ldflags "$LDFLAGS -X main.version=$GITVERSION -X main.commit=$GITCOMMIT" cmd/noah-mqtt/main.go;
+		GOOS=linux GOARCH=$arch go build -o $DEB_DIR/usr/bin/${APP_NAME} -ldflags "$LDFLAGS -X main.version=$GITVERSION -X main.commit=$GITCOMMIT" cmd/nexa-mqtt/main.go;
 
 		if [ "$arch" = "arm" ]; then
 			deb_arch="armhf";

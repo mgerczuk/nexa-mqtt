@@ -279,21 +279,21 @@ type GrowattNoahStatus struct {
 	Result int         `json:"result"`
 	Msg    interface{} `json:"msg"`
 	Obj    struct {
-		SmartSocketPower              string `json:"smartSocketPower"`              // new
-		CtSelfPower                   string `json:"ctSelfPower"`                   // new
-		GroplugFlag                   string `json:"groplugFlag"`                   // new
-		HouseholdLoadApartFromGroplug string `json:"householdLoadApartFromGroplug"` // new
-		ShellyFlag                    string `json:"shellyFlag"`                    // new
-		TotalHouseholdLoad            string `json:"totalHouseholdLoad"`            // new
+		SmartSocketPower              string `json:"smartSocketPower"`
+		CtSelfPower                   string `json:"ctSelfPower"`
+		GroplugFlag                   string `json:"groplugFlag"`
+		HouseholdLoadApartFromGroplug string `json:"householdLoadApartFromGroplug"`
+		ShellyFlag                    string `json:"shellyFlag"`
+		TotalHouseholdLoad            string `json:"totalHouseholdLoad"`
 		TotalBatteryPackSoc           string `json:"totalBatteryPackSoc"`
 		Pac                           string `json:"pac"`
 		WorkMode                      string `json:"workMode"`
-		EastronFlag                   string `json:"eastronFlag"`            // new
-		BatteryPackageQuantity        string `json:"batteryPackageQuantity"` // new
+		EastronFlag                   string `json:"eastronFlag"`
+		BatteryPackageQuantity        string `json:"batteryPackageQuantity"`
 		Ppv                           string `json:"ppv"`
-		GroplugNum                    string `json:"groplugNum"` // new
+		GroplugNum                    string `json:"groplugNum"`
 		TotalBatteryPackChargingPower string `json:"totalBatteryPackChargingPower"`
-		OtherPower                    string `json:"otherPower"` // new
+		OtherPower                    string `json:"otherPower"`
 		Status                        string `json:"status"`
 	} `json:"obj"`
 	Request interface{} `json:"request"`
