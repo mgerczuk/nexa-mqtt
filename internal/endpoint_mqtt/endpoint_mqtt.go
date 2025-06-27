@@ -16,7 +16,7 @@ import (
 type Options struct {
 	MqttClient  mqtt.Client
 	TopicPrefix string
-	HaClient    *homeassistant.Service
+	HaClient    homeassistant.HaClient
 }
 
 type Endpoint struct {
@@ -124,6 +124,7 @@ func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(cli
 		var payload models.ParameterPayload
 		if err := json.Unmarshal(message.Payload(), &payload); err != nil {
 			slog.Error("unable to unmarshal parameter command payload", slog.String("error", err.Error()))
+			return
 		}
 
 		e.stateLock.Lock()
