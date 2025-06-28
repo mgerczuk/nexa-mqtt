@@ -511,10 +511,7 @@ func Test_parametersSubscription_ChargingAndDischargeLimit(t *testing.T) {
 	mockApplier.AssertExpectations(t)
 	mockClient.AssertExpectations(t)
 
-	assert.Nil(t, endpoint.newParameter.ChargingLimit)
-	assert.Nil(t, endpoint.newParameter.DischargeLimit)
-	assert.Nil(t, endpoint.newParameter.DefaultACCouplePower)
-	assert.Nil(t, endpoint.newParameter.DefaultMode)
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
 }
 
 func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
@@ -563,8 +560,5 @@ func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
 	mockApplier.AssertExpectations(t)
 	mockClient.AssertExpectations(t)
 
-	assert.Nil(t, endpoint.newParameter.ChargingLimit)
-	assert.Nil(t, endpoint.newParameter.DischargeLimit)
-	assert.Nil(t, endpoint.newParameter.DefaultACCouplePower)
-	assert.Nil(t, endpoint.newParameter.DefaultMode)
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
 }
