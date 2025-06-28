@@ -139,9 +139,7 @@ func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 	}
 
 	if !data.Obj.IsPlantHaveNexa {
-		err := errors.New("No NEXA device")
-		slog.Error(err.Error())
-		misc.Panic(err)
+		return nil, errors.New("No NEXA device")
 	}
 
 	return &data, nil
@@ -181,7 +179,7 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 
 func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
 	p := math.Max(0, math.Min(800, power))
-	var data map[string]any
+	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"system_out_put_power"},
@@ -197,7 +195,7 @@ func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, dischargeLimit float64) error {
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
-	var data map[string]any
+	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"charging_soc"},
@@ -211,7 +209,7 @@ func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, disc
 }
 
 func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
-	var data map[string]any
+	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"allow_grid_charging"},
@@ -224,7 +222,7 @@ func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
 }
 
 func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
-	var data map[string]any
+	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"grid_connection_control"},
@@ -237,7 +235,7 @@ func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int
 }
 
 func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
-	var data map[string]any
+	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"ac_couple_power_control"},
