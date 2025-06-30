@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,6 +21,7 @@ type HttpClient interface {
 func (h *httpClient) postForm(url string, token string, data url.Values, responseBody any) error {
 	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
 	if err != nil {
+		slog.Error("http.NewRequest failed (app)", slog.String("error", err.Error()))
 		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
@@ -29,6 +31,7 @@ func (h *httpClient) postForm(url string, token string, data url.Values, respons
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36")
 	resp, err := h.client.Do(req)
 	if err != nil {
+		slog.Error("http.Client.Do failed (app)", slog.String("error", err.Error()))
 		return err
 	}
 
@@ -38,15 +41,19 @@ func (h *httpClient) postForm(url string, token string, data url.Values, respons
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
+		slog.Error("io.ReadAll failed (app)", slog.String("error", err.Error()))
 		return err
 	}
 
 	if resp.StatusCode != 200 {
-		return fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		err := fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		slog.Error("StatusCode != 200 (app)", slog.String("error", err.Error()))
+		return err
 	}
 
 	if responseBody != nil {
 		if err := json.Unmarshal(b, &responseBody); err != nil {
+			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()))
 			return err
 		}
 	}

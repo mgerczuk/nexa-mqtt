@@ -54,8 +54,11 @@ func newClient(serverUrl string, username string, password string) *Client {
 func (h *Client) postForm(url string, data url.Values, responseBody any) error {
 	err := h.client.postForm(url, h.token, data, responseBody)
 	if err != nil {
-		if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
-			slog.Warn("JSON parse error - re-login", slog.String("error", err.Error()))
+		notLoggedIn := strings.Contains(err.Error(), "Dear user, you have not login to the system") ||
+			strings.Contains(err.Error(), "invalid character '<' looking for beginning of value")
+
+		if notLoggedIn {
+			slog.Warn("re-login", slog.String("error", err.Error()))
 			if err := h.Login(); err != nil {
 				slog.Error("could not re-login", slog.String("error", err.Error()))
 				misc.Panic(err)
