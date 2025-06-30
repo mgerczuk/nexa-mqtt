@@ -10,6 +10,10 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+type HaClient interface {
+	SetDevices(devices []DeviceInfo)
+}
+
 type Options struct {
 	MqttClient  mqtt.Client
 	TopicPrefix string

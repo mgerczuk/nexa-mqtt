@@ -9,13 +9,14 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"nexa-mqtt/internal/misc"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Client struct {
-	client    *http.Client
+	client    HttpClient
 	serverUrl string
 	username  string
 	password  string
@@ -35,11 +36,13 @@ func newClient(serverUrl string, username string, password string) *Client {
 	slog.Info("setting server url (app)", slog.String("url", serverUrl))
 
 	return &Client{
-		client: &http.Client{
-			Transport:     nil,
-			CheckRedirect: nil,
-			Jar:           jar,
-			Timeout:       10 * time.Second,
+		client: &httpClient{
+			client: &http.Client{
+				Transport:     nil,
+				CheckRedirect: nil,
+				Jar:           jar,
+				Timeout:       10 * time.Second,
+			},
 		},
 		serverUrl: serverUrl,
 		username:  username,
@@ -48,9 +51,27 @@ func newClient(serverUrl string, username string, password string) *Client {
 	}
 }
 
+func (h *Client) postForm(url string, data url.Values, responseBody any) error {
+	err := h.client.postForm(url, h.token, data, responseBody)
+	if err != nil {
+		if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
+			slog.Warn("JSON parse error - re-login", slog.String("error", err.Error()))
+			if err := h.Login(); err != nil {
+				slog.Error("could not re-login", slog.String("error", err.Error()))
+				misc.Panic(err)
+			}
+			return h.postForm(url, data, responseBody)
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (h *Client) loginGetToken() error {
 	var data TokenResponse
-	if _, err := h.postForm("https://evcharge.growatt.com/ocpp/user", url.Values{
+	if err := h.postForm("https://evcharge.growatt.com/ocpp/user", url.Values{
 		"cmd":      {"shineLogin"},
 		"userId":   {fmt.Sprintf("SHINE%s", h.username)},
 		"password": {h.password},
@@ -69,7 +90,7 @@ func (h *Client) Login() error {
 	}
 
 	var data LoginResult
-	if _, err := h.postForm(h.serverUrl+"/newTwoLoginAPIV2.do", url.Values{
+	if err := h.postForm(h.serverUrl+"/newTwoLoginAPIV2.do", url.Values{
 		"userName":          {h.username},
 		"password":          {h.password},
 		"newLogin":          {"1"},
@@ -97,7 +118,7 @@ func (h *Client) Login() error {
 
 func (h *Client) GetPlantList() (*PlantListV2, error) {
 	var data PlantListV2
-	if _, err := h.postForm(h.serverUrl+"/newTwoPlantAPI.do?op=getAllPlantListTwo", url.Values{
+	if err := h.postForm(h.serverUrl+"/newTwoPlantAPI.do?op=getAllPlantListTwo", url.Values{
 		"plantStatus": {""},
 		"pageSize":    {"20"},
 		"language":    {"1"},
@@ -111,16 +132,14 @@ func (h *Client) GetPlantList() (*PlantListV2, error) {
 
 func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 	var data NoahPlantInfo
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/noah/isPlantNoahSystem", url.Values{
 		"plantId": {plantId},
 	}, &data); err != nil {
 		return nil, err
 	}
 
 	if !data.Obj.IsPlantHaveNexa {
-		err := errors.New("No NEXA device")
-		slog.Error(err.Error())
-		misc.Panic(err)
+		return nil, errors.New("No NEXA device")
 	}
 
 	return &data, nil
@@ -128,7 +147,7 @@ func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 
 func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	var data NoahStatus
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getSystemStatus", url.Values{
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getSystemStatus", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -138,7 +157,7 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 
 func (h *Client) GetNoahInfo(serialNumber string) (*NexaInfo, error) {
 	var data NexaInfo
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getNexaInfoBySn", url.Values{
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getNexaInfoBySn", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -149,7 +168,7 @@ func (h *Client) GetNoahInfo(serialNumber string) (*NexaInfo, error) {
 
 func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	var data BatteryInfo
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getBatteryData", url.Values{
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getBatteryData", url.Values{
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -160,8 +179,8 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 
 func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
 	p := math.Max(0, math.Min(800, power))
-	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"system_out_put_power"},
 		"param1":    {fmt.Sprintf("%d", mode)},
@@ -176,8 +195,8 @@ func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, dischargeLimit float64) error {
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
-	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"charging_soc"},
 		"param1":    {fmt.Sprintf("%.0f", c)},
@@ -190,8 +209,8 @@ func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, disc
 }
 
 func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
-	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"allow_grid_charging"},
 		"param1":    {fmt.Sprintf("%d", allow)},
@@ -203,8 +222,8 @@ func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
 }
 
 func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
-	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"grid_connection_control"},
 		"param1":    {fmt.Sprintf("%d", offlineEnable)},
@@ -216,8 +235,8 @@ func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int
 }
 
 func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
-	var data map[string]any
-	if _, err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"ac_couple_power_control"},
 		"param1":    {fmt.Sprintf("%d", _1000WEnable)},
