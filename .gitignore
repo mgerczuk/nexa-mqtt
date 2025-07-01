@@ -25,4 +25,5 @@ dist
 /nexa-mqtt
 
 build/
+tmp/
 cmd/nexa-mqtt/__debug_bin*
