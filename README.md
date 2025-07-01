@@ -1,9 +1,9 @@
 # nexa-mqtt
 ![License](https://img.shields.io/github/license/mgerczuk/nexa-mqtt) ![GitHub last commit](https://img.shields.io/github/last-commit/mgerczuk/nexa-mqtt) ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/mgerczuk/nexa-mqtt)
 
-`nexa-mqtt` is a standalone application designed to retrieve data and metrics from your Growatt NOAH 2000 home battery used in balcony power plants. It publishes this information to an MQTT broker, making it easily accessible for Home Assistant or other applications. It is a fork of https://github.com/mtrossbach/noah-mqtt.
+`nexa-mqtt` is a standalone application designed to retrieve data and metrics from your Growatt NEXA 2000 home battery used in balcony power plants. It publishes this information to an MQTT broker, making it easily accessible for Home Assistant or other applications. It is a fork of https://github.com/mtrossbach/noah-mqtt.
 
-The application features Home Assistant auto-discovery, allowing your NOAH devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
+The application features Home Assistant auto-discovery, allowing your NEXA devices to be automatically recognized and integrated with Home Assistant via the MQTT integration.
 
 # ![HomeAssistant screenshot](/assets/ha-screenshot.png)
 
@@ -122,8 +122,6 @@ You can update the device's parameter settings by posting a message to the follo
 
 ## Option 1: Running `nexa-mqtt` with Docker
 
-_currently not working_
-
 To run the latest version of `nexa-mqtt` using Docker, follow these steps:
 
 1. **Install Docker**: Ensure Docker is installed on your system. You can download Docker Desktop from [Docker’s official website](https://www.docker.com/products/docker-desktop).
@@ -135,7 +133,7 @@ To run the latest version of `nexa-mqtt` using Docker, follow these steps:
 3. **Execute the Docker Command**: Run the following command, replacing the placeholders with your actual values:
 
    ```
-   docker run --name nexa-mqtt -e GROWATT_USERNAME=myusername -e GROWATT_PASSWORD=mypassword -e MQTT_HOST=localhost -e MQTT_PORT=1883 ghcr.io/mtrossbach/nexa-mqtt:latest
+   docker run --name nexa-mqtt -e GROWATT_USERNAME=myusername -e GROWATT_PASSWORD=mypassword -e MQTT_HOST=localhost -e MQTT_PORT=1883 ghcr.io/mgerczuk/nexa-mqtt:latest
    ```
    
 - Replace myusername with your Growatt username.
@@ -143,15 +141,13 @@ To run the latest version of `nexa-mqtt` using Docker, follow these steps:
 - Replace localhost with the hostname or IP address of your MQTT broker.
 - Replace 1883 with the port number your MQTT broker uses (default is 1883).
 
-The application will connect to your MQTT broker and retrieve all metrics and data for your NOAH devices.
+The application will connect to your MQTT broker and retrieve all metrics and data for your NEXA devices.
 
 ## Option 2: Downloading and running a prebuilt binary
 
-_currently not working_
-
 If you prefer not to compile the binary yourself, you can download a prebuilt version:
 
-1. **Download the Binary**: Go to the [Releases](https://github.com/mtrossbach/nexa-mqtt/releases) page of the repository and download the prebuilt binary for your operating system and system architecture.
+1. **Download the Binary**: Go to the [Releases](https://github.com/mgerczuk/nexa-mqtt/releases) page of the repository and download the prebuilt binary for your operating system and system architecture.
 
 2. **Extract the Binary**: If the binary is compressed (e.g., in a zip or tar file), extract it to a directory of your choice.
 
@@ -193,7 +189,7 @@ To compile the binary yourself, ensure you have Go installed on your machine:
 
 2. **Clone the Repository**: Open a terminal and run the following command to clone the repository:
         
-        git clone https://github.com/mtrossbach/nexa-mqtt.git
+        git clone https://github.com/mgerczuk/nexa-mqtt.git
         cd nexa-mqtt
 
 3. **Build the application**:
@@ -209,7 +205,7 @@ Afterwards follow the instructions for running the application from option 2.
 _currently not working_
 
 ## Run standalone (Home Assistant Container, Home Assistant Core)
-`nexa-mqtt` interacts with Home Assistant by publishing data from your Growatt NOAH 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
+`nexa-mqtt` interacts with Home Assistant by publishing data from your Growatt NEXA 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
 
 ![Home Assistant Integration](./assets/nexa-mqtt-ha-dark.drawio.png#gh-dark-mode-only)
 ![Home Assistant Integration](./assets/nexa-mqtt-ha.drawio.png#gh-light-mode-only)
