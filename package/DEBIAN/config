@@ -1,9 +1,0 @@
-#!/bin/bash
-set -e
-. /usr/share/debconf/confmodule
-
-db_input high nexa-mqtt/growatt_username || true
-db_input high nexa-mqtt/growatt_password || true
-db_input high nexa-mqtt/mqtt_host || true
-
-db_go || true
