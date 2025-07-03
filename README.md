@@ -143,7 +143,30 @@ To run the latest version of `nexa-mqtt` using Docker, follow these steps:
 
 The application will connect to your MQTT broker and retrieve all metrics and data for your NEXA devices.
 
-## Option 2: Downloading and running a prebuilt binary
+## Option 2: Downloading and running a Debian package
+
+1. **Download the deb package file**: Go to the [Releases](https://github.com/mgerczuk/nexa-mqtt/releases) page of the repository and download the .deb file for your operating system and system architecture.
+
+2. **Install the package**
+
+   ```sh
+   sudo apt install -f <deb-file>
+   ```
+
+When there is an update simply download the new deb package file and install with the same install command.
+
+nexa-mqtt is started and will be started automatically after a reboot. Check with `journalctl -t nexa-mqtt` if there are any problems, e.g. user name or password errors.
+
+You can modify the environment variables by executing
+
+   ```sh
+   sudo systemctl edit nexa-mqtt
+   sudo systemctl daemon-reload
+   sudo systemctl restart nexa-mqtt
+   ```
+To uninstall the package execute `sudo apt remove nexa-mqtt`.
+
+## Option 3: Downloading and running a prebuilt binary
 
 If you prefer not to compile the binary yourself, you can download a prebuilt version:
 
@@ -181,7 +204,7 @@ If you prefer not to compile the binary yourself, you can download a prebuilt ve
 
 Again, replace `myusername`, `mypassword`, `localhost`, and `1883` with your actual Growatt account details and MQTT broker information.
 
-## Option 3: Compiling the binary yourself
+## Option 4: Compiling the binary yourself
 
 To compile the binary yourself, ensure you have Go installed on your machine:
 
