@@ -77,5 +77,5 @@ func Test_parameterPayload(t *testing.T) {
 
 	pp := parameterPayload(&nexaInfo)
 
-	assert.Equal(t, 95.0, pp.ChargingLimit)
+	assert.Equal(t, 95.0, *pp.ChargingLimit)
 }

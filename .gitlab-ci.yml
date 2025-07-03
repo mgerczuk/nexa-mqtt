@@ -1,0 +1,11 @@
+stages:
+  - test
+
+unit_tests:
+  stage: test
+  image: golang:1.24-alpine
+  before_script:
+    - apk add --no-cache git
+    - go mod tidy
+  script:
+    - go test ./...
