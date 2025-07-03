@@ -1,3 +1,4 @@
+# Dockerfile for local build
 # Alpine image to build
 FROM alpine:latest AS builder
 

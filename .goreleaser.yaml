@@ -7,8 +7,7 @@ before:
 
 builds:
   - env:
-      - CGO_ENABLED=0
-    main: ./cmd/nexa-mqtt
+    - CGO_ENABLED=0
     targets:
       - linux_arm_6
       - linux_arm64
@@ -17,18 +16,18 @@ builds:
       - darwin_arm64
       - windows_amd64
       - windows_arm64
+    main: ./cmd/nexa-mqtt
 
 archives:
   - files:
-      - LICENSE
-      - passwd
+    - LICENSE
+    - passwd
 
 checksum:
   name_template: 'checksums.txt'
 
 dockers:
   - use: buildx
-    dockerfile: Dockerfile_goreleaser
     goos: linux
     goarch: arm64
     build_flag_templates:
@@ -46,9 +45,9 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
+    dockerfile: Dockerfile_goreleaser
 
   - use: buildx
-    dockerfile: Dockerfile_goreleaser
     goos: linux
     goarch: arm
     goarm: 6
@@ -67,9 +66,9 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
+    dockerfile: Dockerfile_goreleaser
 
   - use: buildx
-    dockerfile: Dockerfile_goreleaser
     goos: linux
     goarch: amd64
     build_flag_templates:
@@ -87,6 +86,7 @@ dockers:
     extra_files:
       - LICENSE
       - passwd
+    dockerfile: Dockerfile_goreleaser
 
 docker_manifests:
   - name_template: "ghcr.io/mgerczuk/{{ .ProjectName }}:{{ .Version }}"
