@@ -2,6 +2,7 @@ package growatt_app
 
 import (
 	"errors"
+	"math/rand"
 	"net/http/cookiejar"
 	"strconv"
 	"sync"
@@ -13,6 +14,16 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
+
+var letters = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randSerial(n int) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
 
 func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppService, models.NoahDevicePayload, *MockEndpoint) {
 	mockHttpClient := MockHttpClient{}
@@ -31,12 +42,12 @@ func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppServi
 
 	service := GrowattAppService{
 		client:   &client,
-		stop:     make(chan bool),
 		endpoint: &endpoint,
 	}
 
 	device := models.NoahDevicePayload{
-		Serial: "serial123",
+		Serial:  randSerial(10),
+		PlantId: rand.Intn(20000000),
 	}
 
 	return &mockHttpClient, &service, device, &endpoint
@@ -372,7 +383,7 @@ func TestSetChargingLimits_SetFail(t *testing.T) {
 	endpoint.AssertExpectations(t)
 }
 
-func setupPoll(t *testing.T, wg *sync.WaitGroup, mockHttpClient *MockHttpClient, service *GrowattAppService, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
+func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
 	nexaInfo := NexaInfoObj{}
 
 	nexaInfo.Noah.ChargingSocHighLimit = "95"
@@ -394,13 +405,13 @@ func setupPoll(t *testing.T, wg *sync.WaitGroup, mockHttpClient *MockHttpClient,
 			{ID: device.PlantId},
 		},
 	}, nil)
-	mockHttpClient.OnGetNoahPlantInfo(strconv.Itoa(device.PlantId), NoahPlantInfoObj{IsPlantHaveNexa: true, DeviceSn: "serial123"}, nil)
-	mockHttpClient.OnGetNoahInfo("serial123", nexaInfo, nil)
+	mockHttpClient.OnGetNoahPlantInfo(strconv.Itoa(device.PlantId), NoahPlantInfoObj{IsPlantHaveNexa: true, DeviceSn: device.Serial}, nil)
+	mockHttpClient.OnGetNoahInfo(device.Serial, nexaInfo, nil)
 
 	expectedDevices := []models.NoahDevicePayload{
 		{
 			PlantId: device.PlantId,
-			Serial:  "serial123",
+			Serial:  device.Serial,
 		},
 	}
 	mockEndpoint.On(
@@ -411,7 +422,7 @@ func setupPoll(t *testing.T, wg *sync.WaitGroup, mockHttpClient *MockHttpClient,
 	// ----- pollStatus
 
 	mockHttpClient.OnGetNoahStatus(
-		"serial123",
+		device.Serial,
 		NoahStatusObj{
 			LoadPower:     "400",
 			GridPower:     "0",
@@ -460,7 +471,7 @@ func setupPoll(t *testing.T, wg *sync.WaitGroup, mockHttpClient *MockHttpClient,
 	// ----- pollBatteryDetails
 
 	mockHttpClient.OnGetBatteryData(
-		"serial123",
+		device.Serial,
 		BatteryInfoObj{
 			Batter: []BatteryDetails{
 				{
@@ -507,17 +518,17 @@ func TestPolling_once(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 	var wg sync.WaitGroup
 
-	service.opts.PollingInterval = time.Duration(10 * time.Millisecond)
-	service.opts.BatteryDetailsPollingInterval = time.Duration(10 * time.Millisecond)
-	service.opts.ParameterPollingInterval = time.Duration(10 * time.Millisecond)
+	service.opts.PollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
 
-	setupPoll(t, &wg, mockHttpClient, service, device, mockEndpoint)
+	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
 	wg.Add(3)
 
 	service.StartPolling()
 	service.StopPolling()
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 
 	wg.Wait()
 
@@ -536,19 +547,20 @@ func TestPolling_multipleTimes(t *testing.T) {
 	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
 	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
 
-	setupPoll(t, &wg, mockHttpClient, service, device, mockEndpoint)
+	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
-	wg.Add(12)
+	nLoops := 2
+	wg.Add((nLoops + 1) * 3)
 
 	service.StartPolling()
-	time.Sleep(18 * time.Millisecond)
+	time.Sleep(time.Duration(nLoops*5+3) * time.Millisecond)
 	service.StopPolling()
 
 	wg.Wait()
 
 	mockHttpClient.AssertExpectations(t)
 	mockEndpoint.AssertExpectations(t)
-	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 4)
-	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 4)
-	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 4)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", nLoops+1)
 }

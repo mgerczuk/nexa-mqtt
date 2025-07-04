@@ -12,7 +12,7 @@ func Test_pollStatus_Ok(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
-		"serial123",
+		device.Serial,
 		NoahStatusObj{
 			LoadPower:     "400",
 			GridPower:     "0",
@@ -68,7 +68,7 @@ func Test_pollStatus_Fail(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
-		"serial123",
+		device.Serial,
 		NoahStatusObj{},
 		errors.New("pollStatus fails"))
 
@@ -82,7 +82,7 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
-		"serial123",
+		device.Serial,
 		BatteryInfoObj{
 			Batter: []BatteryDetails{
 				{
@@ -119,7 +119,7 @@ func Test_pollBatteryDetails_Fail(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
-		"serial123",
+		device.Serial,
 		BatteryInfoObj{},
 		errors.New("pollBatteryDetails fails"),
 	)
@@ -146,7 +146,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	defaultMode := models.WorkMode("load_first")
 
 	mockHttpClient.OnGetNoahInfo(
-		"serial123",
+		device.Serial,
 		nexaInfo,
 		nil,
 	)
@@ -172,7 +172,7 @@ func Test_pollParameterData_Fail(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahInfo(
-		"serial123",
+		device.Serial,
 		NexaInfoObj{},
 		errors.New("pollParameterData fails"),
 	)
