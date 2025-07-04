@@ -3,11 +3,15 @@ package growatt_app
 import (
 	"errors"
 	"net/http/cookiejar"
+	"strconv"
+	"sync"
+	"time"
 
 	"nexa-mqtt/pkg/models"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppService, models.NoahDevicePayload, *MockEndpoint) {
@@ -366,4 +370,185 @@ func TestSetChargingLimits_SetFail(t *testing.T) {
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
+}
+
+func setupPoll(t *testing.T, wg *sync.WaitGroup, mockHttpClient *MockHttpClient, service *GrowattAppService, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
+	nexaInfo := NexaInfoObj{}
+
+	nexaInfo.Noah.ChargingSocHighLimit = "95"
+	nexaInfo.Noah.DefaultMode = "0"
+	nexaInfo.Noah.DefaultACCouplePower = "100"
+	nexaInfo.Noah.ChargingSocLowLimit = "11"
+
+	chargingLimit := 95.0
+	dischargeLimit := 11.0
+	defaultACCouplePower := 100.0
+	defaultMode := models.WorkMode("load_first")
+
+	// ----- enumerateDevices
+
+	mockHttpClient.OnGetPlantList(PlantListV2{
+		PlantList: []struct {
+			ID int `json:"id"`
+		}{
+			{ID: device.PlantId},
+		},
+	}, nil)
+	mockHttpClient.OnGetNoahPlantInfo(strconv.Itoa(device.PlantId), NoahPlantInfoObj{IsPlantHaveNexa: true, DeviceSn: "serial123"}, nil)
+	mockHttpClient.OnGetNoahInfo("serial123", nexaInfo, nil)
+
+	expectedDevices := []models.NoahDevicePayload{
+		{
+			PlantId: device.PlantId,
+			Serial:  "serial123",
+		},
+	}
+	mockEndpoint.On(
+		"SetDevices",
+		expectedDevices,
+	)
+
+	// ----- pollStatus
+
+	mockHttpClient.OnGetNoahStatus(
+		"serial123",
+		NoahStatusObj{
+			LoadPower:     "400",
+			GridPower:     "0",
+			ChargePower:   "132",
+			GroplugPower:  "0",
+			WorkMode:      "0",
+			Soc:           "93",
+			EastronStatus: "-1",
+			//AssociatedInvSn: nil,
+			BatteryNum:     "1",
+			ProfitToday:    "0",
+			PlantID:        "10421077",
+			DisChargePower: "0",
+			EacTotal:       "9.6",
+			EacToday:       "3.3",
+			IsHaveCt:       "false",
+			OnOffGrid:      "0",
+			Pac:            "-400",
+			Ppv:            "538",
+			Alias:          "NEXA 2000",
+			ProfitTotal:    "0",
+			MoneyUnit:      "â¬",
+			GroplugNum:     "0",
+			OtherPower:     "-400",
+			Status:         "6",
+		},
+		nil)
+
+	mockEndpoint.On(
+		"PublishDeviceStatus",
+		device,
+		models.DevicePayload{
+			OutputPower:           -400.0,
+			SolarPower:            538.0,
+			Soc:                   93.0,
+			ChargePower:           132.0,
+			DischargePower:        0.0,
+			BatteryNum:            1,
+			GenerationTotalEnergy: 9.6,
+			GenerationTodayEnergy: 3.3,
+			WorkMode:              models.WorkMode("load_first"),
+			Status:                "on_grid",
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+
+	// ----- pollBatteryDetails
+
+	mockHttpClient.OnGetBatteryData(
+		"serial123",
+		BatteryInfoObj{
+			Batter: []BatteryDetails{
+				{
+					Temp:      "39",
+					SerialNum: "serial124",
+					Soc:       "93",
+				},
+				{
+					Temp:      "41",
+					SerialNum: "serial125",
+					Soc:       "78",
+				},
+			},
+		},
+		nil,
+	)
+
+	mockEndpoint.On(
+		"PublishBatteryDetails",
+		device,
+		[]models.BatteryPayload{
+			{SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
+			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+
+	// ----- pollParameterData
+
+	// mockHttpClient.OnGetNoahInfo already set
+
+	mockEndpoint.On(
+		"PublishParameterData",
+		device,
+		models.ParameterPayload{
+			ChargingLimit:        &chargingLimit,
+			DischargeLimit:       &dischargeLimit,
+			DefaultACCouplePower: &defaultACCouplePower,
+			DefaultMode:          &defaultMode,
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+}
+
+func TestPolling_once(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	var wg sync.WaitGroup
+
+	service.opts.PollingInterval = time.Duration(10 * time.Millisecond)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(10 * time.Millisecond)
+	service.opts.ParameterPollingInterval = time.Duration(10 * time.Millisecond)
+
+	setupPoll(t, &wg, mockHttpClient, service, device, mockEndpoint)
+
+	wg.Add(3)
+
+	service.StartPolling()
+	service.StopPolling()
+	time.Sleep(100 * time.Millisecond)
+
+	wg.Wait()
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 1)
+}
+
+func TestPolling_multipleTimes(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	var wg sync.WaitGroup
+
+	service.opts.PollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
+
+	setupPoll(t, &wg, mockHttpClient, service, device, mockEndpoint)
+
+	wg.Add(12)
+
+	service.StartPolling()
+	time.Sleep(18 * time.Millisecond)
+	service.StopPolling()
+
+	wg.Wait()
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 4)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 4)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 4)
 }
