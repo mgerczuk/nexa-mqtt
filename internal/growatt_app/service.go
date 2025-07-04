@@ -1,12 +1,12 @@
 package growatt_app
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"nexa-mqtt/internal/endpoint"
 	"nexa-mqtt/internal/misc"
 	"nexa-mqtt/pkg/models"
-	"os"
 	"time"
 )
 
@@ -82,9 +82,8 @@ func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
 	}
 
 	if len(devices) == 0 {
-		slog.Info("no nexa devices found")
-		<-time.After(60 * time.Second)
-		os.Exit(0)
+		slog.Error("no nexa devices found")
+		misc.Panic(errors.New("no nexa devices found"))
 	}
 
 	return devices
