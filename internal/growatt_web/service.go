@@ -1,6 +1,7 @@
 package growatt_web
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"nexa-mqtt/internal/endpoint"
@@ -20,14 +21,13 @@ type GrowattService struct {
 	client   *Client
 	devices  []models.NoahDevicePayload
 	endpoint endpoint.Endpoint
-	stop     chan bool
+	cancel   context.CancelFunc
 }
 
 func NewGrowattService(options Options) *GrowattService {
 	return &GrowattService{
 		opts:   options,
 		client: newClient(options.ServerUrl, options.Username, options.Password),
-		stop:   make(chan bool),
 	}
 }
 
@@ -43,11 +43,13 @@ func (g *GrowattService) StartPolling() {
 	g.devices = g.enumerateDevices()
 	g.endpoint.SetDevices(g.devices)
 
-	go g.poll()
+	var ctx context.Context
+	ctx, g.cancel = context.WithCancel(context.Background())
+	go g.poll(ctx)
 }
 
 func (g *GrowattService) StopPolling() {
-	g.stop <- true
+	g.cancel()
 }
 
 func (g *GrowattService) SetEndpoint(e endpoint.Endpoint) {
@@ -102,7 +104,7 @@ func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
 	return enumeratedDevices
 }
 
-func (g *GrowattService) poll() {
+func (g *GrowattService) poll(ctx context.Context) {
 	historyInterval := 3 * time.Minute
 
 	slog.Info("start polling growatt (web)",
@@ -130,7 +132,7 @@ func (g *GrowattService) poll() {
 			for _, device := range g.devices {
 				g.pollHistory(device)
 			}
-		case <-g.stop:
+		case <-ctx.Done():
 			slog.Info("stop polling growatt (web)")
 			return
 		}
