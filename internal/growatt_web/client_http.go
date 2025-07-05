@@ -7,20 +7,29 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"nexa-mqtt/internal/misc"
 	"strings"
 )
 
-func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.Response, error) {
+type httpClient struct {
+	client *http.Client
+}
+
+type HttpClient interface {
+	postForm(url string, data url.Values, responseBody any) error
+}
+
+func (h *httpClient) postForm(url string, data url.Values, responseBody any) error {
 	req, err := http.NewRequest("POST", url, strings.NewReader(data.Encode()))
 	if err != nil {
-		return nil, err
+		slog.Error("http.NewRequest failed (web)", slog.String("error", err.Error()))
+		return err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
 	resp, err := h.client.Do(req)
 	if err != nil {
-		return nil, err
+		slog.Error("http.Client.Do failed (web)", slog.String("error", err.Error()))
+		return err
 	}
 
 	defer func(Body io.ReadCloser) {
@@ -29,26 +38,22 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) (*http.
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, err
+		slog.Error("io.ReadAll failed (web)", slog.String("error", err.Error()))
+		return err
 	}
 
 	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		err := fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		slog.Error("StatusCode != 200 (web)", slog.String("error", err.Error()))
+		return err
 	}
 
 	if responseBody != nil {
 		if err := json.Unmarshal(b, &responseBody); err != nil {
-			if strings.Contains(err.Error(), "invalid character '<' looking for beginning of value") {
-				if err := h.Login(); err != nil {
-					slog.Error("could not re-login", slog.String("error", err.Error()))
-					misc.Panic(err)
-				}
-				return h.postForm(url, data, responseBody)
-			} else {
-				return nil, err
-			}
+			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()))
+			return err
 		}
 	}
 
-	return resp, nil
+	return nil
 }
