@@ -1,7 +1,8 @@
 package growatt_web
 
 type GrowattResult struct {
-	Result int `json:"result"`
+	Result int    `json:"result"`
+	Msg    string `json:"msg"`
 }
 
 type GrowattPlant struct {

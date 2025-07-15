@@ -1,6 +1,7 @@
 package growatt_web
 
 import (
+	"errors"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -70,6 +71,9 @@ func (h *Client) Login() error {
 		"password": {h.password},
 	}, &result); err != nil {
 		return err
+	}
+	if result.Result < 0 {
+		return errors.New(result.Msg)
 	}
 	return nil
 }
