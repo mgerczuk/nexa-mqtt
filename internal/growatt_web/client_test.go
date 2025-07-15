@@ -10,10 +10,10 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupMocks(t *testing.T) (*MockHttpClient, *Client) {
+func setupClientMocks(t *testing.T) (*MockHttpClient, *Client) {
 	mockHttpClient := MockHttpClient{}
 	jar, err := cookiejar.New(nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	client := Client{
 		client:    &mockHttpClient,
@@ -27,7 +27,7 @@ func setupMocks(t *testing.T) (*MockHttpClient, *Client) {
 }
 
 func Test_postForm_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.On(
 		"postForm",
@@ -43,7 +43,7 @@ func Test_postForm_Ok(t *testing.T) {
 }
 
 func Test_postForm_AnyError(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.On(
 		"postForm",
@@ -59,7 +59,7 @@ func Test_postForm_AnyError(t *testing.T) {
 }
 
 func Test_postForm_RetryLogin(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.On(
 		"postForm",
@@ -84,7 +84,7 @@ func Test_postForm_RetryLogin(t *testing.T) {
 }
 
 func Test_postForm_RetryLoginFails(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.On(
 		"postForm",
@@ -106,37 +106,37 @@ func Test_postForm_RetryLoginFails(t *testing.T) {
 }
 
 func TestLogin_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnLogin("user", "secret", GrowattResult{}, nil)
 
 	err := client.Login()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestLogin_ErrResult(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnLogin("user", "secret", GrowattResult{Result: -1}, nil)
 
 	err := client.Login()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestLogin_Fails(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnLogin("user", "secret", GrowattResult{}, errors.New("login fails"))
 
 	err := client.Login()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetPlantList_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	expected := []GrowattPlant{
 		{PlantId: "1", PlantName: "Test1"},
@@ -148,11 +148,11 @@ func TestGetPlantList_Ok(t *testing.T) {
 
 	assert.Equal(t, expected, result)
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetPlantList_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetPlantList_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	expected := []GrowattPlant{}
 	mockHttpClient.OnGetPlantList(expected, errors.New("GetPlantList fails"))
@@ -160,88 +160,88 @@ func TestGetPlantList_Fail(t *testing.T) {
 	result, err := client.GetPlantList()
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetPlantDevices_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetPlantDevices("pid", GrowattPlantDevices{}, nil)
 
 	result, err := client.GetPlantDevices("pid")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetPlantDevices_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetPlantDevices_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetPlantDevices("pid", GrowattPlantDevices{}, errors.New("GetPlantDevices fails"))
 
 	result, err := client.GetPlantDevices("pid")
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetNoahList_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahList(12, GrowattNoahList{}, nil)
 
 	result, err := client.GetNoahList(12)
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetNoahList_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetNoahList_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahList(12, GrowattNoahList{}, errors.New("GetNoahList fails"))
 
 	result, err := client.GetNoahList(12)
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetNoahDetails_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahDetails(12, "Serial123", GrowattNoahList{}, nil)
 
 	result, err := client.GetNoahDetails(12, "Serial123")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetNoahDetails_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetNoahDetails_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahDetails(12, "Serial123", GrowattNoahList{}, errors.New("GetNoahDetails fails"))
 
 	result, err := client.GetNoahDetails(12, "Serial123")
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetNoahHistory_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahHistory("Serial123", "2025-07-01", "2025-07-02", GrowattNoahHistory{}, nil)
 
 	result, err := client.GetNoahHistory("Serial123", "2025-07-01", "2025-07-02")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
 func TestGetNoahHistory_EmptyDate(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	expected := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory("Serial123", expected, expected, GrowattNoahHistory{}, nil)
@@ -249,60 +249,60 @@ func TestGetNoahHistory_EmptyDate(t *testing.T) {
 	result, err := client.GetNoahHistory("Serial123", "", "")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetNoahHistory_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetNoahHistory_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahHistory("Serial123", "2025-07-01", "2025-07-02", GrowattNoahHistory{}, errors.New("GetNoahHistory fails"))
 
 	result, err := client.GetNoahHistory("Serial123", "2025-07-01", "2025-07-02")
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetNoahStatus_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahStatus(42, "Serial123", GrowattNoahStatus{}, nil)
 
 	result, err := client.GetNoahStatus(42, "Serial123")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetNoahStatus_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetNoahStatus_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahStatus(42, "Serial123", GrowattNoahStatus{}, errors.New("GetNoahStatus fails"))
 
 	result, err := client.GetNoahStatus(42, "Serial123")
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
 
 func TestGetNoahTotals_Ok(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahTotals(42, "Serial123", GrowattNoahTotals{}, nil)
 
 	result, err := client.GetNoahTotals(42, "Serial123")
 
 	assert.NotNil(t, result)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 }
 
-func TestGetNoahTotals_Fail(t *testing.T) {
-	mockHttpClient, client := setupMocks(t)
+func TestGetNoahTotals_Fails(t *testing.T) {
+	mockHttpClient, client := setupClientMocks(t)
 
 	mockHttpClient.OnGetNoahTotals(42, "Serial123", GrowattNoahTotals{}, errors.New("GetNoahTotals fails"))
 
 	result, err := client.GetNoahTotals(42, "Serial123")
 
 	assert.Nil(t, result)
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 }
