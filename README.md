@@ -225,8 +225,6 @@ Afterwards follow the instructions for running the application from option 2.
 
 # Integration into HomeAssistant
 
-_currently not working_
-
 ## Run standalone (Home Assistant Container, Home Assistant Core)
 `nexa-mqtt` interacts with Home Assistant by publishing data from your Growatt NEXA 2000 home battery to an MQTT broker. This setup allows Home Assistant to subscribe to and integrate this data seamlessly into its ecosystem.
 
@@ -268,9 +266,9 @@ This option leverages the add-on system to manage and run `nexa-mqtt` directly o
    - Open your Home Assistant web interface.
    - Navigate to **Settings** > **Add-ons** > **Add-on Store**.
    - Click on the three-dot menu in the top right corner and select **Repositories**.
-   - Add the following URL: `https://github.com/mtrossbach/hassio-addons`.
+   - Add the following URL: `https://github.com/mgerczuk/hassio-addons`.
 
-[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmtrossbach%2Fhassio-addons)
+[![Open your Home Assistant instance and show the add add-on repository dialog with a specific repository URL pre-filled.](https://my.home-assistant.io/badges/supervisor_add_addon_repository.svg)](https://my.home-assistant.io/redirect/supervisor_add_addon_repository/?repository_url=https%3A%2F%2Fgithub.com%2Fmgerczuk%2Fhassio-addons)
 
 2. **Install the Add-on:**
    - Search for the `nexa-mqtt` add-on within the Add-on Store.
@@ -284,5 +282,5 @@ This option leverages the add-on system to manage and run `nexa-mqtt` directly o
 
 The Home Assistant add-on provides an easy and integrated way to run `nexa-mqtt`, allowing you to manage it directly from the Home Assistant interface.
 
-For more detailed information and updates, visit the [repository](https://github.com/mtrossbach/hassio-addons).
+For more detailed information and updates, visit the [repository](https://github.com/mgerczuk/hassio-addons).
 
