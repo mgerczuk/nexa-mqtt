@@ -5,10 +5,13 @@ import (
 	"math/rand"
 	"net/http/cookiejar"
 	"nexa-mqtt/pkg/models"
+	"strconv"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
 var letters = []rune("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -44,7 +47,7 @@ func setupGrowattServiceMocks(t *testing.T) (*MockHttpClient, *GrowattService, m
 	device := models.NoahDevicePayload{
 		Serial:    randSerial(10),
 		PlantId:   rand.Intn(20000000),
-		Batteries: []models.NoahDeviceBatteryPayload{{}, {}, {}, {}},
+		Batteries: []models.NoahDeviceBatteryPayload{{Alias: "BAT0"}, {Alias: "BAT1"}, {Alias: "BAT2"}, {Alias: "BAT3"}},
 	}
 
 	return &mockHttpClient, &service, device, &endpoint
@@ -382,6 +385,8 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 	today := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{Obj: GrowattNoahHistoryObj{Datas: []GrowattNoahHistoryData{
 		{
+			BatteryPackageQuantity: 4,
+
 			Battery1SerialNum: "serial124",
 			Battery1Soc:       93,
 			Battery1Temp:      39.0,
@@ -438,4 +443,165 @@ func Test_pollBatteryDetails_GetNoahHistoryNoData(t *testing.T) {
 
 	mockHttpClient.AssertExpectations(t)
 	mockEndpoint.AssertExpectations(t)
+}
+
+func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
+	// ----- enumerateDevices
+
+	plantList := []GrowattPlant{
+		{PlantId: "1", PlantName: "plant1"},
+	}
+	mockHttpClient.OnGetPlantList(plantList, nil)
+
+	dev1 := GrowattNoahList{Datas: []GrowattNoahListData{
+		{Sn: device.Serial, PlantID: strconv.Itoa(device.PlantId)},
+	}}
+	mockHttpClient.OnGetNoahList(1, dev1, nil)
+
+	today := time.Now().Format("2006-01-02")
+	// mockHttpClient.OnGetNoahHistory("Serial123", today, today, hist1, nil) set below
+
+	mockEndpoint.On(
+		"SetDevices",
+		[]models.NoahDevicePayload{device},
+	)
+
+	// ----- pollStatus
+
+	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{Obj: GrowattNoahStatusObj{
+		Pac:                           "-400",
+		Ppv:                           "538",
+		TotalBatteryPackSoc:           "93",
+		TotalBatteryPackChargingPower: "132",
+		WorkMode:                      "0",
+		Status:                        "6",
+	}}, nil)
+	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{Obj: GrowattNoahTotalsObj{
+		EacTotal: "9.6",
+		EacToday: "3.3",
+	}}, nil)
+
+	mockEndpoint.On(
+		"PublishDeviceStatus",
+		device,
+		models.DevicePayload{
+			OutputPower:           -400.0,
+			SolarPower:            538.0,
+			Soc:                   93.0,
+			ChargePower:           132.0,
+			DischargePower:        0.0,
+			BatteryNum:            4,
+			GenerationTotalEnergy: 9.6,
+			GenerationTodayEnergy: 3.3,
+			WorkMode:              models.WorkMode("load_first"),
+			Status:                "on_grid",
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+
+	// ----- pollBatteryDetails
+
+	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{Obj: GrowattNoahHistoryObj{Datas: []GrowattNoahHistoryData{
+		{
+			BatteryPackageQuantity: 4,
+
+			Battery1SerialNum: "serial124",
+			Battery1Soc:       93,
+			Battery1Temp:      39.0,
+
+			Battery2SerialNum: "serial125",
+			Battery2Soc:       78,
+			Battery2Temp:      41.0,
+
+			Battery3SerialNum: "serial126",
+			Battery3Soc:       82,
+			Battery3Temp:      40.0,
+
+			Battery4SerialNum: "serial127",
+			Battery4Soc:       66,
+			Battery4Temp:      36.0,
+		}}}}, nil)
+
+	mockEndpoint.On(
+		"PublishBatteryDetails",
+		device,
+		[]models.BatteryPayload{
+			{SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
+			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
+			{SerialNumber: "serial126", Soc: 82.0, Temperature: 40.0},
+			{SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+
+	// ----- pollParameterData
+
+	chargingLimit := 95.0
+	dischargeLimit := 11.0
+	defaultACCouplePower := 100.0
+	defaultMode := models.WorkMode("load_first")
+
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
+		{ChargingSocHighLimit: "95", ChargingSocLowLimit: "11", DefaultMode: "0", DefaultACCouplePower: "100"},
+	}}, nil)
+
+	mockEndpoint.On(
+		"PublishParameterData",
+		device,
+		models.ParameterPayload{
+			ChargingLimit:        &chargingLimit,
+			DischargeLimit:       &dischargeLimit,
+			DefaultACCouplePower: &defaultACCouplePower,
+			DefaultMode:          &defaultMode,
+		},
+	).Run(func(args mock.Arguments) { wg.Done() })
+}
+
+func TestPolling_once(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+	var wg sync.WaitGroup
+
+	service.opts.PollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
+
+	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
+
+	wg.Add(3)
+
+	service.StartPolling()
+	service.StopPolling()
+	time.Sleep(10 * time.Millisecond)
+
+	wg.Wait()
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 1)
+}
+
+func TestPolling_multipleTimes(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+	var wg sync.WaitGroup
+
+	service.opts.PollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
+
+	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
+
+	nLoops := 2
+	wg.Add((nLoops + 1) * 3)
+
+	service.StartPolling()
+	time.Sleep(time.Duration(nLoops*5+3) * time.Millisecond)
+	service.StopPolling()
+
+	wg.Wait()
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", nLoops+1)
 }
