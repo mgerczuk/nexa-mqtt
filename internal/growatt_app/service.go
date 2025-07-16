@@ -1,12 +1,13 @@
 package growatt_app
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"nexa-mqtt/internal/endpoint"
 	"nexa-mqtt/internal/misc"
 	"nexa-mqtt/pkg/models"
-	"os"
 	"time"
 )
 
@@ -24,7 +25,7 @@ type GrowattAppService struct {
 	devices  []models.NoahDevicePayload
 	endpoint endpoint.Endpoint
 	loggedIn bool
-	stop     chan bool
+	cancel   context.CancelFunc
 }
 
 func NewGrowattAppService(options Options) *GrowattAppService {
@@ -32,7 +33,6 @@ func NewGrowattAppService(options Options) *GrowattAppService {
 		opts:     options,
 		client:   newClient(options.ServerUrl, options.Username, options.Password),
 		loggedIn: false,
-		stop:     make(chan bool),
 	}
 }
 
@@ -48,11 +48,13 @@ func (g *GrowattAppService) Login() error {
 
 func (g *GrowattAppService) StartPolling() {
 	g.enumerateDevices()
-	go g.poll()
+	var ctx context.Context
+	ctx, g.cancel = context.WithCancel(context.Background())
+	go g.poll(ctx)
 }
 
 func (g *GrowattAppService) StopPolling() {
-	g.stop <- true
+	g.cancel()
 }
 
 func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
@@ -82,9 +84,8 @@ func (g *GrowattAppService) fetchDevices() []models.NoahDevicePayload {
 	}
 
 	if len(devices) == 0 {
-		slog.Info("no nexa devices found")
-		<-time.After(60 * time.Second)
-		os.Exit(0)
+		slog.Error("no nexa devices found")
+		misc.Panic(errors.New("no nexa devices found"))
 	}
 
 	return devices
@@ -169,7 +170,7 @@ func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, c
 	}
 }
 
-func (g *GrowattAppService) poll() {
+func (g *GrowattAppService) poll(ctx context.Context) {
 	slog.Info("start polling growatt (app)",
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),
 		slog.Int("battery-details-interval", int(g.opts.BatteryDetailsPollingInterval/time.Second)),
@@ -204,7 +205,7 @@ func (g *GrowattAppService) poll() {
 			for _, device := range g.devices {
 				g.pollParameterData(device)
 			}
-		case <-g.stop:
+		case <-ctx.Done():
 			slog.Info("stop polling growatt (app)")
 			return
 		}
