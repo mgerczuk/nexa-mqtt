@@ -7,20 +7,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 )
-
-// ----- Mocks --------------------------------------------------------------
-
-// MockHttpClient implements HttpClient
-type MockHttpClient struct {
-	mock.Mock
-}
-
-func (h *MockHttpClient) postForm(url string, token string, data url.Values, responseBody any) error {
-	args := h.Called(url, token, data, responseBody)
-	return args.Error(0)
-}
 
 // ----- Test functions -----------------------------------------------------
 
@@ -85,39 +72,11 @@ func Test_postForm_RetryLogin(t *testing.T) {
 		nil,
 	).Return(errors.New("invalid character '<' looking for beginning of value"))
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*TokenResponse)
-		responseBody.Token = "THE_TOKEN"
-	}).Return(nil)
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{Token: "THE_TOKEN"}, nil)
 
-	expectedMatch := mock.MatchedBy(func(m url.Values) bool {
-		return m.Get("userName") == "user" &&
-			m.Get("password") == "secret" &&
-			m.Get("newLogin") == "1" &&
-			m.Get("appType") == "ShinePhone"
-	})
-
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoLoginAPIV2.do",
-		"THE_TOKEN",
-		expectedMatch,
-		&LoginResult{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*LoginResult)
-		responseBody.Back.Success = true
-	}).Return(nil)
+	loginResult := LoginResult{}
+	loginResult.Back.Success = true
+	mockHttpClient.On_newTwoLoginAPIV2("THE_TOKEN", "user", "secret", loginResult, nil)
 
 	mockHttpClient.On(
 		"postForm",
@@ -144,36 +103,9 @@ func Test_postForm_RetryLoginFails(t *testing.T) {
 		nil,
 	).Return(errors.New("invalid character '<' looking for beginning of value"))
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*TokenResponse)
-		responseBody.Token = "THE_TOKEN"
-	}).Return(nil)
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{Token: "THE_TOKEN"}, nil)
 
-	expectedMatch := mock.MatchedBy(func(m url.Values) bool {
-		return m.Get("userName") == "user" &&
-			m.Get("password") == "secret" &&
-			m.Get("newLogin") == "1" &&
-			m.Get("appType") == "ShinePhone"
-	})
-
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoLoginAPIV2.do",
-		"THE_TOKEN",
-		expectedMatch,
-		&LoginResult{},
-	).Return(errors.New("login failed"))
+	mockHttpClient.On_newTwoLoginAPIV2("THE_TOKEN", "user", "secret", LoginResult{}, errors.New("login failed"))
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -188,39 +120,11 @@ func Test_postForm_RetryLoginFails(t *testing.T) {
 func TestLogin_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*TokenResponse)
-		responseBody.Token = "THE_TOKEN"
-	}).Return(nil)
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{Token: "THE_TOKEN"}, nil)
 
-	expectedMatch := mock.MatchedBy(func(m url.Values) bool {
-		return m.Get("userName") == "user" &&
-			m.Get("password") == "secret" &&
-			m.Get("newLogin") == "1" &&
-			m.Get("appType") == "ShinePhone"
-	})
-
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoLoginAPIV2.do",
-		"THE_TOKEN",
-		expectedMatch,
-		&LoginResult{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*LoginResult)
-		responseBody.Back.Success = true
-	}).Return(nil)
+	loginResult := LoginResult{}
+	loginResult.Back.Success = true
+	mockHttpClient.On_newTwoLoginAPIV2("THE_TOKEN", "user", "secret", loginResult, nil)
 
 	err := client.Login()
 	assert.NoError(t, err)
@@ -232,39 +136,11 @@ func TestLogin_Ok(t *testing.T) {
 func TestLogin_NoSuccess(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*TokenResponse)
-		responseBody.Token = "THE_TOKEN"
-	}).Return(nil)
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{Token: "THE_TOKEN"}, nil)
 
-	expectedMatch := mock.MatchedBy(func(m url.Values) bool {
-		return m.Get("userName") == "user" &&
-			m.Get("password") == "secret" &&
-			m.Get("newLogin") == "1" &&
-			m.Get("appType") == "ShinePhone"
-	})
-
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoLoginAPIV2.do",
-		"THE_TOKEN",
-		expectedMatch,
-		&LoginResult{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*LoginResult)
-		responseBody.Back.Success = false
-	}).Return(nil)
+	loginResult := LoginResult{}
+	loginResult.Back.Success = false
+	mockHttpClient.On_newTwoLoginAPIV2("THE_TOKEN", "user", "secret", loginResult, nil)
 
 	err := client.Login()
 	assert.Error(t, err)
@@ -272,21 +148,10 @@ func TestLogin_NoSuccess(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
-func TestLogin_loginGetTokenFail(t *testing.T) {
+func TestLogin_loginGetToken_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Return(errors.New("login error"))
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{}, errors.New("login error"))
 
 	err := client.Login()
 	assert.Error(t, err)
@@ -297,36 +162,9 @@ func TestLogin_loginGetTokenFail(t *testing.T) {
 func TestLogin_newTwoLoginFail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://evcharge.growatt.com/ocpp/user",
-		"",
-		url.Values{
-			"cmd":      {"shineLogin"},
-			"userId":   {"SHINEuser"},
-			"password": {"secret"},
-			"lan":      {"1"},
-		},
-		&TokenResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*TokenResponse)
-		responseBody.Token = "THE_TOKEN"
-	}).Return(nil)
+	mockHttpClient.On_loginGetToken("SHINEuser", "secret", TokenResponse{Token: "THE_TOKEN"}, nil)
 
-	expectedMatch := mock.MatchedBy(func(m url.Values) bool {
-		return m.Get("userName") == "user" &&
-			m.Get("password") == "secret" &&
-			m.Get("newLogin") == "1" &&
-			m.Get("appType") == "ShinePhone"
-	})
-
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoLoginAPIV2.do",
-		"THE_TOKEN",
-		expectedMatch,
-		&LoginResult{},
-	).Return(errors.New("newTwoLoginAPIV2 fail"))
+	mockHttpClient.On_newTwoLoginAPIV2("THE_TOKEN", "user", "secret", LoginResult{}, errors.New("newTwoLoginAPIV2 fail"))
 
 	err := client.Login()
 	assert.Error(t, err)
@@ -337,41 +175,20 @@ func TestLogin_newTwoLoginFail(t *testing.T) {
 func TestGetPlantList_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoPlantAPI.do?op=getAllPlantListTwo",
-		"",
-		url.Values{
-			"plantStatus": {""},
-			"pageSize":    {"20"},
-			"language":    {"1"},
-			"toPageNum":   {"1"},
-			"order":       {"1"},
-		},
-		&PlantListV2{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*PlantListV2)
-		*responseBody = PlantListV2{
-			PlantList: []struct {
-				ID int `json:"id"`
-			}{
-				{ID: 1},
-				{ID: 2},
-			},
-		}
-	}).Return(nil)
-
-	data, err := client.GetPlantList()
-
-	assert.NoError(t, err)
-	assert.Equal(t, PlantListV2{
+	expectedPlantList := PlantListV2{
 		PlantList: []struct {
 			ID int `json:"id"`
 		}{
 			{ID: 1},
 			{ID: 2},
 		},
-	}, *data)
+	}
+	mockHttpClient.OnGetPlantList(expectedPlantList, nil)
+
+	data, err := client.GetPlantList()
+
+	assert.NoError(t, err)
+	assert.Equal(t, expectedPlantList, *data)
 
 	mockHttpClient.AssertExpectations(t)
 }
@@ -379,19 +196,8 @@ func TestGetPlantList_Ok(t *testing.T) {
 func TestGetPlantList_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/newTwoPlantAPI.do?op=getAllPlantListTwo",
-		"",
-		url.Values{
-			"plantStatus": {""},
-			"pageSize":    {"20"},
-			"language":    {"1"},
-			"toPageNum":   {"1"},
-			"order":       {"1"},
-		},
-		&PlantListV2{},
-	).Return(errors.New("newTwoPlantAPI fail"))
+	mockHttpClient.OnGetPlantList(PlantListV2{},
+		errors.New("newTwoPlantAPI fail"))
 
 	data, err := client.GetPlantList()
 	assert.Error(t, err)
@@ -403,26 +209,7 @@ func TestGetPlantList_Fail(t *testing.T) {
 func TestGetNoahPlantInfo_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/noah/isPlantNoahSystem",
-		"",
-		url.Values{
-			"plantId": {"2"},
-		},
-		&NoahPlantInfo{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*NoahPlantInfo)
-		*responseBody = NoahPlantInfo{
-			ResponseContainerV2: ResponseContainerV2[NoahPlantInfoObj]{
-				Msg:    "",
-				Result: 0,
-				Obj: NoahPlantInfoObj{
-					IsPlantHaveNexa: true,
-				},
-			},
-		}
-	}).Return(nil)
+	mockHttpClient.OnGetNoahPlantInfo("2", NoahPlantInfoObj{IsPlantHaveNexa: true}, nil)
 
 	data, err := client.GetNoahPlantInfo("2")
 
@@ -443,26 +230,7 @@ func TestGetNoahPlantInfo_Ok(t *testing.T) {
 func TestGetNoahPlantInfo_NoNexa(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/noah/isPlantNoahSystem",
-		"",
-		url.Values{
-			"plantId": {"2"},
-		},
-		&NoahPlantInfo{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*NoahPlantInfo)
-		*responseBody = NoahPlantInfo{
-			ResponseContainerV2: ResponseContainerV2[NoahPlantInfoObj]{
-				Msg:    "",
-				Result: 0,
-				Obj: NoahPlantInfoObj{
-					IsPlantHaveNexa: false,
-				},
-			},
-		}
-	}).Return(nil)
+	mockHttpClient.OnGetNoahPlantInfo("2", NoahPlantInfoObj{IsPlantHaveNexa: false}, nil)
 
 	data, err := client.GetNoahPlantInfo("2")
 
@@ -475,15 +243,7 @@ func TestGetNoahPlantInfo_NoNexa(t *testing.T) {
 func TestGetNoahPlantInfo_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/noah/isPlantNoahSystem",
-		"",
-		url.Values{
-			"plantId": {"2"},
-		},
-		&NoahPlantInfo{},
-	).Return(errors.New("isPlantNoahSystem fail"))
+	mockHttpClient.OnGetNoahPlantInfo("2", NoahPlantInfoObj{}, errors.New("isPlantNoahSystem fail"))
 
 	data, err := client.GetNoahPlantInfo("2")
 
@@ -496,18 +256,7 @@ func TestGetNoahPlantInfo_Fail(t *testing.T) {
 func TestGetNoahStatus_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getSystemStatus",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&NoahStatus{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*NoahStatus)
-		*responseBody = NoahStatus{}
-	}).Return(nil)
+	mockHttpClient.OnGetNoahStatus("serial123", NoahStatusObj{}, nil)
 
 	data, err := client.GetNoahStatus("serial123")
 
@@ -520,15 +269,7 @@ func TestGetNoahStatus_Ok(t *testing.T) {
 func TestGetNoahStatus_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getSystemStatus",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&NoahStatus{},
-	).Return(errors.New("getSystemStatus fail"))
+	mockHttpClient.OnGetNoahStatus("serial123", NoahStatusObj{}, errors.New("getSystemStatus fail"))
 
 	data, err := client.GetNoahStatus("serial123")
 
@@ -541,18 +282,7 @@ func TestGetNoahStatus_Fail(t *testing.T) {
 func TestGetNoahInfo_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getNexaInfoBySn",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&NexaInfo{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*NexaInfo)
-		*responseBody = NexaInfo{}
-	}).Return(nil)
+	mockHttpClient.OnGetNoahInfo("serial123", NexaInfoObj{}, nil)
 
 	data, err := client.GetNoahInfo("serial123")
 
@@ -565,15 +295,7 @@ func TestGetNoahInfo_Ok(t *testing.T) {
 func TestGetNoahInfo_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getNexaInfoBySn",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&NexaInfo{},
-	).Return(errors.New("getSystemStatus fail"))
+	mockHttpClient.OnGetNoahInfo("serial123", NexaInfoObj{}, errors.New("getSystemStatus fail"))
 
 	data, err := client.GetNoahInfo("serial123")
 
@@ -586,18 +308,7 @@ func TestGetNoahInfo_Fail(t *testing.T) {
 func TestGetBatteryData_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getBatteryData",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&BatteryInfo{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*BatteryInfo)
-		*responseBody = BatteryInfo{}
-	}).Return(nil)
+	mockHttpClient.OnGetBatteryData("serial123", BatteryInfoObj{}, nil)
 
 	data, err := client.GetBatteryData("serial123")
 
@@ -610,15 +321,7 @@ func TestGetBatteryData_Ok(t *testing.T) {
 func TestGetBatteryData_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/getBatteryData",
-		"",
-		url.Values{
-			"deviceSn": {"serial123"},
-		},
-		&BatteryInfo{},
-	).Return(errors.New("getBatteryData fail"))
+	mockHttpClient.OnGetBatteryData("serial123", BatteryInfoObj{}, errors.New("getBatteryData fail"))
 
 	data, err := client.GetBatteryData("serial123")
 
@@ -631,21 +334,7 @@ func TestGetBatteryData_Fail(t *testing.T) {
 func TestSetSystemOutputPower_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"system_out_put_power"},
-			"param1":    {"0"},
-			"param2":    {"200"},
-		},
-		&SetResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*SetResponse)
-		*responseBody = SetResponse{}
-	}).Return(nil)
+	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", nil)
 
 	err := client.SetSystemOutputPower("serial123", 0, 200)
 
@@ -658,18 +347,7 @@ func TestSetSystemOutputPower_Ok(t *testing.T) {
 func TestSetSystemOutputPower_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"system_out_put_power"},
-			"param1":    {"0"},
-			"param2":    {"200"},
-		},
-		&SetResponse{},
-	).Return(errors.New("noahDeviceApi/nexa/set system_out_put_power fail"))
+	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", errors.New("noahDeviceApi/nexa/set system_out_put_power fail"))
 
 	err := client.SetSystemOutputPower("serial123", 0, 200)
 
@@ -681,21 +359,7 @@ func TestSetSystemOutputPower_Fail(t *testing.T) {
 func TestSetChargingSoc_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"charging_soc"},
-			"param1":    {"85"},
-			"param2":    {"15"},
-		},
-		&SetResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*SetResponse)
-		*responseBody = SetResponse{}
-	}).Return(nil)
+	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", nil)
 
 	err := client.SetChargingSoc("serial123", 85, 15)
 
@@ -707,18 +371,7 @@ func TestSetChargingSoc_Ok(t *testing.T) {
 func TestSetChargingSoc_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"charging_soc"},
-			"param1":    {"85"},
-			"param2":    {"15"},
-		},
-		&SetResponse{},
-	).Return(errors.New("noahDeviceApi/nexa/set charging_soc fail"))
+	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", errors.New("noahDeviceApi/nexa/set charging_soc fail"))
 
 	err := client.SetChargingSoc("serial123", 85, 15)
 
@@ -730,20 +383,7 @@ func TestSetChargingSoc_Fail(t *testing.T) {
 func TestSetAllowGridCharging_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"allow_grid_charging"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*SetResponse)
-		*responseBody = SetResponse{}
-	}).Return(nil)
+	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", nil)
 
 	err := client.SetAllowGridCharging("serial123", 1)
 
@@ -755,17 +395,7 @@ func TestSetAllowGridCharging_Ok(t *testing.T) {
 func TestSetAllowGridCharging_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"allow_grid_charging"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Return(errors.New("noahDeviceApi/nexa/set allow_grid_charging fail"))
+	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", errors.New("noahDeviceApi/nexa/set allow_grid_charging fail"))
 
 	err := client.SetAllowGridCharging("serial123", 1)
 
@@ -777,20 +407,7 @@ func TestSetAllowGridCharging_Fail(t *testing.T) {
 func TestSetGridConnectionControl_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"grid_connection_control"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*SetResponse)
-		*responseBody = SetResponse{}
-	}).Return(nil)
+	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", nil)
 
 	err := client.SetGridConnectionControl("serial123", 1)
 
@@ -802,17 +419,7 @@ func TestSetGridConnectionControl_Ok(t *testing.T) {
 func TestSetGridConnectionControl_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"grid_connection_control"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Return(errors.New("noahDeviceApi/nexa/set grid_connection_control fail"))
+	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", errors.New("noahDeviceApi/nexa/set grid_connection_control fail"))
 
 	err := client.SetGridConnectionControl("serial123", 1)
 
@@ -824,20 +431,7 @@ func TestSetGridConnectionControl_Fail(t *testing.T) {
 func TestSetACCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"ac_couple_power_control"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Run(func(args mock.Arguments) {
-		responseBody := args.Get(3).(*SetResponse)
-		*responseBody = SetResponse{}
-	}).Return(nil)
+	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", nil)
 
 	err := client.SetACCouplePowerControl("serial123", 1)
 
@@ -849,17 +443,7 @@ func TestSetACCouplePowerControl_Ok(t *testing.T) {
 func TestSetACCouplePowerControl_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.On(
-		"postForm",
-		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
-		"",
-		url.Values{
-			"serialNum": {"serial123"},
-			"type":      {"ac_couple_power_control"},
-			"param1":    {"1"},
-		},
-		&SetResponse{},
-	).Return(errors.New("noahDeviceApi/nexa/set ac_couple_power_control fail"))
+	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", errors.New("noahDeviceApi/nexa/set ac_couple_power_control fail"))
 
 	err := client.SetACCouplePowerControl("serial123", 1)
 
