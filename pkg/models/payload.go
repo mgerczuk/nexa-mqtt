@@ -75,10 +75,13 @@ type BatteryPayload struct {
 }
 
 type ParameterPayload struct {
-	ChargingLimit        *float64  `json:"charging_limit,omitempty"`
-	DischargeLimit       *float64  `json:"discharge_limit,omitempty"`
-	DefaultACCouplePower *float64  `json:"default_output_w,omitempty"`
-	DefaultMode          *WorkMode `json:"default_mode,omitempty"`
+	ChargingLimit         *float64  `json:"charging_limit,omitempty"`
+	DischargeLimit        *float64  `json:"discharge_limit,omitempty"`
+	DefaultACCouplePower  *float64  `json:"default_output_w,omitempty"`
+	DefaultMode           *WorkMode `json:"default_mode,omitempty"`
+	AllowGridCharging     *bool     `json:"allow_grid_charging"`
+	GridConnectionControl *bool     `json:"grid_connection_control"`
+	AcCouplePowerControl  *bool     `json:"ac_couple_power_control"`
 }
 
 func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
@@ -94,6 +97,15 @@ func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
 	if src.DefaultMode != nil {
 		p.DefaultMode = src.DefaultMode
 	}
+	if src.AllowGridCharging != nil {
+		p.AllowGridCharging = src.AllowGridCharging
+	}
+	if src.GridConnectionControl != nil {
+		p.GridConnectionControl = src.GridConnectionControl
+	}
+	if src.AcCouplePowerControl != nil {
+		p.AcCouplePowerControl = src.AcCouplePowerControl
+	}
 }
 
 func EmptyParameterPayload() ParameterPayload {
@@ -101,12 +113,18 @@ func EmptyParameterPayload() ParameterPayload {
 	dischargeLimit := 10.0
 	defaultACCouplePower := 150.0
 	var defaultMode WorkMode = WorkModeLoadFirst
+	allowGridCharging := false
+	gridConnectionControl := false
+	acCouplePowerControl := false
 
 	return ParameterPayload{
-		ChargingLimit:        &chargingLimit,
-		DischargeLimit:       &dischargeLimit,
-		DefaultACCouplePower: &defaultACCouplePower,
-		DefaultMode:          &defaultMode,
+		ChargingLimit:         &chargingLimit,
+		DischargeLimit:        &dischargeLimit,
+		DefaultACCouplePower:  &defaultACCouplePower,
+		DefaultMode:           &defaultMode,
+		AllowGridCharging:     &allowGridCharging,
+		GridConnectionControl: &gridConnectionControl,
+		AcCouplePowerControl:  &acCouplePowerControl,
 	}
 }
 

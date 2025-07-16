@@ -181,7 +181,7 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 }
 
 func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
-	p := math.Max(0, math.Min(800, power))
+	p := math.Max(0, math.Min(1000, power))
 	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},

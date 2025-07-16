@@ -156,6 +156,18 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 		e.param_applier.SetChargingLimits(dev, *e.lastParameter.ChargingLimit, *e.lastParameter.DischargeLimit)
 	}
 
+	if e.newParameter.AllowGridCharging != nil {
+		e.param_applier.SetAllowGridCharging(dev, *e.lastParameter.AllowGridCharging)
+	}
+
+	if e.newParameter.GridConnectionControl != nil {
+		e.param_applier.SetGridConnectionControl(dev, *e.lastParameter.GridConnectionControl)
+	}
+
+	if e.newParameter.AcCouplePowerControl != nil {
+		e.param_applier.SetAcCouplePowerControl(dev, *e.lastParameter.AcCouplePowerControl)
+	}
+
 	e.newParameter = models.ParameterPayload{}
 	e.publishTimer = nil
 

@@ -48,6 +48,12 @@ type GrowattPlantDevices struct {
 }
 
 type GrowattNoahListData struct {
+	AcCoupleEnable              string `json:"acCoupleEnable"`
+	AllowGridCharging           string `json:"allowGridCharging"`
+	CountryAndArea              string `json:"countryAndArea"`
+	HidePowerFromGrid           string `json:"hidePowerFromGrid"`
+	IsHaveCT                    string `json:"isHaveCT"`
+	SafetyCorrespondNum         string `json:"safetyCorrespondNum"`
 	Time8Power                  string `json:"time8Power"`
 	ShellyDeviceSn              string `json:"shellyDeviceSn"`
 	Time5Mode                   string `json:"time5Mode"`

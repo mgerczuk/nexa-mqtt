@@ -17,3 +17,11 @@ func ParseFloat(s string) float64 {
 		return 0
 	}
 }
+
+func BoolToInt(b bool) int {
+	if b {
+		return 1
+	} else {
+		return 0
+	}
+}

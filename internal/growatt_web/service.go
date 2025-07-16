@@ -196,11 +196,17 @@ func (g *GrowattService) pollParameterData(device models.NoahDevicePayload) {
 			dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
 			op := misc.ParseFloat(detailsData.DefaultACCouplePower)
 			mode := models.WorkModeFromString(detailsData.DefaultMode)
+			agc := detailsData.AllowGridCharging == "1"
+			gcc := detailsData.GridConnectionControl == "1"
+			acpc := detailsData.AcCouplePowerControl == "1"
 			paramPayload := models.ParameterPayload{
-				ChargingLimit:        &cl,
-				DischargeLimit:       &dl,
-				DefaultACCouplePower: &op,
-				DefaultMode:          &mode,
+				ChargingLimit:         &cl,
+				DischargeLimit:        &dl,
+				DefaultACCouplePower:  &op,
+				DefaultMode:           &mode,
+				AllowGridCharging:     &agc,
+				GridConnectionControl: &gcc,
+				AcCouplePowerControl:  &acpc,
 			}
 
 			g.endpoint.PublishParameterData(device, paramPayload)

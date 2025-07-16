@@ -139,11 +139,17 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	nexaInfo.Noah.DefaultMode = "0"
 	nexaInfo.Noah.DefaultACCouplePower = "100"
 	nexaInfo.Noah.ChargingSocLowLimit = "11"
+	nexaInfo.Noah.AllowGridCharging = "0"
+	nexaInfo.Noah.GridConnectionControl = "1"
+	nexaInfo.Noah.AcCouplePowerControl = "1"
 
 	chargingLimit := 95.0
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
+	allowGridCharging := false
+	gridConnectionControl := true
+	acCouplePowerControl := true
 
 	mockHttpClient.OnGetNoahInfo(
 		device.Serial,
@@ -155,10 +161,13 @@ func Test_pollParameterData_Ok(t *testing.T) {
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:        &chargingLimit,
-			DischargeLimit:       &dischargeLimit,
-			DefaultACCouplePower: &defaultACCouplePower,
-			DefaultMode:          &defaultMode,
+			ChargingLimit:         &chargingLimit,
+			DischargeLimit:        &dischargeLimit,
+			DefaultACCouplePower:  &defaultACCouplePower,
+			DefaultMode:           &defaultMode,
+			AllowGridCharging:     &allowGridCharging,
+			GridConnectionControl: &gridConnectionControl,
+			AcCouplePowerControl:  &acCouplePowerControl,
 		},
 	)
 
