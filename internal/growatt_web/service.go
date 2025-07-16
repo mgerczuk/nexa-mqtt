@@ -11,10 +11,12 @@ import (
 )
 
 type Options struct {
-	ServerUrl       string
-	Username        string
-	Password        string
-	PollingInterval time.Duration
+	ServerUrl                     string
+	Username                      string
+	Password                      string
+	PollingInterval               time.Duration
+	BatteryDetailsPollingInterval time.Duration
+	ParameterPollingInterval      time.Duration
 }
 type GrowattService struct {
 	opts     Options
@@ -105,20 +107,22 @@ func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
 }
 
 func (g *GrowattService) poll(ctx context.Context) {
-	historyInterval := 3 * time.Minute
-
 	slog.Info("start polling growatt (web)",
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),
-		slog.Int("history-interval", int(historyInterval/time.Second)))
+		slog.Int("battery-details-interval", int(g.opts.BatteryDetailsPollingInterval/time.Second)),
+		slog.Int("parameter-interval", int(g.opts.ParameterPollingInterval/time.Second)))
 
 	tickerPolling := time.NewTicker(g.opts.PollingInterval)
 	defer tickerPolling.Stop()
-	tickerHistory := time.NewTicker(historyInterval)
-	defer tickerHistory.Stop()
+	tickerBatteryDetails := time.NewTicker(g.opts.BatteryDetailsPollingInterval)
+	defer tickerBatteryDetails.Stop()
+	tickerParameter := time.NewTicker(g.opts.ParameterPollingInterval)
+	defer tickerParameter.Stop()
 
 	for _, device := range g.devices {
 		g.pollStatus(device)
-		g.pollHistory(device)
+		g.pollBatteryDetails(device)
+		g.pollParameterData(device)
 	}
 
 	for {
@@ -128,10 +132,16 @@ func (g *GrowattService) poll(ctx context.Context) {
 				g.pollStatus(device)
 			}
 
-		case <-tickerHistory.C:
+		case <-tickerBatteryDetails.C:
 			for _, device := range g.devices {
-				g.pollHistory(device)
+				g.pollBatteryDetails(device)
 			}
+
+		case <-tickerParameter.C:
+			for _, device := range g.devices {
+				g.pollParameterData(device)
+			}
+
 		case <-ctx.Done():
 			slog.Info("stop polling growatt (web)")
 			return
@@ -174,7 +184,7 @@ func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
 	}
 }
 
-func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
+func (g *GrowattService) pollParameterData(device models.NoahDevicePayload) {
 	if details, err := g.client.GetNoahDetails(device.PlantId, device.Serial); err != nil {
 		slog.Error("could not get device details data", slog.String("error", err.Error()))
 	} else {
@@ -196,6 +206,9 @@ func (g *GrowattService) pollHistory(device models.NoahDevicePayload) {
 			g.endpoint.PublishParameterData(device, paramPayload)
 		}
 	}
+}
+
+func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload) {
 
 	if history, err := g.client.GetNoahHistory(device.Serial, "", ""); err != nil {
 		slog.Error("could not get device history", slog.String("error", err.Error()), slog.String("device", device.Serial))

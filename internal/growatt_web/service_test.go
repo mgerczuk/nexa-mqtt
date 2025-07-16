@@ -325,7 +325,7 @@ func Test_pollStatus_GetNoahTotalsFails(t *testing.T) {
 	mockEndpoint.AssertExpectations(t)
 }
 
-func Test_pollHistory_Ok(t *testing.T) {
+func Test_pollParameterData_Ok(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	chargingLimit := 95.0
@@ -347,6 +347,37 @@ func Test_pollHistory_Ok(t *testing.T) {
 			DefaultMode:          &defaultMode,
 		},
 	)
+
+	service.pollParameterData(device)
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+}
+
+func Test_pollParameterData_GetNoahDetailsFails(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, errors.New("GetNoahDetails fails"))
+
+	service.pollParameterData(device)
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+}
+
+func Test_pollParameterData_GetNoahDetailsNoData(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, nil)
+
+	service.pollParameterData(device)
+
+	mockHttpClient.AssertExpectations(t)
+	mockEndpoint.AssertExpectations(t)
+}
+
+func Test_pollBatteryDetails_Ok(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	today := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{Obj: GrowattNoahHistoryObj{Datas: []GrowattNoahHistoryData{
@@ -379,35 +410,31 @@ func Test_pollHistory_Ok(t *testing.T) {
 		},
 	)
 
-	service.pollHistory(device)
+	service.pollBatteryDetails(device)
 
 	mockHttpClient.AssertExpectations(t)
 	mockEndpoint.AssertExpectations(t)
 }
 
-func Test_pollHistory_GetNoahDetailsFails(t *testing.T) {
+func Test_pollBatteryDetails_OnGetNoahHistoryFails(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
-
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, errors.New("GetNoahDetails fails"))
 
 	today := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{}, errors.New("OnGetNoahHistory fails"))
 
-	service.pollHistory(device)
+	service.pollBatteryDetails(device)
 
 	mockHttpClient.AssertExpectations(t)
 	mockEndpoint.AssertExpectations(t)
 }
 
-func Test_pollHistory_GetNoahDetailNoData(t *testing.T) {
+func Test_pollBatteryDetails_GetNoahHistoryNoData(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
-
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, nil)
 
 	today := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{}, nil)
 
-	service.pollHistory(device)
+	service.pollBatteryDetails(device)
 
 	mockHttpClient.AssertExpectations(t)
 	mockEndpoint.AssertExpectations(t)
