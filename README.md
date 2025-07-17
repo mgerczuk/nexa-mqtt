@@ -58,7 +58,9 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 - **Example Payload:**
 ```json
 {
-  "output_w": 398, // current output power in watts
+  "output_w": -398, // current output power in watts
+                    // is negative when solar or battery power is delivered to the grid
+                    // is positive when battery is charged from grid
   "solar_w": 102, // current solar generation power in watts
   "soc": 40, // current state of charge of the whole appliance
   "charge_w": 0, // current charging power in watts
@@ -92,11 +94,17 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 ```json
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
-   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 800, // system output power in watts, between 0 and 800
-   "default_mode": "load_first" // or battery_first
+   "discharge_limit": 10, // battery discharge limit in percent, between 0 and 30
+   "default_output_w": 150, // desired system AC output power in watts, between 0 and 1000
+   "default_mode": "load_first", // or battery_first
+   "allow_grid_charging": false, // true when battery may be charged from grid
+   "grid_connection_control": false, // true for off-grid mode
+   "ac_couple_power_control": false // true for 1000W max. AC output. 
+                                    // Note: this may be forbidden when connected to public grid!
 }
 ```
+
+The value pairs `charging_limit`, `discharge_limit` and `default_output_w`, `default_mode` are set together. If one of them is missing in the payload the cached previous value is used. A debounce timer of 500 ms is used to combine payloads with individual properties to a combined payload. That means that any setting of a value is executed after a delay of 500 ms.
 
 ## Setting Device Parameters
 
