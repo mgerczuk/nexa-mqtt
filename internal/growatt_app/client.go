@@ -148,7 +148,7 @@ func (h *Client) GetNoahPlantInfo(plantId string) (*NoahPlantInfo, error) {
 	return &data, nil
 }
 
-func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
+func (h *Client) GetSystemStatus(serialNumber string) (*NoahStatus, error) {
 	var data NoahStatus
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getSystemStatus", url.Values{
 		"deviceSn": {serialNumber},
@@ -158,7 +158,7 @@ func (h *Client) GetNoahStatus(serialNumber string) (*NoahStatus, error) {
 	return &data, nil
 }
 
-func (h *Client) GetNoahInfo(serialNumber string) (*NexaInfo, error) {
+func (h *Client) GetNexaInfoBySn(serialNumber string) (*NexaInfo, error) {
 	var data NexaInfo
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getNexaInfoBySn", url.Values{
 		"deviceSn": {serialNumber},

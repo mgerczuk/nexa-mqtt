@@ -6,7 +6,7 @@ import (
 )
 
 func (g *GrowattAppService) pollStatus(device models.NoahDevicePayload) {
-	if data, err := g.client.GetNoahStatus(device.Serial); err != nil {
+	if data, err := g.client.GetSystemStatus(device.Serial); err != nil {
 		slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		payload := devicePayload(data)
@@ -29,7 +29,7 @@ func (g *GrowattAppService) pollBatteryDetails(device models.NoahDevicePayload) 
 }
 
 func (g *GrowattAppService) pollParameterData(device models.NoahDevicePayload) {
-	if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
+	if data, err := g.client.GetNexaInfoBySn(device.Serial); err != nil {
 		slog.Error("could not get parameter data", slog.String("error", err.Error()), slog.String("device", device.Serial))
 	} else {
 		payload := parameterPayload(data)

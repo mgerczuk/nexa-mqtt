@@ -258,7 +258,7 @@ func TestGetNoahStatus_Ok(t *testing.T) {
 
 	mockHttpClient.OnGetNoahStatus("serial123", NoahStatusObj{}, nil)
 
-	data, err := client.GetNoahStatus("serial123")
+	data, err := client.GetSystemStatus("serial123")
 
 	assert.NoError(t, err)
 	assert.Equal(t, NoahStatus{}, *data)
@@ -271,7 +271,7 @@ func TestGetNoahStatus_Fail(t *testing.T) {
 
 	mockHttpClient.OnGetNoahStatus("serial123", NoahStatusObj{}, errors.New("getSystemStatus fail"))
 
-	data, err := client.GetNoahStatus("serial123")
+	data, err := client.GetSystemStatus("serial123")
 
 	assert.Error(t, err)
 	assert.Nil(t, data)
@@ -284,7 +284,7 @@ func TestGetNoahInfo_Ok(t *testing.T) {
 
 	mockHttpClient.OnGetNoahInfo("serial123", NexaInfoObj{}, nil)
 
-	data, err := client.GetNoahInfo("serial123")
+	data, err := client.GetNexaInfoBySn("serial123")
 
 	assert.NoError(t, err)
 	assert.Equal(t, NexaInfo{}, *data)
@@ -297,7 +297,7 @@ func TestGetNoahInfo_Fail(t *testing.T) {
 
 	mockHttpClient.OnGetNoahInfo("serial123", NexaInfoObj{}, errors.New("getSystemStatus fail"))
 
-	data, err := client.GetNoahInfo("serial123")
+	data, err := client.GetNexaInfoBySn("serial123")
 
 	assert.Error(t, err)
 	assert.Nil(t, data)

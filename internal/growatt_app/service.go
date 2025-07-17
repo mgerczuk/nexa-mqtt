@@ -95,7 +95,7 @@ func (g *GrowattAppService) enumerateDevices() {
 	devices := g.fetchDevices()
 
 	for i, device := range devices {
-		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
+		if data, err := g.client.GetNexaInfoBySn(device.Serial); err != nil {
 			slog.Error("could not get nexa status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
 		} else {
 			batCount := len(data.Obj.Noah.BatSns)
