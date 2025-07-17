@@ -74,8 +74,17 @@ func Test_parameterPayload(t *testing.T) {
 	nexaInfo.Obj.Noah.DefaultMode = "0"
 	nexaInfo.Obj.Noah.DefaultACCouplePower = "100"
 	nexaInfo.Obj.Noah.ChargingSocLowLimit = "11"
+	nexaInfo.Obj.Noah.AllowGridCharging = "1"
+	nexaInfo.Obj.Noah.GridConnectionControl = "0"
+	nexaInfo.Obj.Noah.AcCouplePowerControl = "1"
 
 	pp := parameterPayload(&nexaInfo)
 
 	assert.Equal(t, 95.0, *pp.ChargingLimit)
+	assert.Equal(t, 11.0, *pp.DischargeLimit)
+	assert.Equal(t, 100.0, *pp.DefaultACCouplePower)
+	assert.Equal(t, models.WorkMode(models.WorkModeLoadFirst), *pp.DefaultMode)
+	assert.Equal(t, true, *pp.AllowGridCharging)
+	assert.Equal(t, false, *pp.GridConnectionControl)
+	assert.Equal(t, true, *pp.AcCouplePowerControl)
 }
