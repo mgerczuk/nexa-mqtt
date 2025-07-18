@@ -147,9 +147,9 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
-	allowGridCharging := false
-	gridConnectionControl := true
-	acCouplePowerControl := true
+	allowGridCharging := models.OFF
+	gridConnectionControl := models.ON
+	acCouplePowerControl := models.ON
 
 	mockHttpClient.OnGetNoahInfo(
 		device.Serial,
@@ -165,9 +165,9 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			DischargeLimit:        &dischargeLimit,
 			DefaultACCouplePower:  &defaultACCouplePower,
 			DefaultMode:           &defaultMode,
-			AllowGridCharging:     &allowGridCharging,
-			GridConnectionControl: &gridConnectionControl,
-			AcCouplePowerControl:  &acCouplePowerControl,
+			AllowGridCharging:     allowGridCharging,
+			GridConnectionControl: gridConnectionControl,
+			AcCouplePowerControl:  acCouplePowerControl,
 		},
 	)
 

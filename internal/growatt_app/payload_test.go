@@ -84,7 +84,7 @@ func Test_parameterPayload(t *testing.T) {
 	assert.Equal(t, 11.0, *pp.DischargeLimit)
 	assert.Equal(t, 100.0, *pp.DefaultACCouplePower)
 	assert.Equal(t, models.WorkMode(models.WorkModeLoadFirst), *pp.DefaultMode)
-	assert.Equal(t, true, *pp.AllowGridCharging)
-	assert.Equal(t, false, *pp.GridConnectionControl)
-	assert.Equal(t, true, *pp.AcCouplePowerControl)
+	assert.Equal(t, models.ON, pp.AllowGridCharging)
+	assert.Equal(t, models.OFF, pp.GridConnectionControl)
+	assert.Equal(t, models.ON, pp.AcCouplePowerControl)
 }

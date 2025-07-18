@@ -8,7 +8,6 @@ import (
 	"nexa-mqtt/pkg/models"
 	"sync"
 	"testing"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/stretchr/testify/assert"
@@ -16,51 +15,6 @@ import (
 )
 
 // ----- Mocks --------------------------------------------------------------
-
-// MockToken implements mqtt.Token
-type MockToken struct {
-	mock.Mock
-	done chan struct{}
-}
-
-func NewMockToken() *MockToken {
-	done := make(chan struct{})
-	close(done) // sofort abgeschlossen
-	return &MockToken{done: done}
-}
-
-func (m *MockToken) Wait() bool                     { return true }
-func (m *MockToken) WaitTimeout(time.Duration) bool { return true }
-func (t *MockToken) Done() <-chan struct{}          { return t.done }
-func (t *MockToken) Error() error {
-	args := t.Called("Error")
-	return args.Error(0)
-}
-
-// MockMqttClient implements mqtt.Client
-type MockMqttClient struct {
-	mock.Mock
-	mqtt.Client
-}
-
-func (m *MockMqttClient) Publish(topic string, qos byte, retained bool, payload interface{}) mqtt.Token {
-	args := m.Called(topic, qos, retained, payload)
-	return args.Get(0).(mqtt.Token)
-}
-
-func (m *MockMqttClient) Subscribe(topic string, qos byte, callback mqtt.MessageHandler) mqtt.Token {
-	args := m.Called(topic, qos, callback)
-	return args.Get(0).(mqtt.Token)
-}
-
-func (m *MockMqttClient) Unsubscribe(topics ...string) mqtt.Token {
-	ifaceArgs := make([]interface{}, len(topics))
-	for i, v := range topics {
-		ifaceArgs[i] = v
-	}
-	args := m.Called(ifaceArgs...)
-	return args.Get(0).(mqtt.Token)
-}
 
 // MockMqttMessage implements mqtt.Message
 type MockMqttMessage struct {
@@ -88,17 +42,17 @@ func (p *MockParameterApplier) SetChargingLimits(device models.NoahDevicePayload
 	return args.Error(0)
 }
 
-func (p *MockParameterApplier) SetAllowGridCharging(device models.NoahDevicePayload, allow bool) error {
+func (p *MockParameterApplier) SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error {
 	args := p.Called(device, allow)
 	return args.Error(0)
 }
 
-func (p *MockParameterApplier) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable bool) error {
+func (p *MockParameterApplier) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error {
 	args := p.Called(device, offlineEnable)
 	return args.Error(0)
 }
 
-func (p *MockParameterApplier) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable bool) error {
+func (p *MockParameterApplier) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
 	args := p.Called(device, _1000WEnable)
 	return args.Error(0)
 }
@@ -469,8 +423,8 @@ func Test_parametersSubscription_ChargingLimit(t *testing.T) {
 		"test/device123/parameters",
 		byte(0),
 		false,
-		fmt.Sprintf(`{"charging_limit":90,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":%v,"grid_connection_control":%v,"ac_couple_power_control":%v}`,
-			*empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, *empty.AllowGridCharging, *empty.GridConnectionControl, *empty.AcCouplePowerControl),
+		fmt.Sprintf(`{"charging_limit":90,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
+			*empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
 	).Run(func(args mock.Arguments) {
 		wg.Done()
 	}).Return(mockToken)
@@ -511,8 +465,8 @@ func Test_parametersSubscription_ChargingAndDischargeLimit(t *testing.T) {
 		"test/device123/parameters",
 		byte(0),
 		false,
-		fmt.Sprintf(`{"charging_limit":95,"discharge_limit":5,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":%v,"grid_connection_control":%v,"ac_couple_power_control":%v}`,
-			*empty.DefaultACCouplePower, *empty.DefaultMode, *empty.AllowGridCharging, *empty.GridConnectionControl, *empty.AcCouplePowerControl),
+		fmt.Sprintf(`{"charging_limit":95,"discharge_limit":5,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
+			*empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
 	).Run(func(args mock.Arguments) {
 		wg.Done()
 	}).Return(mockToken)
@@ -560,8 +514,8 @@ func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
 		"test/device123/parameters",
 		byte(0),
 		false,
-		fmt.Sprintf(`{"charging_limit":75,"discharge_limit":%v,"default_output_w":%v,"default_mode":"battery_first","allow_grid_charging":%v,"grid_connection_control":%v,"ac_couple_power_control":%v}`,
-			*empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.AllowGridCharging, *empty.GridConnectionControl, *empty.AcCouplePowerControl),
+		fmt.Sprintf(`{"charging_limit":75,"discharge_limit":%v,"default_output_w":%v,"default_mode":"battery_first","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
+			*empty.DischargeLimit, *empty.DefaultACCouplePower, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
 	).Run(func(args mock.Arguments) {
 		wg.Done()
 	}).Return(mockToken)
@@ -584,11 +538,11 @@ func Test_parametersSubscription_AllowGridCharging(t *testing.T) {
 
 	mockMqttMessage := MockMqttMessage{}
 	mockMqttMessage.On("Payload").
-		Return([]byte(`{"allow_grid_charging":true}`))
+		Return([]byte(`{"allow_grid_charging":"ON"}`))
 
 	var wg sync.WaitGroup
 
-	mockApplier.On("SetAllowGridCharging", device, true).
+	mockApplier.On("SetAllowGridCharging", device, models.ON).
 		Run(func(args mock.Arguments) {
 			wg.Done()
 		}).
@@ -599,8 +553,8 @@ func Test_parametersSubscription_AllowGridCharging(t *testing.T) {
 		"test/device123/parameters",
 		byte(0),
 		false,
-		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":true,"grid_connection_control":%v,"ac_couple_power_control":%v}`,
-			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, *empty.GridConnectionControl, *empty.AcCouplePowerControl),
+		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"ON","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
+			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.GridConnectionControl, empty.AcCouplePowerControl),
 	).Run(func(args mock.Arguments) {
 		wg.Done()
 	}).Return(mockToken)
@@ -622,17 +576,17 @@ func Test_parametersSubscription_GridConnectionControlAndAcCouplePowerControl(t 
 
 	mockMqttMessage := MockMqttMessage{}
 	mockMqttMessage.On("Payload").
-		Return([]byte(`{"grid_connection_control":true,"ac_couple_power_control":true}`))
+		Return([]byte(`{"grid_connection_control":"ON","ac_couple_power_control":"ON"}`))
 
 	var wg sync.WaitGroup
 
-	mockApplier.On("SetGridConnectionControl", device, true).
+	mockApplier.On("SetGridConnectionControl", device, models.ON).
 		Run(func(args mock.Arguments) {
 			wg.Done()
 		}).
 		Return(nil)
 
-	mockApplier.On("SetAcCouplePowerControl", device, true).
+	mockApplier.On("SetAcCouplePowerControl", device, models.ON).
 		Run(func(args mock.Arguments) {
 			wg.Done()
 		}).
@@ -643,8 +597,8 @@ func Test_parametersSubscription_GridConnectionControlAndAcCouplePowerControl(t 
 		"test/device123/parameters",
 		byte(0),
 		false,
-		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":%v,"grid_connection_control":true,"ac_couple_power_control":true}`,
-			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, *empty.AllowGridCharging),
+		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"ON","ac_couple_power_control":"ON"}`,
+			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging),
 	).Run(func(args mock.Arguments) {
 		wg.Done()
 	}).Return(mockToken)

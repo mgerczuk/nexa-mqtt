@@ -170,14 +170,14 @@ func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, c
 	return nil
 }
 
-func (g *GrowattAppService) SetAllowGridCharging(device models.NoahDevicePayload, allow bool) error {
-	slog.Info("trying to set allow charging  (app)", slog.String("device", device.Serial), slog.Bool("allow", allow))
+func (g *GrowattAppService) SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error {
+	slog.Info("trying to set allow charging  (app)", slog.String("device", device.Serial), slog.String("allow", string(allow)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set allow charging (app)", slog.String("device", device.Serial))
 		return err
 	}
 
-	if err := g.client.SetAllowGridCharging(device.Serial, misc.BoolToInt(allow)); err != nil {
+	if err := g.client.SetAllowGridCharging(device.Serial, misc.OnOffToInt(allow)); err != nil {
 		slog.Error("unable to set allow charging (app)", slog.String("error", err.Error()))
 		return err
 	}
@@ -185,14 +185,14 @@ func (g *GrowattAppService) SetAllowGridCharging(device models.NoahDevicePayload
 	return nil
 }
 
-func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable bool) error {
-	slog.Info("trying to set grid connection  (app)", slog.String("device", device.Serial), slog.Bool("offlineEnable", offlineEnable))
+func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error {
+	slog.Info("trying to set grid connection  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(offlineEnable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set grid connection (app)", slog.String("device", device.Serial))
 		return err
 	}
 
-	if err := g.client.SetGridConnectionControl(device.Serial, misc.BoolToInt(offlineEnable)); err != nil {
+	if err := g.client.SetGridConnectionControl(device.Serial, misc.OnOffToInt(offlineEnable)); err != nil {
 		slog.Error("unable to set grid connection (app)", slog.String("error", err.Error()))
 		return err
 	}
@@ -200,14 +200,14 @@ func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePay
 	return nil
 }
 
-func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable bool) error {
-	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.Bool("offlineEnable", _1000WEnable))
+func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
+	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(_1000WEnable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("device", device.Serial))
 		return err
 	}
 
-	if err := g.client.SetACCouplePowerControl(device.Serial, misc.BoolToInt(_1000WEnable)); err != nil {
+	if err := g.client.SetACCouplePowerControl(device.Serial, misc.OnOffToInt(_1000WEnable)); err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("error", err.Error()))
 		return err
 	}

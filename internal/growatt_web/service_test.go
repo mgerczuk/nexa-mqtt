@@ -335,9 +335,9 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
-	allowGridCharging := false
-	gridConnectionControl := true
-	acCouplePowerControl := true
+	allowGridCharging := models.OFF
+	gridConnectionControl := models.ON
+	acCouplePowerControl := models.ON
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
 		{
@@ -359,9 +359,9 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			DischargeLimit:        &dischargeLimit,
 			DefaultACCouplePower:  &defaultACCouplePower,
 			DefaultMode:           &defaultMode,
-			AllowGridCharging:     &allowGridCharging,
-			GridConnectionControl: &gridConnectionControl,
-			AcCouplePowerControl:  &acCouplePowerControl,
+			AllowGridCharging:     allowGridCharging,
+			GridConnectionControl: gridConnectionControl,
+			AcCouplePowerControl:  acCouplePowerControl,
 		},
 	)
 
@@ -552,9 +552,9 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
-	allowGridCharging := true
-	gridConnectionControl := false
-	acCouplePowerControl := false
+	allowGridCharging := models.ON
+	gridConnectionControl := models.OFF
+	acCouplePowerControl := models.OFF
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
 		{
@@ -576,9 +576,9 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 			DischargeLimit:        &dischargeLimit,
 			DefaultACCouplePower:  &defaultACCouplePower,
 			DefaultMode:           &defaultMode,
-			AllowGridCharging:     &allowGridCharging,
-			GridConnectionControl: &gridConnectionControl,
-			AcCouplePowerControl:  &acCouplePowerControl,
+			AllowGridCharging:     allowGridCharging,
+			GridConnectionControl: gridConnectionControl,
+			AcCouplePowerControl:  acCouplePowerControl,
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
 }

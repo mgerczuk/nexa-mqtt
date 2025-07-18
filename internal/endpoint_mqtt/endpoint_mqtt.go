@@ -123,7 +123,7 @@ func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(cli
 
 		var payload models.ParameterPayload
 		if err := json.Unmarshal(message.Payload(), &payload); err != nil {
-			slog.Error("unable to unmarshal parameter command payload", slog.String("error", err.Error()))
+			slog.Error("unable to unmarshal parameter command payload", slog.String("payload", string(message.Payload())), slog.String("error", err.Error()))
 			return
 		}
 
@@ -156,16 +156,16 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 		e.param_applier.SetChargingLimits(dev, *e.lastParameter.ChargingLimit, *e.lastParameter.DischargeLimit)
 	}
 
-	if e.newParameter.AllowGridCharging != nil {
-		e.param_applier.SetAllowGridCharging(dev, *e.lastParameter.AllowGridCharging)
+	if e.newParameter.AllowGridCharging != "" {
+		e.param_applier.SetAllowGridCharging(dev, e.lastParameter.AllowGridCharging)
 	}
 
-	if e.newParameter.GridConnectionControl != nil {
-		e.param_applier.SetGridConnectionControl(dev, *e.lastParameter.GridConnectionControl)
+	if e.newParameter.GridConnectionControl != "" {
+		e.param_applier.SetGridConnectionControl(dev, e.lastParameter.GridConnectionControl)
 	}
 
-	if e.newParameter.AcCouplePowerControl != nil {
-		e.param_applier.SetAcCouplePowerControl(dev, *e.lastParameter.AcCouplePowerControl)
+	if e.newParameter.AcCouplePowerControl != "" {
+		e.param_applier.SetAcCouplePowerControl(dev, e.lastParameter.AcCouplePowerControl)
 	}
 
 	e.newParameter = models.ParameterPayload{}

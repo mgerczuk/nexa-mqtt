@@ -33,17 +33,17 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	dischargeLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocLowLimit)
 	defaultACCouplePower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
 	defaultMode := models.WorkModeFromString(n.Obj.Noah.DefaultMode)
-	allowGridCharging := n.Obj.Noah.AllowGridCharging == "1"
-	gridConnectionControl := n.Obj.Noah.GridConnectionControl == "1"
-	acCouplePowerControl := n.Obj.Noah.AcCouplePowerControl == "1"
+	allowGridCharging := misc.IntStringToOnOff(n.Obj.Noah.AllowGridCharging)
+	gridConnectionControl := misc.IntStringToOnOff(n.Obj.Noah.GridConnectionControl)
+	acCouplePowerControl := misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl)
 
 	return models.ParameterPayload{
 		ChargingLimit:         &chargingLimit,
 		DischargeLimit:        &dischargeLimit,
 		DefaultACCouplePower:  &defaultACCouplePower,
 		DefaultMode:           &defaultMode,
-		AllowGridCharging:     &allowGridCharging,
-		GridConnectionControl: &gridConnectionControl,
-		AcCouplePowerControl:  &acCouplePowerControl,
+		AllowGridCharging:     allowGridCharging,
+		GridConnectionControl: gridConnectionControl,
+		AcCouplePowerControl:  acCouplePowerControl,
 	}
 }

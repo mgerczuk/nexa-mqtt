@@ -97,9 +97,9 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
    "discharge_limit": 10, // battery discharge limit in percent, between 0 and 30
    "default_output_w": 150, // desired system AC output power in watts, between 0 and 1000
    "default_mode": "load_first", // or battery_first
-   "allow_grid_charging": false, // true when battery may be charged from grid
-   "grid_connection_control": false, // true for off-grid mode
-   "ac_couple_power_control": false // true for 1000W max. AC output. 
+   "allow_grid_charging": "OFF", // ON when battery may be charged from grid
+   "grid_connection_control": "OFF", // ON for off-grid mode
+   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
                                     // Note: this may be forbidden when connected to public grid!
 }
 ```

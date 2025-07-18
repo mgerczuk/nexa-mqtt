@@ -68,17 +68,17 @@ func parameterPayload(detailsData GrowattNoahListData) models.ParameterPayload {
 	dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
 	op := misc.ParseFloat(detailsData.DefaultACCouplePower)
 	mode := models.WorkModeFromString(detailsData.DefaultMode)
-	agc := detailsData.AllowGridCharging == "1"
-	gcc := detailsData.GridConnectionControl == "1"
-	acpc := detailsData.AcCouplePowerControl == "1"
+	agc := misc.IntStringToOnOff(detailsData.AllowGridCharging)
+	gcc := misc.IntStringToOnOff(detailsData.GridConnectionControl)
+	acpc := misc.IntStringToOnOff(detailsData.AcCouplePowerControl)
 	paramPayload := models.ParameterPayload{
 		ChargingLimit:         &cl,
 		DischargeLimit:        &dl,
 		DefaultACCouplePower:  &op,
 		DefaultMode:           &mode,
-		AllowGridCharging:     &agc,
-		GridConnectionControl: &gcc,
-		AcCouplePowerControl:  &acpc,
+		AllowGridCharging:     agc,
+		GridConnectionControl: gcc,
+		AcCouplePowerControl:  acpc,
 	}
 	return paramPayload
 }

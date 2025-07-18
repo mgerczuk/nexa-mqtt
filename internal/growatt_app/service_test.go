@@ -389,7 +389,7 @@ func TestSetAllowGridChargingService_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "1", nil)
 
 	service.loggedIn = true
-	result := service.SetAllowGridCharging(device, true)
+	result := service.SetAllowGridCharging(device, models.ON)
 
 	assert.NoError(t, result)
 
@@ -403,7 +403,7 @@ func TestSetAllowGridChargingService_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 
 	service.loggedIn = false
-	result := service.SetAllowGridCharging(device, true)
+	result := service.SetAllowGridCharging(device, models.ON)
 
 	assert.Error(t, result)
 
@@ -414,10 +414,10 @@ func TestSetAllowGridChargingService_LoginFail(t *testing.T) {
 func TestSetAllowGridChargingService_Fails(t *testing.T) {
 	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
 
-	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "1", errors.New("SetAllowGridCharging fails"))
+	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "0", errors.New("SetAllowGridCharging fails"))
 
 	service.loggedIn = true
-	result := service.SetAllowGridCharging(device, true)
+	result := service.SetAllowGridCharging(device, models.OFF)
 
 	assert.Error(t, result)
 
@@ -431,7 +431,7 @@ func TestSetGridConnectionControlService_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "0", nil)
 
 	service.loggedIn = true
-	result := service.SetGridConnectionControl(device, false)
+	result := service.SetGridConnectionControl(device, models.OFF)
 
 	assert.NoError(t, result)
 
@@ -445,7 +445,7 @@ func TestSetGridConnectionControl_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 
 	service.loggedIn = false
-	result := service.SetGridConnectionControl(device, true)
+	result := service.SetGridConnectionControl(device, models.ON)
 
 	assert.Error(t, result)
 
@@ -459,7 +459,7 @@ func TestSetGridConnectionControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "1", errors.New("SetAllowGridCharging fails"))
 
 	service.loggedIn = true
-	result := service.SetGridConnectionControl(device, true)
+	result := service.SetGridConnectionControl(device, models.ON)
 
 	assert.Error(t, result)
 
@@ -473,7 +473,7 @@ func TestSetAcCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "0", nil)
 
 	service.loggedIn = true
-	result := service.SetAcCouplePowerControl(device, false)
+	result := service.SetAcCouplePowerControl(device, models.OFF)
 
 	assert.NoError(t, result)
 
@@ -487,7 +487,7 @@ func TestSetAcCouplePowerControl_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 
 	service.loggedIn = false
-	result := service.SetAcCouplePowerControl(device, true)
+	result := service.SetAcCouplePowerControl(device, models.ON)
 
 	assert.Error(t, result)
 
@@ -501,7 +501,7 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "1", errors.New("SetAllowGridCharging fails"))
 
 	service.loggedIn = true
-	result := service.SetAcCouplePowerControl(device, true)
+	result := service.SetAcCouplePowerControl(device, models.ON)
 
 	assert.Error(t, result)
 

@@ -95,6 +95,16 @@ func (s *Service) sendDiscovery() {
 				s.options.MqttClient.Publish(topic, 0, false, string(b))
 			}
 		}
+
+		switches := generateSwitchDiscoveryPayload(s.options.Version, d)
+		for _, sw := range switches {
+			if b, err := json.Marshal(sw); err != nil {
+				slog.Error("could not marshal switch discovery payload", slog.Any("sensor", sw))
+			} else {
+				topic := s.switchTopic(sw)
+				s.options.MqttClient.Publish(topic, 0, false, string(b))
+			}
+		}
 	}
 }
 
@@ -112,5 +122,10 @@ func (s *Service) binarySensorTopic(sensor BinarySensor) string {
 
 func (s *Service) numberTopic(number Number) string {
 	return fmt.Sprintf("%s/number/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", number.Device.SerialNumber), strings.ReplaceAll(number.Name, " ", ""))
+
+}
+
+func (s *Service) switchTopic(sw Switch) string {
+	return fmt.Sprintf("%s/switch/%s/%s/config", s.options.TopicPrefix, fmt.Sprintf("nexa_%s", sw.Device.SerialNumber), strings.ReplaceAll(sw.Name, " ", ""))
 
 }
