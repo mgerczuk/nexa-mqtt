@@ -28,7 +28,7 @@ func randSerial(n int) string {
 func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppService, models.NoahDevicePayload, *MockEndpoint) {
 	mockHttpClient := MockHttpClient{}
 	jar, err := cookiejar.New(nil)
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 
 	client := Client{
 		client:    &mockHttpClient,
@@ -60,21 +60,21 @@ func TestServiceLogin_Ok(t *testing.T) {
 
 	err := service.Login()
 
-	assert.Nil(t, err)
+	assert.NoError(t, err)
 	assert.True(t, service.loggedIn)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
 }
 
-func TestServiceLogin_Fail(t *testing.T) {
+func TestServiceLogin_Fails(t *testing.T) {
 	mockHttpClient, service, _, endpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 
 	err := service.Login()
 
-	assert.NotNil(t, err)
+	assert.Error(t, err)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -114,7 +114,7 @@ func Test_fetchDevices_Ok(t *testing.T) {
 	endpoint.AssertExpectations(t)
 }
 
-func Test_fetchDevices_GetPlantList_Fail(t *testing.T) {
+func Test_fetchDevices_GetPlantList_Fails(t *testing.T) {
 	mockHttpClient, service, _, endpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetPlantList(PlantListV2{}, errors.New("GetPlantList fails"))
@@ -130,7 +130,7 @@ func Test_fetchDevices_GetPlantList_Fail(t *testing.T) {
 	t.Errorf("Test failed, panic was expected")
 }
 
-func Test_fetchDevices_NoDevices_Fail(t *testing.T) {
+func Test_fetchDevices_NoDevices_Fails(t *testing.T) {
 	mockHttpClient, service, _, endpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetPlantList(PlantListV2{
@@ -253,7 +253,7 @@ func Test_ensureParameterLogin_AlreadyLoggedIn(t *testing.T) {
 	service.loggedIn = true
 	result := service.ensureParameterLogin()
 
-	assert.True(t, result)
+	assert.NoError(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -267,13 +267,13 @@ func Test_ensureParameterLogin_Ok(t *testing.T) {
 	service.loggedIn = false
 	result := service.ensureParameterLogin()
 
-	assert.True(t, result)
+	assert.NoError(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
 }
 
-func Test_ensureParameterLogin_Fail(t *testing.T) {
+func Test_ensureParameterLogin_Fails(t *testing.T) {
 	mockHttpClient, service, _, endpoint := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
@@ -281,7 +281,7 @@ func Test_ensureParameterLogin_Fail(t *testing.T) {
 	service.loggedIn = false
 	result := service.ensureParameterLogin()
 
-	assert.False(t, result)
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -295,7 +295,7 @@ func TestSetOutputPowerW_Ok(t *testing.T) {
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
 
-	assert.True(t, result)
+	assert.NoError(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -309,7 +309,7 @@ func TestSetOutputPowerW_LoginFail(t *testing.T) {
 	service.loggedIn = false
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
 
-	assert.False(t, result)
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -321,7 +321,7 @@ func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("invalid_mode"), 350.0)
 
-	assert.False(t, result)
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -335,7 +335,7 @@ func TestSetOutputPowerW_SetFailed(t *testing.T) {
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
 
-	assert.False(t, result)
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -349,7 +349,7 @@ func TestSetChargingLimits_Ok(t *testing.T) {
 	service.loggedIn = true
 	result := service.SetChargingLimits(device, 75.0, 25.0)
 
-	assert.True(t, result)
+	assert.NoError(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -363,7 +363,7 @@ func TestSetChargingLimits_LoginFail(t *testing.T) {
 	service.loggedIn = false
 	result := service.SetChargingLimits(device, 75.0, 25.0)
 
-	assert.False(t, result)
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -377,7 +377,133 @@ func TestSetChargingLimits_SetFail(t *testing.T) {
 	service.loggedIn = true
 	result := service.SetChargingLimits(device, 75.0, 25.0)
 
-	assert.False(t, result)
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAllowGridChargingService_Ok(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "1", nil)
+
+	service.loggedIn = true
+	result := service.SetAllowGridCharging(device, models.ON)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAllowGridChargingService_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetAllowGridCharging(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAllowGridChargingService_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "0", errors.New("SetAllowGridCharging fails"))
+
+	service.loggedIn = true
+	result := service.SetAllowGridCharging(device, models.OFF)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControlService_Ok(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "0", nil)
+
+	service.loggedIn = true
+	result := service.SetGridConnectionControl(device, models.OFF)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControl_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetGridConnectionControl(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControl_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "1", errors.New("SetAllowGridCharging fails"))
+
+	service.loggedIn = true
+	result := service.SetGridConnectionControl(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_Ok(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "0", nil)
+
+	service.loggedIn = true
+	result := service.SetAcCouplePowerControl(device, models.OFF)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetAcCouplePowerControl(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "1", errors.New("SetAllowGridCharging fails"))
+
+	service.loggedIn = true
+	result := service.SetAcCouplePowerControl(device, models.ON)
+
+	assert.Error(t, result)
 
 	mockHttpClient.AssertExpectations(t)
 	endpoint.AssertExpectations(t)
@@ -455,7 +581,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,

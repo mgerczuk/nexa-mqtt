@@ -15,10 +15,12 @@
                 "GROWATT_PASSWORD": "secret",
                 "MQTT_HOST": "localhost",
                 "GROWATT_API_MODE": "web+app",
-                "MQTT_TOPIC_PREFIX": "nexa_test",
+                "MQTT_TOPIC_PREFIX": "nexa2mqtt",
                 "POLLING_INTERVAL": "30",
-                "GROWATT_SERVER_URL_WEB": "http://localhost:8080",
-                "GROWATT_SERVER_URL_APP": "http://localhost:8081"
+                "PARAMETER_POLLING_INTERVAL": "30",
+                "GROWATT_SERVER_URL_WEB": "http://localhost:8088",
+                "GROWATT_SERVER_URL_APP": "http://localhost:8089",
+                "HOMEASSISTANT_SWITCH_AS_SELECT": "true"
             }
         }
     ]

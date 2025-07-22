@@ -40,6 +40,7 @@ You can configure `nexa-mqtt` using the following environment variables:
 | `MQTT_PASSWORD`                    | Password for connecting to your MQTT broker                                             | -                              |
 | `MQTT_TOPIC_PREFIX`                | Prefix for MQTT topics used by nexa-mqtt                                                | nexa2mqtt                      |
 | `HOMEASSISTANT_TOPIC_PREFIX`       | Prefix for topics used by Home Assistant                                                | homeassistant                  |
+| `HOMEASSISTANT_SWITCH_AS_SELECT`   | Publish 'switch' entities as 'select'. Set to 'True' for OpenHAB, see below             | false                          |
 
 Adjust these settings to fit your environment and requirements.
 
@@ -58,7 +59,9 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 - **Example Payload:**
 ```json
 {
-  "output_w": 398, // current output power in watts
+  "ac_w": -398, // current AC power in watts
+                // is negative when solar or battery power is delivered to the grid
+                // is positive when battery is charged from grid
   "solar_w": 102, // current solar generation power in watts
   "soc": 40, // current state of charge of the whole appliance
   "charge_w": 0, // current charging power in watts
@@ -92,11 +95,17 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 ```json
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
-   "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 800, // system output power in watts, between 0 and 800
-   "default_mode": "load_first" // or battery_first
+   "discharge_limit": 10, // battery discharge limit in percent, between 0 and 30
+   "default_output_w": 150, // desired system AC output power in watts, between 0 and 1000
+   "default_mode": "load_first", // or battery_first
+   "allow_grid_charging": "OFF", // ON when battery may be charged from grid
+   "grid_connection_control": "OFF", // ON for off-grid mode
+   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
+                                    // Note: this may be forbidden when connected to public grid!
 }
 ```
+
+The value pairs `charging_limit`, `discharge_limit` and `default_output_w`, `default_mode` are set together. If one of them is missing in the payload the cached previous value is used. A debounce timer of 500 ms is used to combine payloads with individual properties to a combined payload. That means that any setting of a value is executed after a delay of 500 ms.
 
 ## Setting Device Parameters
 
@@ -283,4 +292,29 @@ This option leverages the add-on system to manage and run `nexa-mqtt` directly o
 The Home Assistant add-on provides an easy and integrated way to run `nexa-mqtt`, allowing you to manage it directly from the Home Assistant interface.
 
 For more detailed information and updates, visit the [repository](https://github.com/mgerczuk/hassio-addons).
+
+---
+
+# Integration into OpenHAB
+
+`nexa-mqtt` interacts with OpenHAB by publishing data from your Growatt NEXA 2000 home battery to an MQTT broker. This setup allows OpenHAB to subscribe to and integrate this data seamlessly into its ecosystem.
+
+`nexa-mqtt` uses Home Assistant auto-discover. OpenHAB has some problems with this, especially you cannot properly set a '**Switch**' channel data imported from HA auto-discovery. Be sure to set the environment variable `HOMEASSISTANT_SWITCH_AS_SELECT` to `True` when you use OpenHAB. The 'switch' entities will then be imported as **String** channels.
+
+![Home Assistant Integration](./assets/nexa-mqtt-openhab-dark.drawio.png#gh-dark-mode-only)
+![Home Assistant Integration](./assets/nexa-mqtt-openhab.drawio.png#gh-light-mode-only)
+
+1. **Set Up an MQTT Broker**:  
+   Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both nexa-mqtt and OpenHAB.
+
+2. **Check MQTT Integration in OpenHAB**: 
+   If not already done install the MQTT Binding from the Add-on Store
+
+3. **Run nexa-mqtt**:  
+   Start `nexa-mqtt` using the appropriate configuration for your MQTT broker and the environment variable `HOMEASSISTANT_SWITCH_AS_SELECT` to `True`.
+
+4. **Device Discovery**:  
+   OpenHAB should now show a new thing in the inbox on the **Settings**/**Things** page. Click on the inbox, select the entry an chose **Add as Thing**. Enter a name for the new thing. The thing should now be **online** and you can start linking items to the channels.
+
+   In case the thing does not go online first check the MQTT broker and the MQTT binding. If that is Ok, try to disable/enable the thing and/or restart `nexa-mqtt`.
 

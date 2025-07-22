@@ -82,9 +82,19 @@ type CommandConfig struct {
 	CommandTemplate string `json:"command_template,omitempty"`
 }
 
+// see https://www.home-assistant.io/integrations/binary_sensor.mqtt/
 type BinarySensor struct {
 	CommonConfig
 	StateConfig
+	PayloadOff string `json:"payload_off,omitempty"`
+	PayloadOn  string `json:"payload_on,omitempty"`
+}
+
+// see https://www.home-assistant.io/integrations/switch.mqtt/
+type Switch struct {
+	CommonConfig
+	StateConfig
+	CommandConfig
 	PayloadOff string `json:"payload_off,omitempty"`
 	PayloadOn  string `json:"payload_on,omitempty"`
 }

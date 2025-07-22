@@ -156,29 +156,7 @@ func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
 		if totals, err := g.client.GetNoahTotals(device.PlantId, device.Serial); err != nil {
 			slog.Error("could not get device totals", slog.String("error", err.Error()), slog.String("device", device.Serial))
 		} else {
-			batteryPower := misc.ParseFloat(status.Obj.TotalBatteryPackChargingPower)
-
-			chargePower := 0.0
-			dischargePower := 0.0
-			if batteryPower < 0 {
-				dischargePower = -batteryPower
-			} else {
-				chargePower = batteryPower
-			}
-
-			payload := models.DevicePayload{
-				OutputPower:           misc.ParseFloat(status.Obj.Pac),
-				SolarPower:            misc.ParseFloat(status.Obj.Ppv),
-				Soc:                   misc.ParseFloat(status.Obj.TotalBatteryPackSoc),
-				ChargePower:           chargePower,
-				DischargePower:        dischargePower,
-				BatteryNum:            len(device.Batteries),
-				GenerationTotalEnergy: misc.ParseFloat(totals.Obj.EacTotal),
-				GenerationTodayEnergy: misc.ParseFloat(totals.Obj.EacToday),
-				WorkMode:              models.WorkModeFromString(status.Obj.WorkMode),
-				Status:                models.StatusFromString(status.Obj.Status),
-			}
-
+			payload := devicePayload(device, status.Obj, totals.Obj)
 			g.endpoint.PublishDeviceStatus(device, payload)
 		}
 	}
@@ -191,17 +169,7 @@ func (g *GrowattService) pollParameterData(device models.NoahDevicePayload) {
 		if len(details.Datas) != 1 {
 			slog.Error("could not get device details data", slog.String("device", device.Serial))
 		} else {
-			detailsData := details.Datas[0]
-			cl := misc.ParseFloat(detailsData.ChargingSocHighLimit)
-			dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
-			op := misc.ParseFloat(detailsData.DefaultACCouplePower)
-			mode := models.WorkModeFromString(detailsData.DefaultMode)
-			paramPayload := models.ParameterPayload{
-				ChargingLimit:        &cl,
-				DischargeLimit:       &dl,
-				DefaultACCouplePower: &op,
-				DefaultMode:          &mode,
-			}
+			paramPayload := parameterPayload(details.Datas[0])
 
 			g.endpoint.PublishParameterData(device, paramPayload)
 		}
@@ -220,32 +188,7 @@ func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload) {
 
 			var batteries []models.BatteryPayload
 			for i := 0; i < len(device.Batteries); i++ {
-				switch i {
-				case 0:
-					batteries = append(batteries, models.BatteryPayload{
-						SerialNumber: historyData.Battery1SerialNum,
-						Soc:          float64(historyData.Battery1Soc),
-						Temperature:  historyData.Battery1Temp,
-					})
-				case 1:
-					batteries = append(batteries, models.BatteryPayload{
-						SerialNumber: historyData.Battery2SerialNum,
-						Soc:          float64(historyData.Battery2Soc),
-						Temperature:  historyData.Battery2Temp,
-					})
-				case 2:
-					batteries = append(batteries, models.BatteryPayload{
-						SerialNumber: historyData.Battery3SerialNum,
-						Soc:          float64(historyData.Battery3Soc),
-						Temperature:  historyData.Battery3Temp,
-					})
-				case 3:
-					batteries = append(batteries, models.BatteryPayload{
-						SerialNumber: historyData.Battery4SerialNum,
-						Soc:          float64(historyData.Battery4Soc),
-						Temperature:  historyData.Battery4Temp,
-					})
-				}
+				batteries = append(batteries, batteryPayload(historyData, i))
 			}
 
 			g.endpoint.PublishBatteryDetails(device, batteries)

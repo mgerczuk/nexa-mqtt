@@ -12,15 +12,15 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 	sensors := []Sensor{
 		{
 			CommonConfig: CommonConfig{
-				Name:        "Output Power",
-				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "output_power"),
+				Name:        "AC Power",
+				UniqueId:    fmt.Sprintf("%s_%s", info.SerialNumber, "ac_power"),
 				DeviceClass: DeviceClassPower,
 				Device:      device,
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
 				StateTopic:    info.StateTopic,
-				ValueTemplate: "{{ value_json.output_w }}",
+				ValueTemplate: "{{ value_json.ac_w }}",
 			},
 			StateClass:        StateClassMeasurement,
 			UnitOfMeasurement: UnitWatt,

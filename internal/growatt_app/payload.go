@@ -7,7 +7,7 @@ import (
 
 func devicePayload(n *NoahStatus) models.DevicePayload {
 	return models.DevicePayload{
-		OutputPower:           misc.ParseFloat(n.Obj.Pac),
+		ACPower:               misc.ParseFloat(n.Obj.Pac),
 		SolarPower:            misc.ParseFloat(n.Obj.Ppv),
 		Soc:                   misc.ParseFloat(n.Obj.Soc),
 		ChargePower:           misc.ParseFloat(n.Obj.ChargePower),
@@ -33,11 +33,17 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	dischargeLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocLowLimit)
 	defaultACCouplePower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
 	defaultMode := models.WorkModeFromString(n.Obj.Noah.DefaultMode)
+	allowGridCharging := misc.IntStringToOnOff(n.Obj.Noah.AllowGridCharging)
+	gridConnectionControl := misc.IntStringToOnOff(n.Obj.Noah.GridConnectionControl)
+	acCouplePowerControl := misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl)
 
 	return models.ParameterPayload{
-		ChargingLimit:        &chargingLimit,
-		DischargeLimit:       &dischargeLimit,
-		DefaultACCouplePower: &defaultACCouplePower,
-		DefaultMode:          &defaultMode,
+		ChargingLimit:         &chargingLimit,
+		DischargeLimit:        &dischargeLimit,
+		DefaultACCouplePower:  &defaultACCouplePower,
+		DefaultMode:           &defaultMode,
+		AllowGridCharging:     allowGridCharging,
+		GridConnectionControl: gridConnectionControl,
+		AcCouplePowerControl:  acCouplePowerControl,
 	}
 }

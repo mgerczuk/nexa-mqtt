@@ -16,6 +16,13 @@ const (
 	OffGrid              = "off_grid"
 )
 
+type OnOff string
+
+const (
+	ON  OnOff = "ON"
+	OFF OnOff = "OFF"
+)
+
 func StatusFromString(s string) string {
 	switch s {
 	case "-1":
@@ -56,7 +63,7 @@ func IntFromWorkMode(s WorkMode) int {
 }
 
 type DevicePayload struct {
-	OutputPower           float64  `json:"output_w"`
+	ACPower               float64  `json:"ac_w"`
 	SolarPower            float64  `json:"solar_w"`
 	Soc                   float64  `json:"soc"`
 	ChargePower           float64  `json:"charge_w"`
@@ -75,10 +82,13 @@ type BatteryPayload struct {
 }
 
 type ParameterPayload struct {
-	ChargingLimit        *float64  `json:"charging_limit,omitempty"`
-	DischargeLimit       *float64  `json:"discharge_limit,omitempty"`
-	DefaultACCouplePower *float64  `json:"default_output_w,omitempty"`
-	DefaultMode          *WorkMode `json:"default_mode,omitempty"`
+	ChargingLimit         *float64  `json:"charging_limit,omitempty"`
+	DischargeLimit        *float64  `json:"discharge_limit,omitempty"`
+	DefaultACCouplePower  *float64  `json:"default_output_w,omitempty"`
+	DefaultMode           *WorkMode `json:"default_mode,omitempty"`
+	AllowGridCharging     OnOff     `json:"allow_grid_charging,omitempty"`
+	GridConnectionControl OnOff     `json:"grid_connection_control,omitempty"`
+	AcCouplePowerControl  OnOff     `json:"ac_couple_power_control,omitempty"`
 }
 
 func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
@@ -94,6 +104,15 @@ func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
 	if src.DefaultMode != nil {
 		p.DefaultMode = src.DefaultMode
 	}
+	if src.AllowGridCharging != "" {
+		p.AllowGridCharging = src.AllowGridCharging
+	}
+	if src.GridConnectionControl != "" {
+		p.GridConnectionControl = src.GridConnectionControl
+	}
+	if src.AcCouplePowerControl != "" {
+		p.AcCouplePowerControl = src.AcCouplePowerControl
+	}
 }
 
 func EmptyParameterPayload() ParameterPayload {
@@ -101,12 +120,18 @@ func EmptyParameterPayload() ParameterPayload {
 	dischargeLimit := 10.0
 	defaultACCouplePower := 150.0
 	var defaultMode WorkMode = WorkModeLoadFirst
+	allowGridCharging := OFF
+	gridConnectionControl := OFF
+	acCouplePowerControl := OFF
 
 	return ParameterPayload{
-		ChargingLimit:        &chargingLimit,
-		DischargeLimit:       &dischargeLimit,
-		DefaultACCouplePower: &defaultACCouplePower,
-		DefaultMode:          &defaultMode,
+		ChargingLimit:         &chargingLimit,
+		DischargeLimit:        &dischargeLimit,
+		DefaultACCouplePower:  &defaultACCouplePower,
+		DefaultMode:           &defaultMode,
+		AllowGridCharging:     allowGridCharging,
+		GridConnectionControl: gridConnectionControl,
+		AcCouplePowerControl:  acCouplePowerControl,
 	}
 }
 

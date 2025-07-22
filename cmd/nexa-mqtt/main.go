@@ -67,9 +67,10 @@ func (a *App) onMqttDisconnect() {
 
 func (a *App) onMqttConnect(client mqtt.Client) {
 	haService := homeassistant.NewService(homeassistant.Options{
-		MqttClient:  client,
-		TopicPrefix: a.cfg.HomeAssistant.TopicPrefix,
-		Version:     version,
+		MqttClient:     client,
+		TopicPrefix:    a.cfg.HomeAssistant.TopicPrefix,
+		SwitchAsSelect: a.cfg.HomeAssistant.SwitchAsSelect,
+		Version:        version,
 	})
 
 	mqttEndpoint := endpoint_mqtt.NewEndpoint(endpoint_mqtt.Options{

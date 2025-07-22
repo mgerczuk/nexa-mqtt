@@ -36,7 +36,8 @@ type Mqtt struct {
 }
 
 type HomeAssistant struct {
-	TopicPrefix string
+	TopicPrefix    string
+	SwitchAsSelect bool
 }
 
 var _config Config
@@ -65,7 +66,8 @@ func Get() Config {
 				TopicPrefix: getEnv("MQTT_TOPIC_PREFIX", "nexa2mqtt"),
 			},
 			HomeAssistant: HomeAssistant{
-				TopicPrefix: getEnv("HOMEASSISTANT_TOPIC_PREFIX", "homeassistant"),
+				TopicPrefix:    getEnv("HOMEASSISTANT_TOPIC_PREFIX", "homeassistant"),
+				SwitchAsSelect: s2bool(getEnv("HOMEASSISTANT_SWITCH_AS_SELECT", "false"), false),
 			},
 		}
 	})
@@ -98,4 +100,11 @@ func s2i(s string) int {
 		return 0
 	}
 	return i
+}
+
+func s2bool(s string, fallback bool) bool {
+	if b, err := strconv.ParseBool(s); err == nil {
+		return b
+	}
+	return fallback
 }

@@ -95,7 +95,7 @@ func (g *GrowattAppService) enumerateDevices() {
 	devices := g.fetchDevices()
 
 	for i, device := range devices {
-		if data, err := g.client.GetNoahInfo(device.Serial); err != nil {
+		if data, err := g.client.GetNexaInfoBySn(device.Serial); err != nil {
 			slog.Error("could not get nexa status", slog.String("error", err.Error()), slog.String("serialNumber", device.Serial))
 		} else {
 			batCount := len(data.Obj.Noah.BatSns)
@@ -122,52 +122,97 @@ func (g *GrowattAppService) SetEndpoint(e endpoint.Endpoint) {
 	g.endpoint = e
 }
 
-func (g *GrowattAppService) ensureParameterLogin() bool {
+func (g *GrowattAppService) ensureParameterLogin() error {
 	if !g.loggedIn {
 		if err := g.Login(); err != nil {
 			slog.Error("could not login to growatt account (app)", slog.String("error", err.Error()))
-			return false
+			return err
 		}
 	}
-	return true
+	return nil
 }
 
-func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) bool {
+func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) error {
 	slog.Info("trying to set default system output power (app)", slog.String("device", device.Serial), slog.String("mode", string(mode)), slog.Float64("power", power))
-	if !g.ensureParameterLogin() {
+	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set default system output power (app)", slog.String("device", device.Serial))
-		return false
+		return err
 	}
 
 	modeAsInt := models.IntFromWorkMode(mode)
 	if modeAsInt < 0 {
 		slog.Error("unable to set default system output power (app). Invalid mode", slog.String("device", device.Serial), slog.String("mode", string(mode)))
-		return false
+		return fmt.Errorf("invalid work mode %s", mode)
 	}
 
 	slog.Info("set default system output power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", power))
 	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, power); err != nil {
 		slog.Error("unable to set default system output power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
-		return false
-	} else {
-		return true
+		return err
 	}
+
+	return nil
 }
 
-func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit float64, dischargeLimit float64) bool {
+func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit float64, dischargeLimit float64) error {
 	slog.Info("trying to set charging limits (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
-	if !g.ensureParameterLogin() {
+	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set charging limits (app)", slog.String("device", device.Serial))
-		return false
+		return err
 	}
 
 	slog.Info("set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
 	if err := g.client.SetChargingSoc(device.Serial, chargingLimit, dischargeLimit); err != nil {
 		slog.Error("unable to set charging limits (app)", slog.String("error", err.Error()))
-		return false
-	} else {
-		return true
+		return err
 	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error {
+	slog.Info("trying to set allow charging  (app)", slog.String("device", device.Serial), slog.String("allow", string(allow)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set allow charging (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetAllowGridCharging(device.Serial, misc.OnOffToInt(allow)); err != nil {
+		slog.Error("unable to set allow charging (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error {
+	slog.Info("trying to set grid connection  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(offlineEnable)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set grid connection (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetGridConnectionControl(device.Serial, misc.OnOffToInt(offlineEnable)); err != nil {
+		slog.Error("unable to set grid connection (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
+	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(_1000WEnable)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set ac couple power control (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetACCouplePowerControl(device.Serial, misc.OnOffToInt(_1000WEnable)); err != nil {
+		slog.Error("unable to set ac couple power control (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
 }
 
 func (g *GrowattAppService) poll(ctx context.Context) {

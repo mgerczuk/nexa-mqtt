@@ -240,7 +240,7 @@ func Test_pollStatus_OkCharge(t *testing.T) {
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,
@@ -279,7 +279,7 @@ func Test_pollStatus_OkDischarge(t *testing.T) {
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           0.0,
@@ -335,19 +335,33 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
+	allowGridCharging := models.OFF
+	gridConnectionControl := models.ON
+	acCouplePowerControl := models.ON
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
-		{ChargingSocHighLimit: "95", ChargingSocLowLimit: "11", DefaultMode: "0", DefaultACCouplePower: "100"},
+		{
+			ChargingSocHighLimit:  "95",
+			ChargingSocLowLimit:   "11",
+			DefaultMode:           "0",
+			DefaultACCouplePower:  "100",
+			AllowGridCharging:     "0",
+			GridConnectionControl: "1",
+			AcCouplePowerControl:  "1",
+		},
 	}}, nil)
 
 	mockEndpoint.On(
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:        &chargingLimit,
-			DischargeLimit:       &dischargeLimit,
-			DefaultACCouplePower: &defaultACCouplePower,
-			DefaultMode:          &defaultMode,
+			ChargingLimit:         &chargingLimit,
+			DischargeLimit:        &dischargeLimit,
+			DefaultACCouplePower:  &defaultACCouplePower,
+			DefaultMode:           &defaultMode,
+			AllowGridCharging:     allowGridCharging,
+			GridConnectionControl: gridConnectionControl,
+			AcCouplePowerControl:  acCouplePowerControl,
 		},
 	)
 
@@ -485,7 +499,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,
@@ -538,19 +552,33 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
+	allowGridCharging := models.ON
+	gridConnectionControl := models.OFF
+	acCouplePowerControl := models.OFF
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
-		{ChargingSocHighLimit: "95", ChargingSocLowLimit: "11", DefaultMode: "0", DefaultACCouplePower: "100"},
+		{
+			ChargingSocHighLimit:  "95",
+			ChargingSocLowLimit:   "11",
+			DefaultMode:           "0",
+			DefaultACCouplePower:  "100",
+			AllowGridCharging:     "1",
+			GridConnectionControl: "0",
+			AcCouplePowerControl:  "0",
+		},
 	}}, nil)
 
 	mockEndpoint.On(
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:        &chargingLimit,
-			DischargeLimit:       &dischargeLimit,
-			DefaultACCouplePower: &defaultACCouplePower,
-			DefaultMode:          &defaultMode,
+			ChargingLimit:         &chargingLimit,
+			DischargeLimit:        &dischargeLimit,
+			DefaultACCouplePower:  &defaultACCouplePower,
+			DefaultMode:           &defaultMode,
+			AllowGridCharging:     allowGridCharging,
+			GridConnectionControl: gridConnectionControl,
+			AcCouplePowerControl:  acCouplePowerControl,
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
 }
