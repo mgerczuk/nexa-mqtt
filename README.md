@@ -40,6 +40,7 @@ You can configure `nexa-mqtt` using the following environment variables:
 | `MQTT_PASSWORD`                    | Password for connecting to your MQTT broker                                             | -                              |
 | `MQTT_TOPIC_PREFIX`                | Prefix for MQTT topics used by nexa-mqtt                                                | nexa2mqtt                      |
 | `HOMEASSISTANT_TOPIC_PREFIX`       | Prefix for topics used by Home Assistant                                                | homeassistant                  |
+| `HOMEASSISTANT_SWITCH_AS_SELECT`   | Publish 'switch' entities as 'select'. Set to 'True' for OpenHAB, see below             | false                          |
 
 Adjust these settings to fit your environment and requirements.
 
@@ -291,4 +292,29 @@ This option leverages the add-on system to manage and run `nexa-mqtt` directly o
 The Home Assistant add-on provides an easy and integrated way to run `nexa-mqtt`, allowing you to manage it directly from the Home Assistant interface.
 
 For more detailed information and updates, visit the [repository](https://github.com/mgerczuk/hassio-addons).
+
+---
+
+# Integration into OpenHAB
+
+`nexa-mqtt` interacts with OpenHAB by publishing data from your Growatt NEXA 2000 home battery to an MQTT broker. This setup allows OpenHAB to subscribe to and integrate this data seamlessly into its ecosystem.
+
+`nexa-mqtt` uses Home Assistant auto-discover. OpenHAB has some problems with this, especially you cannot properly set a '**Switch**' channel data imported from HA auto-discovery. Be sure to set the environment variable `HOMEASSISTANT_SWITCH_AS_SELECT` to `True` when you use OpenHAB. The 'switch' entities will then be imported as **String** channels.
+
+![Home Assistant Integration](./assets/nexa-mqtt-openhab-dark.drawio.png#gh-dark-mode-only)
+![Home Assistant Integration](./assets/nexa-mqtt-openhab.drawio.png#gh-light-mode-only)
+
+1. **Set Up an MQTT Broker**:  
+   Ensure you have an MQTT broker running, such as [Mosquitto](https://mosquitto.org/), and that it’s accessible from both nexa-mqtt and OpenHAB.
+
+2. **Check MQTT Integration in OpenHAB**: 
+   If not already done install the MQTT Binding from the Add-on Store
+
+3. **Run nexa-mqtt**:  
+   Start `nexa-mqtt` using the appropriate configuration for your MQTT broker and the environment variable `HOMEASSISTANT_SWITCH_AS_SELECT` to `True`.
+
+4. **Device Discovery**:  
+   OpenHAB should now show a new thing in the inbox on the **Settings**/**Things** page. Click on the inbox, select the entry an chose **Add as Thing**. Enter a name for the new thing. The thing should now be **online** and you can start linking items to the channels.
+
+   In case the thing does not go online first check the MQTT broker and the MQTT binding. If that is Ok, try to disable/enable the thing and/or restart `nexa-mqtt`.
 

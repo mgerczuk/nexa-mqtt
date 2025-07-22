@@ -47,9 +47,66 @@ func Test_sendDiscovery(t *testing.T) {
 	}
 
 	setupTopics(&mockClient, "device123")
+	setupSwitchTopics(&mockClient, "device123")
 	setupBatteryTopics(&mockClient, "device123", "BAT0")
 	setupBatteryTopics(&mockClient, "device123", "BAT1")
 	setupTopics(&mockClient, "device234")
+	setupSwitchTopics(&mockClient, "device234")
+	setupBatteryTopics(&mockClient, "device234", "BAT0")
+
+	service.sendDiscovery()
+
+	mockClient.AssertExpectations(t)
+}
+
+func Test_sendDiscoverySwitchAsSelect(t *testing.T) {
+
+	mockClient := MockMqttClient{}
+	service := &Service{
+		options: Options{
+			MqttClient:     &mockClient,
+			TopicPrefix:    "homeassistant",
+			Version:        "version",
+			SwitchAsSelect: true,
+		},
+		devices: []DeviceInfo{
+			{
+				SerialNumber:          "device123",
+				StateTopic:            "test/device123",
+				ParameterStateTopic:   "test/device123/parameters",
+				ParameterCommandTopic: "test/device123/parameters/set",
+				Batteries: []BatteryInfo{
+					{
+						Alias:      "BAT0",
+						StateTopic: "test/device123/BAT0",
+					},
+					{
+						Alias:      "BAT1",
+						StateTopic: "test/device123/BAT1",
+					},
+				},
+			},
+			{
+				SerialNumber:          "device234",
+				StateTopic:            "test/device234",
+				ParameterStateTopic:   "test/device234/parameters",
+				ParameterCommandTopic: "test/device234/parameters/set",
+				Batteries: []BatteryInfo{
+					{
+						Alias:      "BAT0",
+						StateTopic: "test/device234/BAT0",
+					},
+				},
+			},
+		},
+	}
+
+	setupTopics(&mockClient, "device123")
+	setupSwitchTopicsAsSelect(&mockClient, "device123")
+	setupBatteryTopics(&mockClient, "device123", "BAT0")
+	setupBatteryTopics(&mockClient, "device123", "BAT1")
+	setupTopics(&mockClient, "device234")
+	setupSwitchTopicsAsSelect(&mockClient, "device234")
 	setupBatteryTopics(&mockClient, "device234", "BAT0")
 
 	service.sendDiscovery()
@@ -102,6 +159,17 @@ func setupTopics(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/select/nexa_$SERIAL/DefaultMode/config"),
 		r.Replace(`{"name":"Default Mode","unique_id":"$SERIAL_default_mode","device_class":"enum","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.default_mode }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"default_mode\": \"{{ value }}\"}","options":["load_first","battery_first"],"component":"select"}`))
+
+	mockClient.OnPublish(
+		r.Replace("homeassistant/binary_sensor/nexa_$SERIAL/Connectivity/config"),
+		r.Replace(`{"name":"Connectivity","unique_id":"$SERIAL_connectivity","device_class":"connectivity","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ 'offline' if value_json.status == 'offline' else 'online' }}","payload_off":"offline","payload_on":"online"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/binary_sensor/nexa_$SERIAL/Heating/config"),
+		r.Replace(`{"name":"Heating","unique_id":"$SERIAL_heating","icon":"mdi:heat-wave","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ 'heating' if value_json.status == 'heating' else 'not-heating' }}","payload_off":"not-heating","payload_on":"heating"}`))
+}
+
+func setupSwitchTopics(mockClient *MockMqttClient, serial string) {
+	r := strings.NewReplacer("$SERIAL", serial)
 	mockClient.OnPublish(
 		r.Replace("homeassistant/switch/nexa_$SERIAL/AllowGridCharging/config"),
 		r.Replace(`{"name":"AllowGridCharging","unique_id":"$SERIAL_allow_grid_charging","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.allow_grid_charging }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"allow_grid_charging\": \"{{ value }}\"}"}`))
@@ -111,13 +179,19 @@ func setupTopics(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/switch/nexa_$SERIAL/AcCouplePowerControl/config"),
 		r.Replace(`{"name":"AcCouplePowerControl","unique_id":"$SERIAL_ac_couple_power_control","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.ac_couple_power_control }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"ac_couple_power_control\": \"{{ value }}\"}"}`))
+}
 
+func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
+	r := strings.NewReplacer("$SERIAL", serial)
 	mockClient.OnPublish(
-		r.Replace("homeassistant/binary_sensor/nexa_$SERIAL/Connectivity/config"),
-		r.Replace(`{"name":"Connectivity","unique_id":"$SERIAL_connectivity","device_class":"connectivity","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ 'offline' if value_json.status == 'offline' else 'online' }}","payload_off":"offline","payload_on":"online"}`))
+		r.Replace("homeassistant/select/nexa_$SERIAL/AllowGridCharging/config"),
+		r.Replace(`{"name":"AllowGridCharging","unique_id":"$SERIAL_allow_grid_charging","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.allow_grid_charging }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"allow_grid_charging\": \"{{ value }}\"}","options":["OFF","ON"]}`))
 	mockClient.OnPublish(
-		r.Replace("homeassistant/binary_sensor/nexa_$SERIAL/Heating/config"),
-		r.Replace(`{"name":"Heating","unique_id":"$SERIAL_heating","icon":"mdi:heat-wave","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ 'heating' if value_json.status == 'heating' else 'not-heating' }}","payload_off":"not-heating","payload_on":"heating"}`))
+		r.Replace("homeassistant/select/nexa_$SERIAL/GridConnectionControl/config"),
+		r.Replace(`{"name":"GridConnectionControl","unique_id":"$SERIAL_grid_connection_control","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.grid_connection_control }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"grid_connection_control\": \"{{ value }}\"}","options":["OFF","ON"]}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/select/nexa_$SERIAL/AcCouplePowerControl/config"),
+		r.Replace(`{"name":"AcCouplePowerControl","unique_id":"$SERIAL_ac_couple_power_control","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.ac_couple_power_control }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"ac_couple_power_control\": \"{{ value }}\"}","options":["OFF","ON"]}`))
 }
 
 func setupBatteryTopics(mockClient *MockMqttClient, serial string, name string) {

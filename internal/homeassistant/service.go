@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
+	"nexa-mqtt/pkg/models"
 	"strings"
 	"time"
 
@@ -15,9 +16,10 @@ type HaClient interface {
 }
 
 type Options struct {
-	MqttClient  mqtt.Client
-	TopicPrefix string
-	Version     string
+	MqttClient     mqtt.Client
+	TopicPrefix    string
+	Version        string
+	SwitchAsSelect bool
 }
 
 type Service struct {
@@ -98,11 +100,26 @@ func (s *Service) sendDiscovery() {
 
 		switches := generateSwitchDiscoveryPayload(s.options.Version, d)
 		for _, sw := range switches {
-			if b, err := json.Marshal(sw); err != nil {
-				slog.Error("could not marshal switch discovery payload", slog.Any("sensor", sw))
+			if s.options.SwitchAsSelect {
+				sel := Select{
+					CommonConfig:  sw.CommonConfig,
+					StateConfig:   sw.StateConfig,
+					CommandConfig: sw.CommandConfig,
+					Options:       []string{string(models.OFF), string(models.ON)},
+				}
+				if b, err := json.Marshal(sel); err != nil {
+					slog.Error("could not marshal select discovery payload", slog.Any("select", sel))
+				} else {
+					topic := s.selectTopic(sel)
+					s.options.MqttClient.Publish(topic, 0, false, string(b))
+				}
 			} else {
-				topic := s.switchTopic(sw)
-				s.options.MqttClient.Publish(topic, 0, false, string(b))
+				if b, err := json.Marshal(sw); err != nil {
+					slog.Error("could not marshal switch discovery payload", slog.Any("sensor", sw))
+				} else {
+					topic := s.switchTopic(sw)
+					s.options.MqttClient.Publish(topic, 0, false, string(b))
+				}
 			}
 		}
 	}
