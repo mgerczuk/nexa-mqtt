@@ -26,7 +26,7 @@ func Test_devicePayload(t *testing.T) {
 
 	payload := devicePayload(device, status, totals)
 
-	assert.Equal(t, -330.0, payload.OutputPower)
+	assert.Equal(t, -330.0, payload.ACPower)
 	assert.Equal(t, 178.0, payload.SolarPower)
 	assert.Equal(t, 72.0, payload.Soc)
 	assert.Equal(t, 248.0, payload.ChargePower)

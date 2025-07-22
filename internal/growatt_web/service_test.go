@@ -240,7 +240,7 @@ func Test_pollStatus_OkCharge(t *testing.T) {
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,
@@ -279,7 +279,7 @@ func Test_pollStatus_OkDischarge(t *testing.T) {
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           0.0,
@@ -499,7 +499,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,

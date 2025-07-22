@@ -45,7 +45,7 @@ func Test_pollStatus_Ok(t *testing.T) {
 		"PublishDeviceStatus",
 		device,
 		models.DevicePayload{
-			OutputPower:           -400.0,
+			ACPower:               -400.0,
 			SolarPower:            538.0,
 			Soc:                   93.0,
 			ChargePower:           132.0,

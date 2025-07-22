@@ -7,7 +7,7 @@ import (
 
 func devicePayload(n *NoahStatus) models.DevicePayload {
 	return models.DevicePayload{
-		OutputPower:           misc.ParseFloat(n.Obj.Pac),
+		ACPower:               misc.ParseFloat(n.Obj.Pac),
 		SolarPower:            misc.ParseFloat(n.Obj.Ppv),
 		Soc:                   misc.ParseFloat(n.Obj.Soc),
 		ChargePower:           misc.ParseFloat(n.Obj.ChargePower),

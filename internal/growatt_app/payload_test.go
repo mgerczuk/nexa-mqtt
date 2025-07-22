@@ -41,7 +41,7 @@ func Test_devicePayload(t *testing.T) {
 
 	dp := devicePayload(&noahStatus)
 
-	assert.Equal(t, -400.0, dp.OutputPower)
+	assert.Equal(t, -400.0, dp.ACPower)
 	assert.Equal(t, 538.0, dp.SolarPower)
 	assert.Equal(t, 93.0, dp.Soc)
 	assert.Equal(t, 132.0, dp.ChargePower)

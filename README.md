@@ -59,9 +59,9 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 - **Example Payload:**
 ```json
 {
-  "output_w": -398, // current output power in watts
-                    // is negative when solar or battery power is delivered to the grid
-                    // is positive when battery is charged from grid
+  "ac_w": -398, // current AC power in watts
+                // is negative when solar or battery power is delivered to the grid
+                // is positive when battery is charged from grid
   "solar_w": 102, // current solar generation power in watts
   "soc": 40, // current state of charge of the whole appliance
   "charge_w": 0, // current charging power in watts

@@ -18,7 +18,7 @@ func devicePayload(device models.NoahDevicePayload, status GrowattNoahStatusObj,
 	}
 
 	payload := models.DevicePayload{
-		OutputPower:           misc.ParseFloat(status.Pac),
+		ACPower:               misc.ParseFloat(status.Pac),
 		SolarPower:            misc.ParseFloat(status.Ppv),
 		Soc:                   misc.ParseFloat(status.TotalBatteryPackSoc),
 		ChargePower:           chargePower,

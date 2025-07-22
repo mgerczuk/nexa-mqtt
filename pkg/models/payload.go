@@ -63,7 +63,7 @@ func IntFromWorkMode(s WorkMode) int {
 }
 
 type DevicePayload struct {
-	OutputPower           float64  `json:"output_w"`
+	ACPower               float64  `json:"ac_w"`
 	SolarPower            float64  `json:"solar_w"`
 	Soc                   float64  `json:"soc"`
 	ChargePower           float64  `json:"charge_w"`

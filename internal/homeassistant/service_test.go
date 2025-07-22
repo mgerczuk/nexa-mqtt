@@ -117,8 +117,8 @@ func Test_sendDiscoverySwitchAsSelect(t *testing.T) {
 func setupTopics(mockClient *MockMqttClient, serial string) {
 	r := strings.NewReplacer("$SERIAL", serial)
 	mockClient.OnPublish(
-		r.Replace("homeassistant/sensor/nexa_$SERIAL/OutputPower/config"),
-		r.Replace(`{"name":"Output Power","unique_id":"$SERIAL_output_power","device_class":"power","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ value_json.output_w }}","state_class":"measurement","unit_of_measurement":"W"}`))
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/ACPower/config"),
+		r.Replace(`{"name":"AC Power","unique_id":"$SERIAL_ac_power","device_class":"power","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ value_json.ac_w }}","state_class":"measurement","unit_of_measurement":"W"}`))
 	mockClient.OnPublish(
 		r.Replace("homeassistant/sensor/nexa_$SERIAL/SolarPower/config"),
 		r.Replace(`{"name":"Solar Power","unique_id":"$SERIAL_solar_power","icon":"mdi:solar-power","device_class":"power","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL","value_template":"{{ value_json.solar_w }}","state_class":"measurement","unit_of_measurement":"W"}`))

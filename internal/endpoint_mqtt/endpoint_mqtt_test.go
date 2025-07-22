@@ -191,7 +191,7 @@ func TestPublishDeviceStatus_Success(t *testing.T) {
 		"test/device123",
 		byte(0),
 		false,
-		`{"output_w":0,"solar_w":0,"soc":0,"charge_w":0,"discharge_w":0,"battery_num":0,"generation_total_kwh":0,"generation_today_kwh":0}`,
+		`{"ac_w":0,"solar_w":0,"soc":0,"charge_w":0,"discharge_w":0,"battery_num":0,"generation_total_kwh":0,"generation_today_kwh":0}`,
 	).Return(mockToken)
 
 	endpoint := &Endpoint{
@@ -220,7 +220,7 @@ func TestPublishDeviceStatus_Fail(t *testing.T) {
 	}
 
 	device := models.NoahDevicePayload{Serial: "device123"}
-	status := models.DevicePayload{OutputPower: math.NaN()}
+	status := models.DevicePayload{ACPower: math.NaN()}
 
 	endpoint.PublishDeviceStatus(device, status)
 
