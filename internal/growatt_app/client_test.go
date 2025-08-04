@@ -334,12 +334,23 @@ func TestGetBatteryData_Fail(t *testing.T) {
 func TestSetSystemOutputPower_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", nil)
+	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 
 	err := client.SetSystemOutputPower("serial123", 0, 200)
 
 	assert.NoError(t, err)
-	//	assert.Equal(t, BatteryInfo{}, *data)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetSystemOutputPower_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetSystemOutputPower("serial123", 0, 200)
+
+	assert.Error(t, err)
 
 	mockHttpClient.AssertExpectations(t)
 }
@@ -347,7 +358,7 @@ func TestSetSystemOutputPower_Ok(t *testing.T) {
 func TestSetSystemOutputPower_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", errors.New("noahDeviceApi/nexa/set system_out_put_power fail"))
+	mockHttpClient.OnSet2Params("serial123", "system_out_put_power", "0", "200", errors.New("noahDeviceApi/nexa/set system_out_put_power fail"), SetResponse{})
 
 	err := client.SetSystemOutputPower("serial123", 0, 200)
 
@@ -359,7 +370,7 @@ func TestSetSystemOutputPower_Fail(t *testing.T) {
 func TestSetChargingSoc_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", nil)
+	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 
 	err := client.SetChargingSoc("serial123", 85, 15)
 
@@ -368,10 +379,22 @@ func TestSetChargingSoc_Ok(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
+func TestSetChargingSoc_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetChargingSoc("serial123", 85, 15)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
 func TestSetChargingSoc_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", errors.New("noahDeviceApi/nexa/set charging_soc fail"))
+	mockHttpClient.OnSet2Params("serial123", "charging_soc", "85", "15", errors.New("noahDeviceApi/nexa/set charging_soc fail"), SetResponse{})
 
 	err := client.SetChargingSoc("serial123", 85, 15)
 
@@ -383,7 +406,7 @@ func TestSetChargingSoc_Fail(t *testing.T) {
 func TestSetAllowGridCharging_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", nil)
+	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 
 	err := client.SetAllowGridCharging("serial123", 1)
 
@@ -392,10 +415,22 @@ func TestSetAllowGridCharging_Ok(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
+func TestSetAllowGridCharging_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetAllowGridCharging("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
 func TestSetAllowGridCharging_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", errors.New("noahDeviceApi/nexa/set allow_grid_charging fail"))
+	mockHttpClient.OnSet1Param("serial123", "allow_grid_charging", "1", errors.New("noahDeviceApi/nexa/set allow_grid_charging fail"), SetResponse{})
 
 	err := client.SetAllowGridCharging("serial123", 1)
 
@@ -407,7 +442,7 @@ func TestSetAllowGridCharging_Fail(t *testing.T) {
 func TestSetGridConnectionControl_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", nil)
+	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 
 	err := client.SetGridConnectionControl("serial123", 1)
 
@@ -416,10 +451,22 @@ func TestSetGridConnectionControl_Ok(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
+func TestSetGridConnectionControl_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetGridConnectionControl("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
 func TestSetGridConnectionControl_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", errors.New("noahDeviceApi/nexa/set grid_connection_control fail"))
+	mockHttpClient.OnSet1Param("serial123", "grid_connection_control", "1", errors.New("noahDeviceApi/nexa/set grid_connection_control fail"), SetResponse{})
 
 	err := client.SetGridConnectionControl("serial123", 1)
 
@@ -431,7 +478,7 @@ func TestSetGridConnectionControl_Fail(t *testing.T) {
 func TestSetACCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", nil)
+	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 
 	err := client.SetACCouplePowerControl("serial123", 1)
 
@@ -440,10 +487,22 @@ func TestSetACCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
+func TestSetACCouplePowerControl_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetACCouplePowerControl("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
 func TestSetACCouplePowerControl_Fail(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
-	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", errors.New("noahDeviceApi/nexa/set ac_couple_power_control fail"))
+	mockHttpClient.OnSet1Param("serial123", "ac_couple_power_control", "1", errors.New("noahDeviceApi/nexa/set ac_couple_power_control fail"), SetResponse{})
 
 	err := client.SetACCouplePowerControl("serial123", 1)
 

@@ -215,7 +215,7 @@ func (m *MockHttpClient) OnGetBatteryData(serialNumber string, result BatteryInf
 	return call.Return(err)
 }
 
-func (m *MockHttpClient) OnSet1Param(serialNumber string, typ string, param1 string, err error) *mock.Call {
+func (m *MockHttpClient) OnSet1Param(serialNumber string, typ string, param1 string, err error, response SetResponse) *mock.Call {
 	call := m.On(
 		"postForm",
 		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
@@ -231,14 +231,14 @@ func (m *MockHttpClient) OnSet1Param(serialNumber string, typ string, param1 str
 	if err == nil {
 		call = call.Run(func(args mock.Arguments) {
 			responseBody := args.Get(3).(*SetResponse)
-			*responseBody = SetResponse{}
+			*responseBody = response
 		})
 	}
 
 	return call.Return(err)
 }
 
-func (m *MockHttpClient) OnSet2Params(serialNumber string, typ string, param1 string, param2 string, err error) *mock.Call {
+func (m *MockHttpClient) OnSet2Params(serialNumber string, typ string, param1 string, param2 string, err error, response SetResponse) *mock.Call {
 	call := m.On(
 		"postForm",
 		"https://server-api.growatt.com/noahDeviceApi/nexa/set",
@@ -255,7 +255,7 @@ func (m *MockHttpClient) OnSet2Params(serialNumber string, typ string, param1 st
 	if err == nil {
 		call = call.Run(func(args mock.Arguments) {
 			responseBody := args.Get(3).(*SetResponse)
-			*responseBody = SetResponse{}
+			*responseBody = response
 		})
 	}
 

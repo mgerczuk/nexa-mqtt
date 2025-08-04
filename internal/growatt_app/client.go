@@ -191,6 +191,9 @@ func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 	}, &data); err != nil {
 		return err
 	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
 
 	return nil
 }
@@ -207,6 +210,9 @@ func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, disc
 	}, &data); err != nil {
 		return err
 	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
 
 	return nil
 }
@@ -219,6 +225,9 @@ func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
 		"param1":    {fmt.Sprintf("%d", allow)},
 	}, &data); err != nil {
 		return err
+	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
 	}
 
 	return nil
@@ -233,6 +242,9 @@ func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int
 	}, &data); err != nil {
 		return err
 	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
 
 	return nil
 }
@@ -245,6 +257,9 @@ func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) 
 		"param1":    {fmt.Sprintf("%d", _1000WEnable)},
 	}, &data); err != nil {
 		return err
+	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
 	}
 
 	return nil
