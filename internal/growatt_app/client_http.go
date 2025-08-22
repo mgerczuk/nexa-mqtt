@@ -53,7 +53,7 @@ func (h *httpClient) postForm(url string, token string, data url.Values, respons
 
 	if responseBody != nil {
 		if err := json.Unmarshal(b, &responseBody); err != nil {
-			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()))
+			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()), slog.String("body", string(b)), slog.String("url", url))
 			return err
 		}
 	}
