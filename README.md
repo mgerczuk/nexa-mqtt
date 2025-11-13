@@ -100,8 +100,14 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
    "default_mode": "load_first", // or battery_first
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
-   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
-                                    // Note: this may be forbidden when connected to public grid!
+   "ac_couple_power_control": "OFF", // ON for 1000W max. AC output. (Power+ Function)
+                                     // Note: this may be forbidden when connected to
+                                     // public grid!
+   "light_load_enable": "OFF", // ON allows the device to discharge at low power for
+                               // extended periods. (AC Always On)
+   "never_power_off": "OFF" // When ON the device remains powered on and never shuts down
+                            // while connected to the grid. (Always On)
+                            // "allow_grid_charging" should be ON for this function
 }
 ```
 
@@ -121,8 +127,14 @@ You can update the device's parameter settings by posting a message to the follo
    "default_mode": "load_first", // or battery_first
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
-   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
-                                    // Note: this may be forbidden when connected to public grid!
+   "ac_couple_power_control": "OFF", // ON for 1000W max. AC output. (Power+ Function)
+                                     // Note: this may be forbidden when connected to
+                                     // public grid!
+   "light_load_enable": "OFF", // ON allows the device to discharge at low power for
+                               // extended periods. (AC Always On)
+   "never_power_off": "OFF" // When ON the device remains powered on and never shuts down
+                            // while connected to the grid. (Always On)
+                            // "allow_grid_charging" should be ON for this function
 }
 ```
 

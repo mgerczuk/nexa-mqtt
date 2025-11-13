@@ -57,6 +57,16 @@ func (p *MockParameterApplier) SetAcCouplePowerControl(device models.NoahDeviceP
 	return args.Error(0)
 }
 
+func (p *MockParameterApplier) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
+	args := p.Called(device, enable)
+	return args.Error(0)
+}
+
+func (p *MockParameterApplier) SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error {
+	args := p.Called(device, enable)
+	return args.Error(0)
+}
+
 // MockHaClient implements homeassistant.HaClient
 type MockHaClient struct {
 	mock.Mock

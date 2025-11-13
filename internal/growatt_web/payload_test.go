@@ -99,6 +99,8 @@ func Test_parameterPayload(t *testing.T) {
 		AllowGridCharging:     "1",
 		GridConnectionControl: "0",
 		AcCouplePowerControl:  "1",
+		LightLoadEnable:       "1",
+		NeverPowerOff:         "0",
 	}
 
 	payload := parameterPayload(detailsData)
@@ -110,4 +112,6 @@ func Test_parameterPayload(t *testing.T) {
 	assert.Equal(t, models.ON, payload.AllowGridCharging)
 	assert.Equal(t, models.OFF, payload.GridConnectionControl)
 	assert.Equal(t, models.ON, payload.AcCouplePowerControl)
+	assert.Equal(t, models.ON, payload.LightLoadEnable)
+	assert.Equal(t, models.OFF, payload.NeverPowerOff)
 }

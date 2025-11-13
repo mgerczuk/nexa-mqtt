@@ -168,6 +168,14 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 		e.param_applier.SetAcCouplePowerControl(dev, e.lastParameter.AcCouplePowerControl)
 	}
 
+	if e.newParameter.LightLoadEnable != "" {
+		e.param_applier.SetLightLoadEnable(dev, e.lastParameter.LightLoadEnable)
+	}
+
+	if e.newParameter.NeverPowerOff != "" {
+		e.param_applier.SetNeverPowerOff(dev, e.lastParameter.NeverPowerOff)
+	}
+
 	e.newParameter = models.ParameterPayload{}
 	e.publishTimer = nil
 

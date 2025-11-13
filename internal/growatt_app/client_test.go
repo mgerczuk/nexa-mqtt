@@ -510,3 +510,74 @@ func TestSetACCouplePowerControl_Fail(t *testing.T) {
 
 	mockHttpClient.AssertExpectations(t)
 }
+func TestSetLightLoadEnable_Ok(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "light_load_enable", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	err := client.SetLightLoadEnable("serial123", 1)
+
+	assert.NoError(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "light_load_enable", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetLightLoadEnable("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_Fail(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "light_load_enable", "1", errors.New("noahDeviceApi/nexa/set light_load_enable fail"), SetResponse{})
+
+	err := client.SetLightLoadEnable("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Ok(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "never_power_off", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	err := client.SetNeverPowerOff("serial123", 1)
+
+	assert.NoError(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "never_power_off", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetNeverPowerOff("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Fail(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet1Param("serial123", "never_power_off", "1", errors.New("noahDeviceApi/nexa/set never_power_off fail"), SetResponse{})
+
+	err := client.SetNeverPowerOff("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}

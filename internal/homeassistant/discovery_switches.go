@@ -57,6 +57,38 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				CommandTemplate: "{\"ac_couple_power_control\": \"{{ value }}\"}",
 			},
 		},
+		{
+			CommonConfig: CommonConfig{
+				Name:     "LightLoadEnable",
+				UniqueId: fmt.Sprintf("%s_light_load_enable", info.SerialNumber),
+				Device:   device,
+				Origin:   origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.ParameterStateTopic,
+				ValueTemplate: "{{ value_json.light_load_enable }}",
+			},
+			CommandConfig: CommandConfig{
+				CommandTopic:    info.ParameterCommandTopic,
+				CommandTemplate: "{\"light_load_enable\": \"{{ value }}\"}",
+			},
+		},
+		{
+			CommonConfig: CommonConfig{
+				Name:     "NeverPowerOff",
+				UniqueId: fmt.Sprintf("%s_never_power_off", info.SerialNumber),
+				Device:   device,
+				Origin:   origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.ParameterStateTopic,
+				ValueTemplate: "{{ value_json.never_power_off }}",
+			},
+			CommandConfig: CommandConfig{
+				CommandTopic:    info.ParameterCommandTopic,
+				CommandTemplate: "{\"never_power_off\": \"{{ value }}\"}",
+			},
+		},
 	}
 	return switches
 }

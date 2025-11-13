@@ -36,6 +36,8 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	allowGridCharging := misc.IntStringToOnOff(n.Obj.Noah.AllowGridCharging)
 	gridConnectionControl := misc.IntStringToOnOff(n.Obj.Noah.GridConnectionControl)
 	acCouplePowerControl := misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl)
+	lightLoadEnable := misc.IntStringToOnOff(n.Obj.Noah.LightLoadEnable)
+	neverPowerOff := misc.IntStringToOnOff(n.Obj.Noah.NeverPowerOff)
 
 	return models.ParameterPayload{
 		ChargingLimit:         &chargingLimit,
@@ -45,5 +47,7 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 		AllowGridCharging:     allowGridCharging,
 		GridConnectionControl: gridConnectionControl,
 		AcCouplePowerControl:  acCouplePowerControl,
+		LightLoadEnable:       lightLoadEnable,
+		NeverPowerOff:         neverPowerOff,
 	}
 }

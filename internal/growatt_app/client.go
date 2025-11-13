@@ -98,7 +98,7 @@ func (h *Client) Login() error {
 		"password":          {h.password},
 		"newLogin":          {"1"},
 		"phoneType":         {"android"},
-		"shinephoneVersion": {"8.3.0.2"},
+		"shinephoneVersion": {"8.3.6.0"},
 		"phoneSn":           {uuid.New().String()},
 		"ipvcpc":            {ipvcpc(h.username)},
 		"language":          {"1"},
@@ -161,6 +161,7 @@ func (h *Client) GetSystemStatus(serialNumber string) (*NoahStatus, error) {
 func (h *Client) GetNexaInfoBySn(serialNumber string) (*NexaInfo, error) {
 	var data NexaInfo
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getNexaInfoBySn", url.Values{
+		"language": {"1"},
 		"deviceSn": {serialNumber},
 	}, &data); err != nil {
 		return nil, err
@@ -169,6 +170,7 @@ func (h *Client) GetNexaInfoBySn(serialNumber string) (*NexaInfo, error) {
 	return &data, nil
 }
 
+// No longer used in app 8.3.1.0 and higher
 func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	var data BatteryInfo
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/getBatteryData", url.Values{
@@ -249,12 +251,47 @@ func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int
 	return nil
 }
 
+// "Power+ Function" setting
 func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
 	var data SetResponse
 	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
 		"serialNum": {serialNumber},
 		"type":      {"ac_couple_power_control"},
 		"param1":    {fmt.Sprintf("%d", _1000WEnable)},
+	}, &data); err != nil {
+		return err
+	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
+
+	return nil
+}
+
+// "AC Always On" setting
+func (h *Client) SetLightLoadEnable(serialNumber string, enable int) error {
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"light_load_enable"},
+		"param1":    {fmt.Sprintf("%d", enable)},
+	}, &data); err != nil {
+		return err
+	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
+
+	return nil
+}
+
+// "Always On" setting
+func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"never_power_off"},
+		"param1":    {fmt.Sprintf("%d", enable)},
 	}, &data); err != nil {
 		return err
 	}

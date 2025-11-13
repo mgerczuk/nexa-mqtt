@@ -8,4 +8,6 @@ type ParameterApplier interface {
 	SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error
 	SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error
 	SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error
+	SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error
+	SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error
 }

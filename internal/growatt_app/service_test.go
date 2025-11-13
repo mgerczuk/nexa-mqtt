@@ -509,6 +509,90 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	endpoint.AssertExpectations(t)
 }
 
+func TestSetLightLoadEnable_ServiceOk(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "light_load_enable", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	service.loggedIn = true
+	result := service.SetLightLoadEnable(device, models.ON)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetLightLoadEnable(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "light_load_enable", "0", errors.New("SetLightLoadEnable fails"), SetResponse{})
+
+	service.loggedIn = true
+	result := service.SetLightLoadEnable(device, models.OFF)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_ServiceOk(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "never_power_off", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	service.loggedIn = true
+	result := service.SetNeverPowerOff(device, models.ON)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetNeverPowerOff(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "never_power_off", "0", errors.New("SetNeverPowerOff fails"), SetResponse{})
+
+	service.loggedIn = true
+	result := service.SetNeverPowerOff(device, models.OFF)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
 func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
 	nexaInfo := NexaInfoObj{}
 

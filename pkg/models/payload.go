@@ -89,6 +89,8 @@ type ParameterPayload struct {
 	AllowGridCharging     OnOff     `json:"allow_grid_charging,omitempty"`
 	GridConnectionControl OnOff     `json:"grid_connection_control,omitempty"`
 	AcCouplePowerControl  OnOff     `json:"ac_couple_power_control,omitempty"`
+	LightLoadEnable       OnOff     `json:"light_load_enable,omitempty"`
+	NeverPowerOff         OnOff     `json:"never_power_off,omitempty"`
 }
 
 func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
