@@ -179,6 +179,12 @@ func setupSwitchTopics(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/switch/nexa_$SERIAL/AcCouplePowerControl/config"),
 		r.Replace(`{"name":"AcCouplePowerControl","unique_id":"$SERIAL_ac_couple_power_control","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.ac_couple_power_control }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"ac_couple_power_control\": \"{{ value }}\"}"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/switch/nexa_$SERIAL/LightLoadEnable/config"),
+		r.Replace(`{"name":"LightLoadEnable","unique_id":"$SERIAL_light_load_enable","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.light_load_enable }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"light_load_enable\": \"{{ value }}\"}"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/switch/nexa_$SERIAL/NeverPowerOff/config"),
+		r.Replace(`{"name":"NeverPowerOff","unique_id":"$SERIAL_never_power_off","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.never_power_off }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"never_power_off\": \"{{ value }}\"}"}`))
 }
 
 func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
@@ -192,6 +198,12 @@ func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/select/nexa_$SERIAL/AcCouplePowerControl/config"),
 		r.Replace(`{"name":"AcCouplePowerControl","unique_id":"$SERIAL_ac_couple_power_control","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.ac_couple_power_control }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"ac_couple_power_control\": \"{{ value }}\"}","options":["OFF","ON"]}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/select/nexa_$SERIAL/LightLoadEnable/config"),
+		r.Replace(`{"name":"LightLoadEnable","unique_id":"$SERIAL_light_load_enable","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.light_load_enable }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"light_load_enable\": \"{{ value }}\"}","options":["OFF","ON"]}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/select/nexa_$SERIAL/NeverPowerOff/config"),
+		r.Replace(`{"name":"NeverPowerOff","unique_id":"$SERIAL_never_power_off","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.never_power_off }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"never_power_off\": \"{{ value }}\"}","options":["OFF","ON"]}`))
 }
 
 func setupBatteryTopics(mockClient *MockMqttClient, serial string, name string) {
