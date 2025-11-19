@@ -79,6 +79,8 @@ func Test_parameterPayload(t *testing.T) {
 	nexaInfo.Obj.Noah.AcCouplePowerControl = "1"
 	nexaInfo.Obj.Noah.LightLoadEnable = "1"
 	nexaInfo.Obj.Noah.NeverPowerOff = "0"
+	nexaInfo.Obj.Noah.AntiBackflowEnable = "1"
+	nexaInfo.Obj.Noah.AntiBackflowPowerPercentage = "15"
 
 	pp := parameterPayload(&nexaInfo)
 
@@ -91,4 +93,6 @@ func Test_parameterPayload(t *testing.T) {
 	assert.Equal(t, models.ON, pp.AcCouplePowerControl)
 	assert.Equal(t, models.ON, pp.LightLoadEnable)
 	assert.Equal(t, models.OFF, pp.NeverPowerOff)
+	assert.Equal(t, models.ON, pp.AntiBackflowEnable)
+	assert.Equal(t, 15.0, *pp.AntiBackflowPowerPercentage)
 }

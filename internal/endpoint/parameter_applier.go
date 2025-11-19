@@ -10,4 +10,5 @@ type ParameterApplier interface {
 	SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error
 	SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error
 	SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error
+	SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error
 }

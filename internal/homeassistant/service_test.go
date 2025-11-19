@@ -154,6 +154,9 @@ func setupTopics(mockClient *MockMqttClient, serial string) {
 		r.Replace("homeassistant/number/nexa_$SERIAL/DischargeLimit/config"),
 		r.Replace(`{"name":"Discharge Limit","unique_id":"$SERIAL_discharge_limit","icon":"mdi:battery-arrow-down-outline","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.discharge_limit }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"discharge_limit\": {{ value }}}","state_class":"measurement","unit_of_measurement":"%","mode":"slider","step":1,"max":30}`))
 	mockClient.OnPublish(
+		r.Replace("homeassistant/number/nexa_$SERIAL/AntiBackflowPowerPercentage/config"),
+		r.Replace(`{"name":"Anti Backflow Power Percentage","unique_id":"$SERIAL_anti_backflow_power_percentage","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.anti_backflow_power_percentage }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"anti_backflow_power_percentage\": {{ value }}}","state_class":"measurement","unit_of_measurement":"%","mode":"slider","step":1,"max":100}`))
+	mockClient.OnPublish(
 		r.Replace("homeassistant/number/nexa_$SERIAL/DefaultACOutputPower/config"),
 		r.Replace(`{"name":"Default AC Output Power","unique_id":"$SERIAL_default_output_w","device_class":"power","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.default_output_w }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"default_output_w\": {{ value }}}","state_class":"measurement","unit_of_measurement":"W","mode":"slider","step":1,"max":800}`))
 	mockClient.OnPublish(
@@ -185,6 +188,9 @@ func setupSwitchTopics(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/switch/nexa_$SERIAL/NeverPowerOff/config"),
 		r.Replace(`{"name":"NeverPowerOff","unique_id":"$SERIAL_never_power_off","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.never_power_off }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"never_power_off\": \"{{ value }}\"}"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/switch/nexa_$SERIAL/AntiBackflowEnable/config"),
+		r.Replace(`{"name":"AntiBackflowEnable","unique_id":"$SERIAL_anti_backflow_enable","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.anti_backflow_enable }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"anti_backflow_enable\": \"{{ value }}\"}"}`))
 }
 
 func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
@@ -204,6 +210,9 @@ func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
 	mockClient.OnPublish(
 		r.Replace("homeassistant/select/nexa_$SERIAL/NeverPowerOff/config"),
 		r.Replace(`{"name":"NeverPowerOff","unique_id":"$SERIAL_never_power_off","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.never_power_off }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"never_power_off\": \"{{ value }}\"}","options":["OFF","ON"]}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/select/nexa_$SERIAL/AntiBackflowEnable/config"),
+		r.Replace(`{"name":"AntiBackflowEnable","unique_id":"$SERIAL_anti_backflow_enable","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/parameters","value_template":"{{ value_json.anti_backflow_enable }}","command_topic":"test/$SERIAL/parameters/set","command_template":"{\"anti_backflow_enable\": \"{{ value }}\"}","options":["OFF","ON"]}`))
 }
 
 func setupBatteryTopics(mockClient *MockMqttClient, serial string, name string) {

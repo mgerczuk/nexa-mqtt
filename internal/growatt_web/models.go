@@ -47,21 +47,24 @@ type GrowattPlantDevices struct {
 	} `json:"obj"`
 }
 
+// from /device/getNoahList
 type GrowattNoahListData struct {
-	AcCouplePowerControl  string `json:"acCouplePowerControl"`
-	Alias                 string `json:"alias"`
-	AllowGridCharging     string `json:"allowGridCharging"`
-	ChargingSocHighLimit  string `json:"chargingSocHighLimit"`
-	ChargingSocLowLimit   string `json:"chargingSocLowLimit"`
-	DefaultACCouplePower  string `json:"defaultACCouplePower"`
-	DefaultMode           string `json:"defaultMode"`
-	DeviceModel           string `json:"deviceModel"`
-	GridConnectionControl string `json:"gridConnectionControl"`
-	LightLoadEnable       string `json:"lightLoadEnable"`
-	NeverPowerOff         string `json:"neverPowerOff"`
-	PlantID               string `json:"plantId"`
-	Sn                    string `json:"sn"`
-	Version               string `json:"version"`
+	AcCouplePowerControl        string `json:"acCouplePowerControl"`
+	Alias                       string `json:"alias"`
+	AllowGridCharging           string `json:"allowGridCharging"`
+	AntiBackflowEnable          string `json:"antiBackflowEnable"`
+	AntiBackflowPowerPercentage string `json:"antiBackflowPowerPercentage"`
+	ChargingSocHighLimit        string `json:"chargingSocHighLimit"`
+	ChargingSocLowLimit         string `json:"chargingSocLowLimit"`
+	DefaultACCouplePower        string `json:"defaultACCouplePower"`
+	DefaultMode                 string `json:"defaultMode"`
+	DeviceModel                 string `json:"deviceModel"`
+	GridConnectionControl       string `json:"gridConnectionControl"`
+	LightLoadEnable             string `json:"lightLoadEnable"`
+	NeverPowerOff               string `json:"neverPowerOff"`
+	PlantID                     string `json:"plantId"`
+	Sn                          string `json:"sn"`
+	Version                     string `json:"version"`
 }
 
 type GrowattNoahList struct {

@@ -89,6 +89,22 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				CommandTemplate: "{\"never_power_off\": \"{{ value }}\"}",
 			},
 		},
+		{
+			CommonConfig: CommonConfig{
+				Name:     "AntiBackflowEnable",
+				UniqueId: fmt.Sprintf("%s_anti_backflow_enable", info.SerialNumber),
+				Device:   device,
+				Origin:   origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.ParameterStateTopic,
+				ValueTemplate: "{{ value_json.anti_backflow_enable }}",
+			},
+			CommandConfig: CommandConfig{
+				CommandTopic:    info.ParameterCommandTopic,
+				CommandTemplate: "{\"anti_backflow_enable\": \"{{ value }}\"}",
+			},
+		},
 	}
 	return switches
 }

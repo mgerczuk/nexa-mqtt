@@ -72,22 +72,25 @@ type NoahStatus struct {
 	ResponseContainerV2[NoahStatusObj]
 }
 
+// from /noahDeviceApi/nexa/getNexaInfoBySn
 type NexaInfoObj struct {
 	Noah struct {
-		AcCouplePowerControl  string   `json:"acCouplePowerControl"`
-		Alias                 string   `json:"alias"`
-		AllowGridCharging     string   `json:"allowGridCharging"`
-		BatSns                []string `json:"batSns"`
-		ChargingSocHighLimit  string   `json:"chargingSocHighLimit"`
-		ChargingSocLowLimit   string   `json:"chargingSocLowLimit"`
-		DefaultACCouplePower  string   `json:"defaultACCouplePower"`
-		DefaultMode           string   `json:"defaultMode"`
-		GridConnectionControl string   `json:"gridConnectionControl"`
-		LightLoadEnable       string   `json:"light_load_enable"`
-		Model                 string   `json:"model"`
-		NeverPowerOff         string   `json:"never_power_off"`
-		Version               string   `json:"version"`
-		WorkMode              string   `json:"workMode"`
+		AcCouplePowerControl        string   `json:"acCouplePowerControl"`
+		Alias                       string   `json:"alias"`
+		AllowGridCharging           string   `json:"allowGridCharging"`
+		AntiBackflowEnable          string   `json:"antiBackflowEnable"`
+		AntiBackflowPowerPercentage string   `json:"antiBackflowPowerPercentage"`
+		BatSns                      []string `json:"batSns"`
+		ChargingSocHighLimit        string   `json:"chargingSocHighLimit"`
+		ChargingSocLowLimit         string   `json:"chargingSocLowLimit"`
+		DefaultACCouplePower        string   `json:"defaultACCouplePower"`
+		DefaultMode                 string   `json:"defaultMode"`
+		GridConnectionControl       string   `json:"gridConnectionControl"`
+		LightLoadEnable             string   `json:"light_load_enable"`
+		Model                       string   `json:"model"`
+		NeverPowerOff               string   `json:"never_power_off"`
+		Version                     string   `json:"version"`
+		WorkMode                    string   `json:"workMode"`
 	} `json:"noah"`
 }
 

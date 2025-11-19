@@ -82,15 +82,17 @@ type BatteryPayload struct {
 }
 
 type ParameterPayload struct {
-	ChargingLimit         *float64  `json:"charging_limit,omitempty"`
-	DischargeLimit        *float64  `json:"discharge_limit,omitempty"`
-	DefaultACCouplePower  *float64  `json:"default_output_w,omitempty"`
-	DefaultMode           *WorkMode `json:"default_mode,omitempty"`
-	AllowGridCharging     OnOff     `json:"allow_grid_charging,omitempty"`
-	GridConnectionControl OnOff     `json:"grid_connection_control,omitempty"`
-	AcCouplePowerControl  OnOff     `json:"ac_couple_power_control,omitempty"`
-	LightLoadEnable       OnOff     `json:"light_load_enable,omitempty"`
-	NeverPowerOff         OnOff     `json:"never_power_off,omitempty"`
+	ChargingLimit               *float64  `json:"charging_limit,omitempty"`
+	DischargeLimit              *float64  `json:"discharge_limit,omitempty"`
+	DefaultACCouplePower        *float64  `json:"default_output_w,omitempty"`
+	DefaultMode                 *WorkMode `json:"default_mode,omitempty"`
+	AllowGridCharging           OnOff     `json:"allow_grid_charging,omitempty"`
+	GridConnectionControl       OnOff     `json:"grid_connection_control,omitempty"`
+	AcCouplePowerControl        OnOff     `json:"ac_couple_power_control,omitempty"`
+	LightLoadEnable             OnOff     `json:"light_load_enable,omitempty"`
+	NeverPowerOff               OnOff     `json:"never_power_off,omitempty"`
+	AntiBackflowEnable          OnOff     `json:"anti_backflow_enable,omitempty"`
+	AntiBackflowPowerPercentage *float64  `json:"anti_backflow_power_percentage,omitempty"`
 }
 
 func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {

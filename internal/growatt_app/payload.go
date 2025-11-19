@@ -38,16 +38,20 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	acCouplePowerControl := misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl)
 	lightLoadEnable := misc.IntStringToOnOff(n.Obj.Noah.LightLoadEnable)
 	neverPowerOff := misc.IntStringToOnOff(n.Obj.Noah.NeverPowerOff)
+	antiBackflowEnable := misc.IntStringToOnOff(n.Obj.Noah.AntiBackflowEnable)
+	antiBackflowPowerPercentage := misc.ParseFloat(n.Obj.Noah.AntiBackflowPowerPercentage)
 
 	return models.ParameterPayload{
-		ChargingLimit:         &chargingLimit,
-		DischargeLimit:        &dischargeLimit,
-		DefaultACCouplePower:  &defaultACCouplePower,
-		DefaultMode:           &defaultMode,
-		AllowGridCharging:     allowGridCharging,
-		GridConnectionControl: gridConnectionControl,
-		AcCouplePowerControl:  acCouplePowerControl,
-		LightLoadEnable:       lightLoadEnable,
-		NeverPowerOff:         neverPowerOff,
+		ChargingLimit:               &chargingLimit,
+		DischargeLimit:              &dischargeLimit,
+		DefaultACCouplePower:        &defaultACCouplePower,
+		DefaultMode:                 &defaultMode,
+		AllowGridCharging:           allowGridCharging,
+		GridConnectionControl:       gridConnectionControl,
+		AcCouplePowerControl:        acCouplePowerControl,
+		LightLoadEnable:             lightLoadEnable,
+		NeverPowerOff:               neverPowerOff,
+		AntiBackflowEnable:          antiBackflowEnable,
+		AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 	}
 }

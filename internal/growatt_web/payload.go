@@ -68,17 +68,20 @@ func parameterPayload(detailsData GrowattNoahListData) models.ParameterPayload {
 	dl := misc.ParseFloat(detailsData.ChargingSocLowLimit)
 	op := misc.ParseFloat(detailsData.DefaultACCouplePower)
 	mode := models.WorkModeFromString(detailsData.DefaultMode)
+	antiBackflowPowerPercentage := misc.ParseFloat(detailsData.AntiBackflowPowerPercentage)
 
 	paramPayload := models.ParameterPayload{
-		ChargingLimit:         &cl,
-		DischargeLimit:        &dl,
-		DefaultACCouplePower:  &op,
-		DefaultMode:           &mode,
-		AllowGridCharging:     misc.IntStringToOnOff(detailsData.AllowGridCharging),
-		GridConnectionControl: misc.IntStringToOnOff(detailsData.GridConnectionControl),
-		AcCouplePowerControl:  misc.IntStringToOnOff(detailsData.AcCouplePowerControl),
-		LightLoadEnable:       misc.IntStringToOnOff(detailsData.LightLoadEnable),
-		NeverPowerOff:         misc.IntStringToOnOff(detailsData.NeverPowerOff),
+		ChargingLimit:               &cl,
+		DischargeLimit:              &dl,
+		DefaultACCouplePower:        &op,
+		DefaultMode:                 &mode,
+		AllowGridCharging:           misc.IntStringToOnOff(detailsData.AllowGridCharging),
+		GridConnectionControl:       misc.IntStringToOnOff(detailsData.GridConnectionControl),
+		AcCouplePowerControl:        misc.IntStringToOnOff(detailsData.AcCouplePowerControl),
+		LightLoadEnable:             misc.IntStringToOnOff(detailsData.LightLoadEnable),
+		NeverPowerOff:               misc.IntStringToOnOff(detailsData.NeverPowerOff),
+		AntiBackflowEnable:          misc.IntStringToOnOff(detailsData.AntiBackflowEnable),
+		AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 	}
 	return paramPayload
 }

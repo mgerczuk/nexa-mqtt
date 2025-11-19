@@ -593,6 +593,48 @@ func TestSetNeverPowerOff_Fails(t *testing.T) {
 	endpoint.AssertExpectations(t)
 }
 
+func TestSetBackflow_ServiceOk(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "backflow_setting", "1", "50", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	service.loggedIn = true
+	result := service.SetBackflow(device, models.ON, 50)
+
+	assert.NoError(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetBackflow_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+
+	service.loggedIn = false
+	result := service.SetBackflow(device, models.ON, 50)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetBackflow_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "backflow_setting", "0", "50", errors.New("SetBackflow fails"), SetResponse{})
+
+	service.loggedIn = true
+	result := service.SetBackflow(device, models.OFF, 50)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
 func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models.NoahDevicePayload, mockEndpoint *MockEndpoint) {
 	nexaInfo := NexaInfoObj{}
 
@@ -600,11 +642,25 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	nexaInfo.Noah.DefaultMode = "0"
 	nexaInfo.Noah.DefaultACCouplePower = "100"
 	nexaInfo.Noah.ChargingSocLowLimit = "11"
+	nexaInfo.Noah.AllowGridCharging = "1"
+	nexaInfo.Noah.GridConnectionControl = "1"
+	nexaInfo.Noah.AcCouplePowerControl = "0"
+	nexaInfo.Noah.LightLoadEnable = "1"
+	nexaInfo.Noah.NeverPowerOff = "0"
+	nexaInfo.Noah.AntiBackflowEnable = "1"
+	nexaInfo.Noah.AntiBackflowPowerPercentage = "20"
 
 	chargingLimit := 95.0
 	dischargeLimit := 11.0
 	defaultACCouplePower := 100.0
 	defaultMode := models.WorkMode("load_first")
+	allowGridCharging := models.ON
+	gridConnectionControl := models.ON
+	acCouplePowerControl := models.OFF
+	lightLoadEnable := models.ON
+	neverPowerOff := models.OFF
+	antiBackflowEnable := models.ON
+	antiBackflowPowerPercentage := 20.0
 
 	// ----- enumerateDevices
 
@@ -716,10 +772,17 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:        &chargingLimit,
-			DischargeLimit:       &dischargeLimit,
-			DefaultACCouplePower: &defaultACCouplePower,
-			DefaultMode:          &defaultMode,
+			ChargingLimit:               &chargingLimit,
+			DischargeLimit:              &dischargeLimit,
+			DefaultACCouplePower:        &defaultACCouplePower,
+			DefaultMode:                 &defaultMode,
+			AllowGridCharging:           allowGridCharging,
+			GridConnectionControl:       gridConnectionControl,
+			AcCouplePowerControl:        acCouplePowerControl,
+			LightLoadEnable:             lightLoadEnable,
+			NeverPowerOff:               neverPowerOff,
+			AntiBackflowEnable:          antiBackflowEnable,
+			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
 }

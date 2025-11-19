@@ -510,6 +510,7 @@ func TestSetACCouplePowerControl_Fail(t *testing.T) {
 
 	mockHttpClient.AssertExpectations(t)
 }
+
 func TestSetLightLoadEnable_Ok(t *testing.T) {
 	mockHttpClient, client := setupMocks(t)
 
@@ -576,6 +577,42 @@ func TestSetNeverPowerOff_Fail(t *testing.T) {
 	mockHttpClient.OnSet1Param("serial123", "never_power_off", "1", errors.New("noahDeviceApi/nexa/set never_power_off fail"), SetResponse{})
 
 	err := client.SetNeverPowerOff("serial123", 1)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_Ok(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet2Params("serial123", "backflow_setting", "1", "50", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+
+	err := client.SetBackflow("serial123", 1, 50)
+
+	assert.NoError(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_FailResult(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet2Params("serial123", "backflow_setting", "1", "50", nil, SetResponse{ResponseContainerV2[any]{Result: 0}})
+
+	err := client.SetBackflow("serial123", 1, 50)
+
+	assert.Error(t, err)
+
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_Fail(t *testing.T) {
+	mockHttpClient, client := setupMocks(t)
+
+	mockHttpClient.OnSet2Params("serial123", "backflow_setting", "1", "50", errors.New("noahDeviceApi/nexa/set backflow_setting fail"), SetResponse{})
+
+	err := client.SetBackflow("serial123", 1, 50)
 
 	assert.Error(t, err)
 

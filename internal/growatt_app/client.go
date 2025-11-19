@@ -301,3 +301,21 @@ func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
 
 	return nil
 }
+
+// "Export Limitation" setting
+func (h *Client) SetBackflow(serialNumber string, enableLimit int, powerSettingPercent float64) error {
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+		"serialNum": {serialNumber},
+		"type":      {"backflow_setting"},
+		"param1":    {fmt.Sprintf("%d", enableLimit)},
+		"param2":    {fmt.Sprintf("%.0f", powerSettingPercent)},
+	}, &data); err != nil {
+		return err
+	}
+	if data.Result <= 0 {
+		return errors.New(data.Msg)
+	}
+
+	return nil
+}

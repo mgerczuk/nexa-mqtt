@@ -105,9 +105,12 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
                                      // public grid!
    "light_load_enable": "OFF", // ON allows the device to discharge at low power for
                                // extended periods. (AC Always On)
-   "never_power_off": "OFF" // When ON the device remains powered on and never shuts down
-                            // while connected to the grid. (Always On)
-                            // "allow_grid_charging" should be ON for this function
+   "never_power_off": "OFF", // When ON the device remains powered on and never shuts down
+                             // while connected to the grid. (Always On)
+                             // "allow_grid_charging" should be ON for this function
+   "anti_backflow_enable": "OFF", //When ON export to grid is limited
+   "anti_backflow_power_percentage": 20 // Seems to be max. allowed backflow in percent
+                                        // of maximum output (800/1000W)
 }
 ```
 
@@ -132,9 +135,12 @@ You can update the device's parameter settings by posting a message to the follo
                                      // public grid!
    "light_load_enable": "OFF", // ON allows the device to discharge at low power for
                                // extended periods. (AC Always On)
-   "never_power_off": "OFF" // When ON the device remains powered on and never shuts down
-                            // while connected to the grid. (Always On)
-                            // "allow_grid_charging" should be ON for this function
+   "never_power_off": "OFF", // When ON the device remains powered on and never shuts down
+                             // while connected to the grid. (Always On)
+                             // "allow_grid_charging" should be ON for this function
+   "anti_backflow_enable": "OFF", //When ON export to grid is limited
+   "anti_backflow_power_percentage": 20 // Seems to be max. allowed backflow in percent
+                                        // of maximum output (800/1000W)
 }
 ```
 

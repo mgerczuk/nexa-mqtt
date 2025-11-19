@@ -245,6 +245,21 @@ func (g *GrowattAppService) SetNeverPowerOff(device models.NoahDevicePayload, en
 	return nil
 }
 
+func (g *GrowattAppService) SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error {
+	slog.Info("trying to set backflow (app)", slog.String("device", device.Serial), slog.String("enableLimit", string(enableLimit)), slog.Float64("powerSettingPercent", powerSettingPercent))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set backflow (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetBackflow(device.Serial, misc.OnOffToInt(enableLimit), powerSettingPercent); err != nil {
+		slog.Error("unable to set backflow (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
 func (g *GrowattAppService) poll(ctx context.Context) {
 	slog.Info("start polling growatt (app)",
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),

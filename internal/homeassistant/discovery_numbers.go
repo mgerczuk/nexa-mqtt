@@ -77,6 +77,29 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 			Max:               30,
 			UnitOfMeasurement: UnitPercent,
 		},
+		{
+			CommonConfig: CommonConfig{
+				Name:     "Anti Backflow Power Percentage",
+				UniqueId: fmt.Sprintf("%s_anti_backflow_power_percentage", info.SerialNumber),
+				Icon:     "",
+				Device:   device,
+				Origin:   origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.ParameterStateTopic,
+				ValueTemplate: "{{ value_json.anti_backflow_power_percentage }}",
+			},
+			CommandConfig: CommandConfig{
+				CommandTopic:    info.ParameterCommandTopic,
+				CommandTemplate: "{\"anti_backflow_power_percentage\": {{ value }}}",
+			},
+			StateClass:        StateClassMeasurement,
+			Mode:              ModeSlider,
+			Step:              1,
+			Min:               0,
+			Max:               100,
+			UnitOfMeasurement: UnitPercent,
+		},
 	}
 
 	return numbers

@@ -176,6 +176,10 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 		e.param_applier.SetNeverPowerOff(dev, e.lastParameter.NeverPowerOff)
 	}
 
+	if e.newParameter.AntiBackflowEnable != "" || e.newParameter.AntiBackflowPowerPercentage != nil {
+		e.param_applier.SetBackflow(dev, e.lastParameter.AntiBackflowEnable, *e.lastParameter.AntiBackflowPowerPercentage)
+	}
+
 	e.newParameter = models.ParameterPayload{}
 	e.publishTimer = nil
 

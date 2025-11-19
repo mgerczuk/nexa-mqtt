@@ -338,16 +338,24 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	allowGridCharging := models.OFF
 	gridConnectionControl := models.ON
 	acCouplePowerControl := models.ON
+	lightLoadEnable := models.OFF
+	neverPowerOff := models.ON
+	antiBackflowEnable := models.ON
+	antiBackflowPowerPercentage := 37.0
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
 		{
-			ChargingSocHighLimit:  "95",
-			ChargingSocLowLimit:   "11",
-			DefaultMode:           "0",
-			DefaultACCouplePower:  "100",
-			AllowGridCharging:     "0",
-			GridConnectionControl: "1",
-			AcCouplePowerControl:  "1",
+			ChargingSocHighLimit:        "95",
+			ChargingSocLowLimit:         "11",
+			DefaultMode:                 "0",
+			DefaultACCouplePower:        "100",
+			AllowGridCharging:           "0",
+			GridConnectionControl:       "1",
+			AcCouplePowerControl:        "1",
+			LightLoadEnable:             "0",
+			NeverPowerOff:               "1",
+			AntiBackflowEnable:          "1",
+			AntiBackflowPowerPercentage: "37",
 		},
 	}}, nil)
 
@@ -355,13 +363,17 @@ func Test_pollParameterData_Ok(t *testing.T) {
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:         &chargingLimit,
-			DischargeLimit:        &dischargeLimit,
-			DefaultACCouplePower:  &defaultACCouplePower,
-			DefaultMode:           &defaultMode,
-			AllowGridCharging:     allowGridCharging,
-			GridConnectionControl: gridConnectionControl,
-			AcCouplePowerControl:  acCouplePowerControl,
+			ChargingLimit:               &chargingLimit,
+			DischargeLimit:              &dischargeLimit,
+			DefaultACCouplePower:        &defaultACCouplePower,
+			DefaultMode:                 &defaultMode,
+			AllowGridCharging:           allowGridCharging,
+			GridConnectionControl:       gridConnectionControl,
+			AcCouplePowerControl:        acCouplePowerControl,
+			LightLoadEnable:             lightLoadEnable,
+			NeverPowerOff:               neverPowerOff,
+			AntiBackflowEnable:          antiBackflowEnable,
+			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	)
 
@@ -555,16 +567,24 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	allowGridCharging := models.ON
 	gridConnectionControl := models.OFF
 	acCouplePowerControl := models.OFF
+	lightLoadEnable := models.ON
+	neverPowerOff := models.OFF
+	antiBackflowEnable := models.ON
+	antiBackflowPowerPercentage := 45.0
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
 		{
-			ChargingSocHighLimit:  "95",
-			ChargingSocLowLimit:   "11",
-			DefaultMode:           "0",
-			DefaultACCouplePower:  "100",
-			AllowGridCharging:     "1",
-			GridConnectionControl: "0",
-			AcCouplePowerControl:  "0",
+			ChargingSocHighLimit:        "95",
+			ChargingSocLowLimit:         "11",
+			DefaultMode:                 "0",
+			DefaultACCouplePower:        "100",
+			AllowGridCharging:           "1",
+			GridConnectionControl:       "0",
+			AcCouplePowerControl:        "0",
+			LightLoadEnable:             "1",
+			NeverPowerOff:               "0",
+			AntiBackflowEnable:          "1",
+			AntiBackflowPowerPercentage: "45",
 		},
 	}}, nil)
 
@@ -572,13 +592,17 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:         &chargingLimit,
-			DischargeLimit:        &dischargeLimit,
-			DefaultACCouplePower:  &defaultACCouplePower,
-			DefaultMode:           &defaultMode,
-			AllowGridCharging:     allowGridCharging,
-			GridConnectionControl: gridConnectionControl,
-			AcCouplePowerControl:  acCouplePowerControl,
+			ChargingLimit:               &chargingLimit,
+			DischargeLimit:              &dischargeLimit,
+			DefaultACCouplePower:        &defaultACCouplePower,
+			DefaultMode:                 &defaultMode,
+			AllowGridCharging:           allowGridCharging,
+			GridConnectionControl:       gridConnectionControl,
+			AcCouplePowerControl:        acCouplePowerControl,
+			LightLoadEnable:             lightLoadEnable,
+			NeverPowerOff:               neverPowerOff,
+			AntiBackflowEnable:          antiBackflowEnable,
+			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
 }
