@@ -201,7 +201,7 @@ func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePay
 }
 
 func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
-	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(_1000WEnable)))
+	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.String("1000WEnable", string(_1000WEnable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("device", device.Serial))
 		return err
@@ -209,6 +209,51 @@ func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayl
 
 	if err := g.client.SetACCouplePowerControl(device.Serial, misc.OnOffToInt(_1000WEnable)); err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
+	slog.Info("trying to set light load enable (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set light load enable (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetLightLoadEnable(device.Serial, misc.OnOffToInt(enable)); err != nil {
+		slog.Error("unable to set light load enable (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error {
+	slog.Info("trying to set never power off (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set set never power off (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetNeverPowerOff(device.Serial, misc.OnOffToInt(enable)); err != nil {
+		slog.Error("unable to set set never power off (app)", slog.String("error", err.Error()))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattAppService) SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error {
+	slog.Info("trying to set backflow (app)", slog.String("device", device.Serial), slog.String("enableLimit", string(enableLimit)), slog.Float64("powerSettingPercent", powerSettingPercent))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set backflow (app)", slog.String("device", device.Serial))
+		return err
+	}
+
+	if err := g.client.SetBackflow(device.Serial, misc.OnOffToInt(enableLimit), powerSettingPercent); err != nil {
+		slog.Error("unable to set backflow (app)", slog.String("error", err.Error()))
 		return err
 	}
 

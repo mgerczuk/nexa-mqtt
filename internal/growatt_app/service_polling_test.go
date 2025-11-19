@@ -142,6 +142,10 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	nexaInfo.Noah.AllowGridCharging = "0"
 	nexaInfo.Noah.GridConnectionControl = "1"
 	nexaInfo.Noah.AcCouplePowerControl = "1"
+	nexaInfo.Noah.LightLoadEnable = "0"
+	nexaInfo.Noah.NeverPowerOff = "1"
+	nexaInfo.Noah.AntiBackflowEnable = "1"
+	nexaInfo.Noah.AntiBackflowPowerPercentage = "15"
 
 	chargingLimit := 95.0
 	dischargeLimit := 11.0
@@ -150,6 +154,10 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	allowGridCharging := models.OFF
 	gridConnectionControl := models.ON
 	acCouplePowerControl := models.ON
+	lightLoadEnable := models.OFF
+	neverPowerOff := models.ON
+	antiBackflowEnable := models.ON
+	antiBackflowPowerPercentage := 15.0
 
 	mockHttpClient.OnGetNoahInfo(
 		device.Serial,
@@ -161,13 +169,17 @@ func Test_pollParameterData_Ok(t *testing.T) {
 		"PublishParameterData",
 		device,
 		models.ParameterPayload{
-			ChargingLimit:         &chargingLimit,
-			DischargeLimit:        &dischargeLimit,
-			DefaultACCouplePower:  &defaultACCouplePower,
-			DefaultMode:           &defaultMode,
-			AllowGridCharging:     allowGridCharging,
-			GridConnectionControl: gridConnectionControl,
-			AcCouplePowerControl:  acCouplePowerControl,
+			ChargingLimit:               &chargingLimit,
+			DischargeLimit:              &dischargeLimit,
+			DefaultACCouplePower:        &defaultACCouplePower,
+			DefaultMode:                 &defaultMode,
+			AllowGridCharging:           allowGridCharging,
+			GridConnectionControl:       gridConnectionControl,
+			AcCouplePowerControl:        acCouplePowerControl,
+			LightLoadEnable:             lightLoadEnable,
+			NeverPowerOff:               neverPowerOff,
+			AntiBackflowEnable:          antiBackflowEnable,
+			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	)
 

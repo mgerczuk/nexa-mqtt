@@ -72,43 +72,26 @@ type NoahStatus struct {
 	ResponseContainerV2[NoahStatusObj]
 }
 
+// from /noahDeviceApi/nexa/getNexaInfoBySn
 type NexaInfoObj struct {
 	Noah struct {
-		TimeSegment                 []map[string]string `json:"time_segment"`
-		AntiBackflowEnable          string              `json:"antiBackflowEnable"`          // new
-		AcCouplePowerControl        string              `json:"acCouplePowerControl"`        // new
-		AmmeterModel                string              `json:"ammeterModel"`                // new
-		AmmeterSn                   string              `json:"ammeterSn"`                   // new
-		ShellyList                  []interface{}       `json:"shellyList"`                  // new
-		GridSet                     string              `json:"gridSet"`                     // new
-		AntiBackflowPowerPercentage string              `json:"antiBackflowPowerPercentage"` // new
-		BatSns                      []string            `json:"batSns"`
-		ManName                     string              `json:"manName"`
-		AssociatedInvSn             string              `json:"associatedInvSn"`
-		PlantID                     string              `json:"plantId"`
-		ChargingSocHighLimit        string              `json:"chargingSocHighLimit"`
-		DefaultMode                 string              `json:"defaultMode"`          // new
-		DefaultACCouplePower        string              `json:"defaultACCouplePower"` // new
-		Version                     string              `json:"version"`
-		DeviceSn                    string              `json:"deviceSn"`
-		ChargingSocLowLimit         string              `json:"chargingSocLowLimit"`
-		FormulaMoney                string              `json:"formulaMoney"`
-		Alias                       string              `json:"alias"`
-		Model                       string              `json:"model"`
-		CtType                      string              `json:"ctType"`                // new
-		AllowGridCharging           string              `json:"allowGridCharging"`     // new
-		GridConnectionControl       string              `json:"gridConnectionControl"` // new
-		PlantName                   string              `json:"plantName"`
-		AssociatedInvManAndModel    int                 `json:"associatedInvManAndModel"`
-		TempType                    string              `json:"tempType"`
-		MoneyUnitText               string              `json:"moneyUnitText"`
+		AcCouplePowerControl        string   `json:"acCouplePowerControl"`
+		Alias                       string   `json:"alias"`
+		AllowGridCharging           string   `json:"allowGridCharging"`
+		AntiBackflowEnable          string   `json:"antiBackflowEnable"`
+		AntiBackflowPowerPercentage string   `json:"antiBackflowPowerPercentage"`
+		BatSns                      []string `json:"batSns"`
+		ChargingSocHighLimit        string   `json:"chargingSocHighLimit"`
+		ChargingSocLowLimit         string   `json:"chargingSocLowLimit"`
+		DefaultACCouplePower        string   `json:"defaultACCouplePower"`
+		DefaultMode                 string   `json:"defaultMode"`
+		GridConnectionControl       string   `json:"gridConnectionControl"`
+		LightLoadEnable             string   `json:"light_load_enable"`
+		Model                       string   `json:"model"`
+		NeverPowerOff               string   `json:"never_power_off"`
+		Version                     string   `json:"version"`
+		WorkMode                    string   `json:"workMode"`
 	} `json:"noah"`
-	PlantList []struct {
-		PlantID      string      `json:"plantId"`
-		PlantImgName interface{} `json:"plantImgName"`
-		PlantName    string      `json:"plantName"`
-	} `json:"plantList"`
-	UnitList map[string]string `json:"unitList"` // new
 }
 
 type NexaInfo struct {

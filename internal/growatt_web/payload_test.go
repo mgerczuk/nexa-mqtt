@@ -92,13 +92,17 @@ func Test_batteryPayload(t *testing.T) {
 
 func Test_parameterPayload(t *testing.T) {
 	detailsData := GrowattNoahListData{
-		ChargingSocHighLimit:  "95",
-		ChargingSocLowLimit:   "11",
-		DefaultACCouplePower:  "270",
-		DefaultMode:           "0",
-		AllowGridCharging:     "1",
-		GridConnectionControl: "0",
-		AcCouplePowerControl:  "1",
+		ChargingSocHighLimit:        "95",
+		ChargingSocLowLimit:         "11",
+		DefaultACCouplePower:        "270",
+		DefaultMode:                 "0",
+		AllowGridCharging:           "1",
+		GridConnectionControl:       "0",
+		AcCouplePowerControl:        "1",
+		LightLoadEnable:             "1",
+		NeverPowerOff:               "0",
+		AntiBackflowEnable:          "1",
+		AntiBackflowPowerPercentage: "77",
 	}
 
 	payload := parameterPayload(detailsData)
@@ -110,4 +114,8 @@ func Test_parameterPayload(t *testing.T) {
 	assert.Equal(t, models.ON, payload.AllowGridCharging)
 	assert.Equal(t, models.OFF, payload.GridConnectionControl)
 	assert.Equal(t, models.ON, payload.AcCouplePowerControl)
+	assert.Equal(t, models.ON, payload.LightLoadEnable)
+	assert.Equal(t, models.OFF, payload.NeverPowerOff)
+	assert.Equal(t, models.ON, payload.AntiBackflowEnable)
+	assert.Equal(t, 77.0, *payload.AntiBackflowPowerPercentage)
 }

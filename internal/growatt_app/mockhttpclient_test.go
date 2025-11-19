@@ -171,6 +171,7 @@ func (m *MockHttpClient) OnGetNoahInfo(serialNumber string, result NexaInfoObj, 
 		"https://server-api.growatt.com/noahDeviceApi/nexa/getNexaInfoBySn",
 		"",
 		url.Values{
+			"language": {"1"},
 			"deviceSn": {serialNumber},
 		},
 		&NexaInfo{},

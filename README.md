@@ -69,7 +69,7 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
   "battery_num": 2, // number of batteries
   "generation_total_kwh": 319.8, // total energy generation
   "generation_today_kwh": 3.1, // engery generation today
-  "work_mode": "load_first", // current work mode: load_first or battery_first
+  "work_mode": "load_first", // current work mode: load_first, battery_first or smart_self_use
   "status": "on_grid" // connectivity status: offline, smart_self_use, fault, on_grid or off_grid
 }
 ```
@@ -97,11 +97,20 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 10, // battery discharge limit in percent, between 0 and 30
    "default_output_w": 150, // desired system AC output power in watts, between 0 and 800 in steps of 10
-   "default_mode": "load_first", // or battery_first
+   "default_mode": "load_first", // load_first, battery_first or smart_self_use
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
-   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
-                                    // Note: this may be forbidden when connected to public grid!
+   "ac_couple_power_control": "OFF", // ON for 1000W max. AC output. (Power+ Function)
+                                     // Note: this may be forbidden when connected to
+                                     // public grid!
+   "light_load_enable": "OFF", // ON allows the device to discharge at low power for
+                               // extended periods. (AC Always On)
+   "never_power_off": "OFF", // When ON the device remains powered on and never shuts down
+                             // while connected to the grid. (Always On)
+                             // "allow_grid_charging" should be ON for this function
+   "anti_backflow_enable": "OFF", //When ON export to grid is limited in smart_self_use mode
+   "anti_backflow_power_percentage": 20 // Seems to be max. allowed backflow in percent
+                                        // of maximum output (800/1000W)
 }
 ```
 
@@ -118,11 +127,20 @@ You can update the device's parameter settings by posting a message to the follo
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
    "default_output_w": 800, // desired system AC output power in watts, between 0 and 800 in steps of 10 
-   "default_mode": "load_first", // or battery_first
+   "default_mode": "load_first", // load_first, battery_first or smart_self_use
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
-   "ac_couple_power_control": "OFF" // ON for 1000W max. AC output. 
-                                    // Note: this may be forbidden when connected to public grid!
+   "ac_couple_power_control": "OFF", // ON for 1000W max. AC output. (Power+ Function)
+                                     // Note: this may be forbidden when connected to
+                                     // public grid!
+   "light_load_enable": "OFF", // ON allows the device to discharge at low power for
+                               // extended periods. (AC Always On)
+   "never_power_off": "OFF", // When ON the device remains powered on and never shuts down
+                             // while connected to the grid. (Always On)
+                             // "allow_grid_charging" should be ON for this function
+   "anti_backflow_enable": "OFF", //When ON export to grid is limited in smart_self_use mode
+   "anti_backflow_power_percentage": 20 // Seems to be max. allowed backflow in percent
+                                        // of maximum output (800/1000W)
 }
 ```
 
