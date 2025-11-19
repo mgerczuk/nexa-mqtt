@@ -144,7 +144,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				StateTopic:    info.StateTopic,
 				ValueTemplate: "{{ value_json.work_mode }}",
 			},
-			Options: []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
+			Options: []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst, models.SmartSelfUse},
 		},
 		{
 			CommonConfig: CommonConfig{

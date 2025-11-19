@@ -46,18 +46,25 @@ func StatusFromString(s string) string {
 }
 
 func WorkModeFromString(s string) WorkMode {
-	if s == "0" {
+	switch s {
+	case "0":
 		return WorkModeLoadFirst
+	case "1":
+		return WorkModeBatteryFirst
+	case "2":
+		return SmartSelfUse
 	}
 	return WorkModeBatteryFirst
 }
 
 func IntFromWorkMode(s WorkMode) int {
-	if s == WorkModeLoadFirst {
+	switch s {
+	case WorkModeLoadFirst:
 		return 0
-	}
-	if s == WorkModeBatteryFirst {
+	case WorkModeBatteryFirst:
 		return 1
+	case SmartSelfUse:
+		return 2
 	}
 	return -1
 }

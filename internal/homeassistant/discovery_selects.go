@@ -26,7 +26,7 @@ func generateSelectDiscoveryPayload(appVersion string, info DeviceInfo) []Select
 				CommandTopic:    info.ParameterCommandTopic,
 				CommandTemplate: "{\"default_mode\": \"{{ value }}\"}",
 			},
-			Options:   []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst},
+			Options:   []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst, models.SmartSelfUse},
 			Component: "select",
 		},
 	}
