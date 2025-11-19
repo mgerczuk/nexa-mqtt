@@ -124,7 +124,7 @@ type Number struct {
 	StateClass        StateClass `json:"state_class,omitempty"`
 	UnitOfMeasurement Unit       `json:"unit_of_measurement,omitempty"`
 	Mode              Mode       `json:"mode,omitempty"`
-	Step              float64    `json:"step,omitempty"`
-	Min               float64    `json:"min,omitempty"`
-	Max               float64    `json:"max,omitempty"`
+	Step              float64    `json:"step"`
+	Min               float64    `json:"min"`
+	Max               float64    `json:"max"`
 }
