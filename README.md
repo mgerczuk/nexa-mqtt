@@ -96,7 +96,7 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 10, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 150, // desired system AC output power in watts, between 0 and 800 in steps of 10
+   "default_output_w": 150, // desired system AC output power in watts, between 0 and 1000 in steps of 10
    "default_mode": "load_first", // load_first, battery_first or smart_self_use
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
@@ -126,7 +126,7 @@ You can update the device's parameter settings by posting a message to the follo
 {
    "charging_limit": 100, // battery charging limit in percent, between 70 and 100
    "discharge_limit": 9, // battery discharge limit in percent, between 0 and 30
-   "default_output_w": 800, // desired system AC output power in watts, between 0 and 800 in steps of 10 
+   "default_output_w": 800, // desired system AC output power in watts, between 0 and 1000 in steps of 10 
    "default_mode": "load_first", // load_first, battery_first or smart_self_use
    "allow_grid_charging": "OFF", // ON when battery may be charged from grid
    "grid_connection_control": "OFF", // ON for off-grid mode
