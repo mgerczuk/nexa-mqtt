@@ -28,7 +28,7 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 			Mode:              ModeSlider,
 			Step:              1,
 			Min:               0,
-			Max:               800,
+			Max:               1000,
 			UnitOfMeasurement: UnitWatt,
 		},
 		{
