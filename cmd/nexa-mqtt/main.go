@@ -183,8 +183,15 @@ func NewApp(cfg config.Config) *App {
 }
 
 func connectMqtt(mqttCfg config.Mqtt, app *App) {
+	var brokerUrl string
+	if mqttCfg.BrokerURL != "" {
+		brokerUrl = mqttCfg.BrokerURL
+	} else {
+		brokerUrl = fmt.Sprintf("tcp://%s:%d", mqttCfg.Host, mqttCfg.Port)
+	}
+
 	opts := mqtt.NewClientOptions().
-		AddBroker(fmt.Sprintf("tcp://%s:%d", mqttCfg.Host, mqttCfg.Port)).
+		AddBroker(brokerUrl).
 		SetClientID(mqttCfg.ClientId).
 		SetUsername(mqttCfg.Username).
 		SetPassword(mqttCfg.Password)
@@ -200,7 +207,7 @@ func connectMqtt(mqttCfg config.Mqtt, app *App) {
 	}
 
 	c := mqtt.NewClient(opts)
-	slog.Info("connecting to mqtt broker", slog.String("host", mqttCfg.Host), slog.Int("port", mqttCfg.Port), slog.String("clientId", mqttCfg.ClientId), slog.String("username", mqttCfg.Username))
+	slog.Info("connecting to mqtt broker", slog.String("brokerUrl", brokerUrl), slog.String("host", mqttCfg.Host), slog.Int("port", mqttCfg.Port), slog.String("clientId", mqttCfg.ClientId), slog.String("username", mqttCfg.Username))
 	if token := c.Connect(); token.Wait() && token.Error() != nil {
 		slog.Error("could not connect to mqtt broker", slog.String("error", token.Error().Error()))
 		misc.Panic(token.Error())

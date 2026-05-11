@@ -27,6 +27,7 @@ type Growatt struct {
 }
 
 type Mqtt struct {
+	BrokerURL   string
 	Host        string
 	Port        int
 	ClientId    string
@@ -58,6 +59,7 @@ func Get() Config {
 				Password:     getEnv("GROWATT_PASSWORD", ""),
 			},
 			Mqtt: Mqtt{
+				BrokerURL:   getEnv("MQTT_BROKER_URL", ""),
 				Host:        getEnv("MQTT_HOST", ""),
 				Port:        s2i(getEnv("MQTT_PORT", "1883")),
 				ClientId:    getEnv("MQTT_CLIENT_ID", "nexa-mqtt"),
@@ -75,13 +77,14 @@ func Get() Config {
 }
 
 func Validate() error {
-	if len(Get().Mqtt.Host) == 0 {
-		return errors.New("MQTT_HOST is required")
+	config := Get()
+	if len(config.Mqtt.Host) == 0 && len(config.Mqtt.BrokerURL) == 0 {
+		return errors.New("MQTT_HOST or MQTT_BROKER_URL is required")
 	}
-	if len(Get().Growatt.Username) == 0 {
+	if len(config.Growatt.Username) == 0 {
 		return errors.New("GROWATT_USERNAME is required")
 	}
-	if len(Get().Growatt.Password) == 0 {
+	if len(config.Growatt.Password) == 0 {
 		return errors.New("GROWATT_PASSWORD is required")
 	}
 	return nil
