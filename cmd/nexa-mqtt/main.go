@@ -184,8 +184,8 @@ func NewApp(cfg config.Config) *App {
 
 func connectMqtt(mqttCfg config.Mqtt, app *App) {
 	var brokerUrl string
-	if mqttCfg.BrokerUrl != "" {
-		brokerUrl = mqttCfg.BrokerUrl
+	if mqttCfg.BrokerURL != "" {
+		brokerUrl = mqttCfg.BrokerURL
 	} else {
 		brokerUrl = fmt.Sprintf("tcp://%s:%d", mqttCfg.Host, mqttCfg.Port)
 	}
