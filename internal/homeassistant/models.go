@@ -10,6 +10,9 @@ const (
 	DeviceClassPower        DeviceClass = "power"
 	DeviceClassConnectivity DeviceClass = "connectivity"
 	DeviceClassEnum         DeviceClass = "enum"
+	DeviceClassTimestamp    DeviceClass = "timestamp"
+	DeviceClassVoltage      DeviceClass = "voltage"
+	DeviceClassCurrent      DeviceClass = "current"
 )
 
 type StateClass string
@@ -26,6 +29,8 @@ const (
 	UnitWatt          Unit = "W"
 	UnitPercent       Unit = "%"
 	UnitCelsius       Unit = "°C"
+	UnitVoltage       Unit = "V"
+	UnitCurrent       Unit = "A"
 )
 
 type Icon string

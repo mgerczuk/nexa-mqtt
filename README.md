@@ -26,7 +26,7 @@ You can configure `nexa-mqtt` using the following environment variables:
 |:-----------------------------------|:----------------------------------------------------------------------------------------|:-------------------------------| 
 | `LOG_LEVEL`                        | Sets the logging level of the application                                               | INFO                           |
 | `POLLING_INTERVAL`                 | Time in seconds between fetching new status data                                        | 30                             |
-| `BATTERY_DETAILS_POLLING_INTERVAL` | Time in seconds between fetching battery details (per battery SoC & temperature).       | 180                            |
+| `BATTERY_DETAILS_POLLING_INTERVAL` | Time in seconds to wait after fetching battery details and PV input data before the next polling cycle starts. | 180     |
 | `PARAMETER_POLLING_INTERVAL`       | Time in seconds between fetching parameter data (system-output-power, charging limits). | 180                            |
 | `GROWATT_API_MODE`                 | Growatt API mode, either `app`, `web`, `web+app`                                        | web+app                        |
 | `GROWATT_USERNAME`                 | Your Growatt account username (required)                                                | -                              |
@@ -77,18 +77,33 @@ The following MQTT topics are used by `nexa-mqtt` to publish data:
 
 ### 2. Battery Information
 - **Topic:** `nexa2mqtt/{DEVICE_SERIAL}/BAT{BAT_NR}`
-- **Description:** This topic contains information about the device's batteries. Replace `{BAT_NR}` with the battery number (e.g., BAT0, BAT1, BAT2, etc.).
+- **Description:** This topic contains information about the device's batteries. Replace `{BAT_NR}` with the battery number (e.g., BAT0, BAT1, BAT2, etc.). Battery information is updated about every 3 minutes.
 - **Example:** `nexa2mqtt/0ABC00AA15AA00AA/BAT0`
 - **Example Payload:**
 ```json
 {
+   "time": "2025-05-21T10:54:51+02:00", // timestamp
    "serial": "0ABC00AA15AA00AA", // battery serial number
    "soc": 42, // current state of charge of this battery
-   "temp": 26 // current temperatur of this battery
+   "temp": 26 // current temperature of this battery
 }
 ```
 
-### 3. Device Configuration
+### 3. PV Input Information
+- **Topic:** `nexa2mqtt/{DEVICE_SERIAL}/PV{0..3}`
+- **Description:** This topic contains information about the 4 PV inputs. PV input data is updated about every 3 minutes. PV input data is only available in API modes **`web`** and **`web+app`**
+- **Example:** `nexa2mqtt/0ABC00AA15AA00AA/PV1`
+- **Example Payload:**
+```json
+{
+   "time": "2025-05-21T10:54:51+02:00", // timestamp
+   "voltage": 33.25,
+   "current": 1.72,
+   "temp": 26
+}
+```
+
+### 4. Device Configuration
 - **Topic:** `nexa2mqtt/{DEVICE_SERIAL}/parameters`
 - **Description:** This topic contains the current configuration parameters of the device.
 - **Example:** `nexa2mqtt/0ABC00AA15AA00AA/parameters`

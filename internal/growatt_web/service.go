@@ -192,6 +192,13 @@ func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload) {
 			}
 
 			g.endpoint.PublishBatteryDetails(device, batteries)
+
+			var pvs []models.PvPayload
+			for i := range 4 {
+				pvs = append(pvs, pvPayload(historyData, i))
+			}
+
+			g.endpoint.PublishPvDetails(device, pvs)
 		}
 	}
 }

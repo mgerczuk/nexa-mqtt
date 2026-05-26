@@ -60,6 +60,14 @@ func (e *Endpoint) SetDevices(devices []models.NoahDevicePayload) {
 				StateTopic: stateTopicBattery(e.opts.TopicPrefix, dev.Serial, i),
 			})
 		}
+
+		var pvs []homeassistant.PVInfo
+		for i := range 4 {
+			pvs = append(pvs, homeassistant.PVInfo{
+				StateTopic: stateTopicPv(e.opts.TopicPrefix, dev.Serial, i),
+			})
+		}
+
 		haDevices = append(haDevices, homeassistant.DeviceInfo{
 			SerialNumber:          dev.Serial,
 			Model:                 dev.Model,
@@ -69,6 +77,7 @@ func (e *Endpoint) SetDevices(devices []models.NoahDevicePayload) {
 			ParameterStateTopic:   parameterStateTopic(e.opts.TopicPrefix, dev.Serial),
 			ParameterCommandTopic: parameterCommandTopic(e.opts.TopicPrefix, dev.Serial),
 			Batteries:             bats,
+			PVs:                   pvs,
 		})
 	}
 
@@ -96,6 +105,20 @@ func (e *Endpoint) PublishBatteryDetails(device models.NoahDevicePayload, detail
 	}
 	logData = append(logData, slog.String("device", device.Serial))
 	slog.Debug("battery data sent to mqtt", logData...)
+}
+
+func (e *Endpoint) PublishPvDetails(device models.NoahDevicePayload, details []models.PvPayload) {
+	var logData []any
+	for i, pv := range details {
+		if b, err := json.Marshal(pv); err != nil {
+			slog.Error("could not marshal pv data", slog.String("error", err.Error()))
+		} else {
+			e.opts.MqttClient.Publish(stateTopicPv(e.opts.TopicPrefix, device.Serial, i), 0, false, string(b))
+			logData = append(logData, slog.String(fmt.Sprintf("PV%d", i), string(b)))
+		}
+	}
+	logData = append(logData, slog.String("device", device.Serial))
+	slog.Debug("pv data sent to mqtt", logData...)
 }
 
 func (e *Endpoint) PublishParameterData(device models.NoahDevicePayload, param models.ParameterPayload) {

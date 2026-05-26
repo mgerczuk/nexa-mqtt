@@ -30,6 +30,20 @@ func Test_sendDiscovery(t *testing.T) {
 						StateTopic: "test/device123/BAT1",
 					},
 				},
+				PVs: []PVInfo{
+					{
+						StateTopic: "test/device123/PV0",
+					},
+					{
+						StateTopic: "test/device123/PV1",
+					},
+					{
+						StateTopic: "test/device123/PV2",
+					},
+					{
+						StateTopic: "test/device123/PV3",
+					},
+				},
 			},
 			{
 				SerialNumber:          "device234",
@@ -42,6 +56,20 @@ func Test_sendDiscovery(t *testing.T) {
 						StateTopic: "test/device234/BAT0",
 					},
 				},
+				PVs: []PVInfo{
+					{
+						StateTopic: "test/device234/PV0",
+					},
+					{
+						StateTopic: "test/device234/PV1",
+					},
+					{
+						StateTopic: "test/device234/PV2",
+					},
+					{
+						StateTopic: "test/device234/PV3",
+					},
+				},
 			},
 		},
 	}
@@ -50,9 +78,17 @@ func Test_sendDiscovery(t *testing.T) {
 	setupSwitchTopics(&mockClient, "device123")
 	setupBatteryTopics(&mockClient, "device123", "BAT0")
 	setupBatteryTopics(&mockClient, "device123", "BAT1")
+	setupPVTopics(&mockClient, "device123", "PV0")
+	setupPVTopics(&mockClient, "device123", "PV1")
+	setupPVTopics(&mockClient, "device123", "PV2")
+	setupPVTopics(&mockClient, "device123", "PV3")
 	setupTopics(&mockClient, "device234")
 	setupSwitchTopics(&mockClient, "device234")
 	setupBatteryTopics(&mockClient, "device234", "BAT0")
+	setupPVTopics(&mockClient, "device234", "PV0")
+	setupPVTopics(&mockClient, "device234", "PV1")
+	setupPVTopics(&mockClient, "device234", "PV2")
+	setupPVTopics(&mockClient, "device234", "PV3")
 
 	service.sendDiscovery()
 
@@ -85,6 +121,20 @@ func Test_sendDiscoverySwitchAsSelect(t *testing.T) {
 						StateTopic: "test/device123/BAT1",
 					},
 				},
+				PVs: []PVInfo{
+					{
+						StateTopic: "test/device123/PV0",
+					},
+					{
+						StateTopic: "test/device123/PV1",
+					},
+					{
+						StateTopic: "test/device123/PV2",
+					},
+					{
+						StateTopic: "test/device123/PV3",
+					},
+				},
 			},
 			{
 				SerialNumber:          "device234",
@@ -97,6 +147,20 @@ func Test_sendDiscoverySwitchAsSelect(t *testing.T) {
 						StateTopic: "test/device234/BAT0",
 					},
 				},
+				PVs: []PVInfo{
+					{
+						StateTopic: "test/device234/PV0",
+					},
+					{
+						StateTopic: "test/device234/PV1",
+					},
+					{
+						StateTopic: "test/device234/PV2",
+					},
+					{
+						StateTopic: "test/device234/PV3",
+					},
+				},
 			},
 		},
 	}
@@ -105,9 +169,17 @@ func Test_sendDiscoverySwitchAsSelect(t *testing.T) {
 	setupSwitchTopicsAsSelect(&mockClient, "device123")
 	setupBatteryTopics(&mockClient, "device123", "BAT0")
 	setupBatteryTopics(&mockClient, "device123", "BAT1")
+	setupPVTopics(&mockClient, "device123", "PV0")
+	setupPVTopics(&mockClient, "device123", "PV1")
+	setupPVTopics(&mockClient, "device123", "PV2")
+	setupPVTopics(&mockClient, "device123", "PV3")
 	setupTopics(&mockClient, "device234")
 	setupSwitchTopicsAsSelect(&mockClient, "device234")
 	setupBatteryTopics(&mockClient, "device234", "BAT0")
+	setupPVTopics(&mockClient, "device234", "PV0")
+	setupPVTopics(&mockClient, "device234", "PV1")
+	setupPVTopics(&mockClient, "device234", "PV2")
+	setupPVTopics(&mockClient, "device234", "PV3")
 
 	service.sendDiscovery()
 
@@ -218,9 +290,28 @@ func setupSwitchTopicsAsSelect(mockClient *MockMqttClient, serial string) {
 func setupBatteryTopics(mockClient *MockMqttClient, serial string, name string) {
 	r := strings.NewReplacer("$BAT", name, "$SERIAL", serial)
 	mockClient.OnPublish(
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/$BATTimestamp/config"),
+		r.Replace(`{"name":"$BAT Timestamp","unique_id":"$SERIAL_$BAT_time","device_class":"timestamp","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/$BAT","value_template":"{{ value_json.time }}"}`))
+	mockClient.OnPublish(
 		r.Replace("homeassistant/sensor/nexa_$SERIAL/$BATSoC/config"),
 		r.Replace(`{"name":"$BAT SoC","unique_id":"$SERIAL_$BAT_soc","device_class":"battery","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/$BAT","value_template":"{{ value_json.soc }}","state_class":"measurement","unit_of_measurement":"%"}`))
 	mockClient.OnPublish(
 		r.Replace("homeassistant/sensor/nexa_$SERIAL/$BATTemperature/config"),
 		r.Replace("{\"name\":\"$BAT Temperature\",\"unique_id\":\"$SERIAL_$BAT_temp\",\"device_class\":\"temperature\",\"device\":{\"identifiers\":[\"nexa_$SERIAL\"],\"manufacturer\":\"Growatt\",\"serial_number\":\"$SERIAL\"},\"origin\":{\"name\":\"nexa-mqtt\",\"sw_version\":\"version\",\"support_url\":\"https://github.com/mgerczuk/nexa-mqtt\"},\"state_topic\":\"test/$SERIAL/$BAT\",\"value_template\":\"{{ value_json.temp }}\",\"state_class\":\"measurement\",\"unit_of_measurement\":\"°C\"}"))
+}
+
+func setupPVTopics(mockClient *MockMqttClient, serial string, name string) {
+	r := strings.NewReplacer("$PV", name, "$SERIAL", serial)
+	mockClient.OnPublish(
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/$PVTimestamp/config"),
+		r.Replace(`{"name":"$PV Timestamp","unique_id":"$SERIAL_$PV_time","device_class":"timestamp","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/$PV","value_template":"{{ value_json.time }}"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/$PVVoltage/config"),
+		r.Replace(`{"name":"$PV Voltage","unique_id":"$SERIAL_$PV_voltage","device_class":"voltage","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/$PV","value_template":"{{ value_json.voltage }}","state_class":"measurement","unit_of_measurement":"V"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/$PVCurrent/config"),
+		r.Replace(`{"name":"$PV Current","unique_id":"$SERIAL_$PV_current","device_class":"current","device":{"identifiers":["nexa_$SERIAL"],"manufacturer":"Growatt","serial_number":"$SERIAL"},"origin":{"name":"nexa-mqtt","sw_version":"version","support_url":"https://github.com/mgerczuk/nexa-mqtt"},"state_topic":"test/$SERIAL/$PV","value_template":"{{ value_json.current }}","state_class":"measurement","unit_of_measurement":"A"}`))
+	mockClient.OnPublish(
+		r.Replace("homeassistant/sensor/nexa_$SERIAL/$PVTemperature/config"),
+		r.Replace("{\"name\":\"$PV Temperature\",\"unique_id\":\"$SERIAL_$PV_temp\",\"device_class\":\"temperature\",\"device\":{\"identifiers\":[\"nexa_$SERIAL\"],\"manufacturer\":\"Growatt\",\"serial_number\":\"$SERIAL\"},\"origin\":{\"name\":\"nexa-mqtt\",\"sw_version\":\"version\",\"support_url\":\"https://github.com/mgerczuk/nexa-mqtt\"},\"state_topic\":\"test/$SERIAL/$PV\",\"value_template\":\"{{ value_json.temp }}\",\"state_class\":\"measurement\",\"unit_of_measurement\":\"°C\"}"))
 }

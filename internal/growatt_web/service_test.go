@@ -409,8 +409,10 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	today := time.Now().Format("2006-01-02")
+	time := time.Now().Add(-3 * time.Minute).Truncate(time.Second)
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{Obj: GrowattNoahHistoryObj{Datas: []GrowattNoahHistoryData{
 		{
+			Time:                   time.Format("2006-01-02 15:04:05"),
 			BatteryPackageQuantity: 4,
 
 			Battery1SerialNum: "serial124",
@@ -428,16 +430,43 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 			Battery4SerialNum: "serial127",
 			Battery4Soc:       66,
 			Battery4Temp:      36.0,
+
+			Pv1Voltage: 33.15,
+			Pv1Current: 1.72,
+			Pv1Temp:    23,
+
+			Pv2Voltage: 30.35,
+			Pv2Current: 1.77,
+			Pv2Temp:    23,
+
+			Pv3Voltage: 7.13,
+			Pv3Current: 0,
+			Pv3Temp:    20.5,
+
+			Pv4Voltage: 7.09,
+			Pv4Current: 0.03,
+			Pv4Temp:    20.5,
 		}}}}, nil)
 
 	mockEndpoint.On(
 		"PublishBatteryDetails",
 		device,
 		[]models.BatteryPayload{
-			{SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
-			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
-			{SerialNumber: "serial126", Soc: 82.0, Temperature: 40.0},
-			{SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
+			{Time: time, SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
+			{Time: time, SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
+			{Time: time, SerialNumber: "serial126", Soc: 82.0, Temperature: 40.0},
+			{Time: time, SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
+		},
+	)
+
+	mockEndpoint.On(
+		"PublishPvDetails",
+		device,
+		[]models.PvPayload{
+			{Time: time, Voltage: 33.15, Current: 1.72, Temp: 23.0},
+			{Time: time, Voltage: 30.35, Current: 1.77, Temp: 23.0},
+			{Time: time, Voltage: 7.13, Current: 0.0, Temp: 20.5},
+			{Time: time, Voltage: 7.09, Current: 0.03, Temp: 20.5},
 		},
 	)
 
@@ -485,6 +514,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
 
 	today := time.Now().Format("2006-01-02")
+	time := time.Now().Add(-3 * time.Minute).Truncate(time.Second)
 	// mockHttpClient.OnGetNoahHistory("Serial123", today, today, hist1, nil) set below
 
 	mockEndpoint.On(
@@ -528,6 +558,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{Obj: GrowattNoahHistoryObj{Datas: []GrowattNoahHistoryData{
 		{
+			Time:                   time.Format("2006-01-02 15:04:05"),
 			BatteryPackageQuantity: 4,
 
 			Battery1SerialNum: "serial124",
@@ -545,18 +576,45 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 			Battery4SerialNum: "serial127",
 			Battery4Soc:       66,
 			Battery4Temp:      36.0,
+
+			Pv1Voltage: 33.15,
+			Pv1Current: 1.72,
+			Pv1Temp:    23,
+
+			Pv2Voltage: 30.35,
+			Pv2Current: 1.77,
+			Pv2Temp:    23,
+
+			Pv3Voltage: 7.13,
+			Pv3Current: 0,
+			Pv3Temp:    20.5,
+
+			Pv4Voltage: 7.09,
+			Pv4Current: 0.03,
+			Pv4Temp:    20.5,
 		}}}}, nil)
 
 	mockEndpoint.On(
 		"PublishBatteryDetails",
 		device,
 		[]models.BatteryPayload{
-			{SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
-			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
-			{SerialNumber: "serial126", Soc: 82.0, Temperature: 40.0},
-			{SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
+			{Time: time, SerialNumber: "serial124", Soc: 93.0, Temperature: 39.0},
+			{Time: time, SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
+			{Time: time, SerialNumber: "serial126", Soc: 82.0, Temperature: 40.0},
+			{Time: time, SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
+
+	mockEndpoint.On(
+		"PublishPvDetails",
+		device,
+		[]models.PvPayload{
+			{Time: time, Voltage: 33.15, Current: 1.72, Temp: 23.0},
+			{Time: time, Voltage: 30.35, Current: 1.77, Temp: 23.0},
+			{Time: time, Voltage: 7.13, Current: 0.0, Temp: 20.5},
+			{Time: time, Voltage: 7.09, Current: 0.03, Temp: 20.5},
+		},
+	)
 
 	// ----- pollParameterData
 
@@ -629,6 +687,7 @@ func TestPolling_once(t *testing.T) {
 	mockEndpoint.AssertExpectations(t)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishPvDetails", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 1)
 }
 

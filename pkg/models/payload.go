@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type WorkMode string
 
@@ -83,9 +86,17 @@ type DevicePayload struct {
 }
 
 type BatteryPayload struct {
-	SerialNumber string  `json:"serial"`
-	Soc          float64 `json:"soc"`
-	Temperature  float64 `json:"temp"`
+	Time         time.Time `json:"time"`
+	SerialNumber string    `json:"serial"`
+	Soc          float64   `json:"soc"`
+	Temperature  float64   `json:"temp"`
+}
+
+type PvPayload struct {
+	Time    time.Time `json:"time"`
+	Voltage float64   `json:"voltage"`
+	Current float64   `json:"current"`
+	Temp    float64   `json:"temp"`
 }
 
 type ParameterPayload struct {

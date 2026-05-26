@@ -10,6 +10,10 @@ func stateTopicBattery(topicPrefix string, serialNumber string, index int) strin
 	return fmt.Sprintf("%s/%s/BAT%d", topicPrefix, serialNumber, index)
 }
 
+func stateTopicPv(topicPrefix string, serialNumber string, index int) string {
+	return fmt.Sprintf("%s/%s/PV%d", topicPrefix, serialNumber, index)
+}
+
 func parameterStateTopic(topicPrefix string, serialNumber string) string {
 	return fmt.Sprintf("%s/%s/parameters", topicPrefix, serialNumber)
 }

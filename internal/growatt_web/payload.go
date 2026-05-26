@@ -2,8 +2,10 @@ package growatt_web
 
 import (
 	"fmt"
+	"log/slog"
 	"nexa-mqtt/internal/misc"
 	"nexa-mqtt/pkg/models"
+	"time"
 )
 
 func devicePayload(device models.NoahDevicePayload, status GrowattNoahStatusObj, totals GrowattNoahTotalsObj) models.DevicePayload {
@@ -33,27 +35,37 @@ func devicePayload(device models.NoahDevicePayload, status GrowattNoahStatusObj,
 }
 
 func batteryPayload(historyData GrowattNoahHistoryData, i int) models.BatteryPayload {
+	tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, time.Local)
+	if err != nil {
+		slog.Error("GrowattNoahHistoryData.Time invalid time format", "historyData.Time", historyData.Time, "error", err.Error())
+		tm = time.Time{}
+	}
+
 	switch i {
 	case 0:
 		return models.BatteryPayload{
+			Time:         tm,
 			SerialNumber: historyData.Battery1SerialNum,
 			Soc:          float64(historyData.Battery1Soc),
 			Temperature:  historyData.Battery1Temp,
 		}
 	case 1:
 		return models.BatteryPayload{
+			Time:         tm,
 			SerialNumber: historyData.Battery2SerialNum,
 			Soc:          float64(historyData.Battery2Soc),
 			Temperature:  historyData.Battery2Temp,
 		}
 	case 2:
 		return models.BatteryPayload{
+			Time:         tm,
 			SerialNumber: historyData.Battery3SerialNum,
 			Soc:          float64(historyData.Battery3Soc),
 			Temperature:  historyData.Battery3Temp,
 		}
 	case 3:
 		return models.BatteryPayload{
+			Time:         tm,
 			SerialNumber: historyData.Battery4SerialNum,
 			Soc:          float64(historyData.Battery4Soc),
 			Temperature:  historyData.Battery4Temp,
@@ -61,6 +73,47 @@ func batteryPayload(historyData GrowattNoahHistoryData, i int) models.BatteryPay
 	}
 
 	panic(fmt.Errorf("growatt_web.batteryPayload: invalid index %d", i))
+}
+
+func pvPayload(historyData GrowattNoahHistoryData, i int) models.PvPayload {
+	tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, time.Local)
+	if err != nil {
+		slog.Error("GrowattNoahHistoryData.Time invalid time format", "historyData.Time", historyData.Time, "error", err.Error())
+		tm = time.Time{}
+	}
+
+	switch i {
+	case 0:
+		return models.PvPayload{
+			Time:    tm,
+			Voltage: historyData.Pv1Voltage,
+			Current: historyData.Pv1Current,
+			Temp:    historyData.Pv1Temp,
+		}
+	case 1:
+		return models.PvPayload{
+			Time:    tm,
+			Voltage: historyData.Pv2Voltage,
+			Current: historyData.Pv2Current,
+			Temp:    historyData.Pv2Temp,
+		}
+	case 2:
+		return models.PvPayload{
+			Time:    tm,
+			Voltage: historyData.Pv3Voltage,
+			Current: historyData.Pv3Current,
+			Temp:    historyData.Pv3Temp,
+		}
+	case 3:
+		return models.PvPayload{
+			Time:    tm,
+			Voltage: historyData.Pv4Voltage,
+			Current: historyData.Pv4Current,
+			Temp:    historyData.Pv4Temp,
+		}
+	}
+
+	panic(fmt.Errorf("growatt_web.pvPayload: invalid index %d", i))
 }
 
 func parameterPayload(detailsData GrowattNoahListData) models.ParameterPayload {

@@ -9,9 +9,14 @@ type DeviceInfo struct {
 	ParameterStateTopic   string
 	ParameterCommandTopic string
 	Batteries             []BatteryInfo
+	PVs                   []PVInfo
 }
 
 type BatteryInfo struct {
 	Alias      string
+	StateTopic string
+}
+
+type PVInfo struct {
 	StateTopic string
 }
