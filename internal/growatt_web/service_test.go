@@ -126,11 +126,11 @@ func Test_enumerateDevices_GetNoahHistoryFails(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
-	}}
+	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{Datas: []GrowattNoahListData{}}
+	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -151,11 +151,11 @@ func Test_enumerateDevices_GetNoahHistoryNoData(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
-	}}
+	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{Datas: []GrowattNoahListData{}}
+	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -177,14 +177,14 @@ func Test_enumerateDevices_Ok(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
 		{Sn: "Serial234", PlantID: "1", DeviceModel: "NEXA 2001"},
-	}}
+	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{Datas: []GrowattNoahListData{
+	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial345", PlantID: "2", DeviceModel: "NEXA 2002"},
-	}}
+	}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -223,18 +223,22 @@ func Test_enumerateDevices_Ok(t *testing.T) {
 func Test_pollStatus_OkCharge(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{Obj: GrowattNoahStatusObj{
-		Pac:                           "-400",
-		Ppv:                           "538",
-		TotalBatteryPackSoc:           "93",
-		TotalBatteryPackChargingPower: "132",
-		WorkMode:                      "0",
-		Status:                        "6",
-	}}, nil)
-	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{Obj: GrowattNoahTotalsObj{
-		EacTotal: "9.6",
-		EacToday: "3.3",
-	}}, nil)
+	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{
+		Response: Response[GrowattNoahStatusObj]{
+			Obj: GrowattNoahStatusObj{
+				Pac:                           "-400",
+				Ppv:                           "538",
+				TotalBatteryPackSoc:           "93",
+				TotalBatteryPackChargingPower: "132",
+				WorkMode:                      "0",
+				Status:                        "6",
+			}}}, nil)
+	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{
+		Response: Response[GrowattNoahTotalsObj]{
+			Obj: GrowattNoahTotalsObj{
+				EacTotal: "9.6",
+				EacToday: "3.3",
+			}}}, nil)
 
 	mockEndpoint.On(
 		"PublishDeviceStatus",
@@ -262,18 +266,22 @@ func Test_pollStatus_OkCharge(t *testing.T) {
 func Test_pollStatus_OkDischarge(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{Obj: GrowattNoahStatusObj{
-		Pac:                           "-400",
-		Ppv:                           "538",
-		TotalBatteryPackSoc:           "93",
-		TotalBatteryPackChargingPower: "-132",
-		WorkMode:                      "0",
-		Status:                        "6",
-	}}, nil)
-	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{Obj: GrowattNoahTotalsObj{
-		EacTotal: "9.6",
-		EacToday: "3.3",
-	}}, nil)
+	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{
+		Response: Response[GrowattNoahStatusObj]{
+			Obj: GrowattNoahStatusObj{
+				Pac:                           "-400",
+				Ppv:                           "538",
+				TotalBatteryPackSoc:           "93",
+				TotalBatteryPackChargingPower: "-132",
+				WorkMode:                      "0",
+				Status:                        "6",
+			}}}, nil)
+	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{
+		Response: Response[GrowattNoahTotalsObj]{
+			Obj: GrowattNoahTotalsObj{
+				EacTotal: "9.6",
+				EacToday: "3.3",
+			}}}, nil)
 
 	mockEndpoint.On(
 		"PublishDeviceStatus",
@@ -312,14 +320,16 @@ func Test_pollStatus_GetNoahStatusFails(t *testing.T) {
 func Test_pollStatus_GetNoahTotalsFails(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{Obj: GrowattNoahStatusObj{
-		Pac:                           "-400",
-		Ppv:                           "538",
-		TotalBatteryPackSoc:           "93",
-		TotalBatteryPackChargingPower: "132",
-		WorkMode:                      "0",
-		Status:                        "6",
-	}}, nil)
+	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{
+		Response: Response[GrowattNoahStatusObj]{
+			Obj: GrowattNoahStatusObj{
+				Pac:                           "-400",
+				Ppv:                           "538",
+				TotalBatteryPackSoc:           "93",
+				TotalBatteryPackChargingPower: "132",
+				WorkMode:                      "0",
+				Status:                        "6",
+			}}}, nil)
 	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{}, errors.New("GetNoahTotals fails"))
 
 	service.pollStatus(device)
@@ -343,7 +353,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	antiBackflowEnable := models.ON
 	antiBackflowPowerPercentage := 37.0
 
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{
 			ChargingSocHighLimit:        "95",
 			ChargingSocLowLimit:         "11",
@@ -357,7 +367,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			AntiBackflowEnable:          "1",
 			AntiBackflowPowerPercentage: "37",
 		},
-	}}, nil)
+	}}}, nil)
 
 	mockEndpoint.On(
 		"PublishParameterData",
@@ -632,9 +642,9 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: device.Serial, PlantID: strconv.Itoa(device.PlantId)},
-	}}
+	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -648,18 +658,22 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 
 	// ----- pollStatus
 
-	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{Obj: GrowattNoahStatusObj{
-		Pac:                           "-400",
-		Ppv:                           "538",
-		TotalBatteryPackSoc:           "93",
-		TotalBatteryPackChargingPower: "132",
-		WorkMode:                      "0",
-		Status:                        "6",
-	}}, nil)
-	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{Obj: GrowattNoahTotalsObj{
-		EacTotal: "9.6",
-		EacToday: "3.3",
-	}}, nil)
+	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{
+		Response: Response[GrowattNoahStatusObj]{
+			Obj: GrowattNoahStatusObj{
+				Pac:                           "-400",
+				Ppv:                           "538",
+				TotalBatteryPackSoc:           "93",
+				TotalBatteryPackChargingPower: "132",
+				WorkMode:                      "0",
+				Status:                        "6",
+			}}}, nil)
+	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{
+		Response: Response[GrowattNoahTotalsObj]{
+			Obj: GrowattNoahTotalsObj{
+				EacTotal: "9.6",
+				EacToday: "3.3",
+			}}}, nil)
 
 	mockEndpoint.On(
 		"PublishDeviceStatus",
@@ -754,7 +768,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	antiBackflowEnable := models.ON
 	antiBackflowPowerPercentage := 45.0
 
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{Datas: []GrowattNoahListData{
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{
 			ChargingSocHighLimit:        "95",
 			ChargingSocLowLimit:         "11",
@@ -768,7 +782,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 			AntiBackflowEnable:          "1",
 			AntiBackflowPowerPercentage: "45",
 		},
-	}}, nil)
+	}}}, nil)
 
 	mockEndpoint.On(
 		"PublishParameterData",

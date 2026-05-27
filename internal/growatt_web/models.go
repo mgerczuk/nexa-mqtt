@@ -1,8 +1,23 @@
 package growatt_web
 
-type GrowattResult struct {
-	Result int    `json:"result"`
+type Response[T any] struct {
 	Msg    string `json:"msg"`
+	Result int    `json:"result"`
+	Obj    T      `json:"obj"`
+}
+
+type PageResponse[T any] struct {
+	CurrPage int  `json:"currPage"`
+	Pages    int  `json:"pages"`
+	PageSize int  `json:"pageSize"`
+	Count    int  `json:"count"`
+	Ind      int  `json:"ind"`
+	Datas    []T  `json:"datas"`
+	NotPager bool `json:"notPager"`
+}
+
+type GrowattResult struct {
+	Response[any]
 }
 
 type GrowattPlant struct {
@@ -11,14 +26,8 @@ type GrowattPlant struct {
 }
 
 type GrowattPlantDevices struct {
-	Result int `json:"result"`
-	Obj    struct {
-		CurrPage int `json:"currPage"`
-		Pages    int `json:"pages"`
-		PageSize int `json:"pageSize"`
-		Count    int `json:"count"`
-		Ind      int `json:"ind"`
-		Datas    []struct {
+	Response[struct {
+		PageResponse[struct {
 			DeviceType      string `json:"deviceType"`
 			PtoStatus       string `json:"ptoStatus"`
 			ShellyDeviceSn  string `json:"shellyDeviceSn"`
@@ -42,9 +51,8 @@ type GrowattPlantDevices struct {
 			PlantName       string `json:"plantName"`
 			Status          string `json:"status"`
 			LastUpdateTime  string `json:"lastUpdateTime"`
-		} `json:"datas"`
-		NotPager bool `json:"notPager"`
-	} `json:"obj"`
+		}]
+	}]
 }
 
 // from /device/getNoahList
@@ -68,13 +76,7 @@ type GrowattNoahListData struct {
 }
 
 type GrowattNoahList struct {
-	CurrPage int                   `json:"currPage"`
-	Pages    int                   `json:"pages"`
-	PageSize int                   `json:"pageSize"`
-	Count    int                   `json:"count"`
-	Ind      int                   `json:"ind"`
-	Datas    []GrowattNoahListData `json:"datas"`
-	NotPager bool                  `json:"notPager"`
+	PageResponse[GrowattNoahListData]
 }
 
 type GrowattNoahHistoryData struct {
@@ -205,29 +207,28 @@ type GrowattNoahHistory struct {
 }
 
 type GrowattNoahStatusObj struct {
+	AcCoupleEnable                string `json:"acCoupleEnable"`
 	SmartSocketPower              string `json:"smartSocketPower"`
 	CtSelfPower                   string `json:"ctSelfPower"`
 	GroplugFlag                   string `json:"groplugFlag"`
 	HouseholdLoadApartFromGroplug string `json:"householdLoadApartFromGroplug"`
+	IsHaveCT                      string `json:"isHaveCT"`
 	ShellyFlag                    string `json:"shellyFlag"`
 	TotalHouseholdLoad            string `json:"totalHouseholdLoad"`
 	TotalBatteryPackSoc           string `json:"totalBatteryPackSoc"`
 	Pac                           string `json:"pac"`
-	WorkMode                      string `json:"workMode"`
 	EastronFlag                   string `json:"eastronFlag"`
 	BatteryPackageQuantity        string `json:"batteryPackageQuantity"`
 	Ppv                           string `json:"ppv"`
 	GroplugNum                    string `json:"groplugNum"`
-	TotalBatteryPackChargingPower string `json:"totalBatteryPackChargingPower"`
 	OtherPower                    string `json:"otherPower"`
 	Status                        string `json:"status"`
+	TotalBatteryPackChargingPower string `json:"totalBatteryPackChargingPower"`
+	WorkMode                      string `json:"workMode"`
 }
 
 type GrowattNoahStatus struct {
-	Result  int                  `json:"result"`
-	Msg     interface{}          `json:"msg"`
-	Obj     GrowattNoahStatusObj `json:"obj"`
-	Request interface{}          `json:"request"`
+	Response[GrowattNoahStatusObj]
 }
 
 type GrowattNoahTotalsObj struct {
@@ -239,8 +240,5 @@ type GrowattNoahTotalsObj struct {
 }
 
 type GrowattNoahTotals struct {
-	Result  int                  `json:"result"`
-	Msg     interface{}          `json:"msg"`
-	Obj     GrowattNoahTotalsObj `json:"obj"`
-	Request interface{}          `json:"request"`
+	Response[GrowattNoahTotalsObj]
 }
