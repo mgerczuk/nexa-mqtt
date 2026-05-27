@@ -26,7 +26,7 @@ You can configure `nexa-mqtt` using the following environment variables:
 |:-----------------------------------|:----------------------------------------------------------------------------------------|:-------------------------------| 
 | `LOG_LEVEL`                        | Sets the logging level of the application                                               | INFO                           |
 | `POLLING_INTERVAL`                 | Time in seconds between fetching new status data                                        | 30                             |
-| `BATTERY_DETAILS_POLLING_INTERVAL` | Time in seconds to wait after fetching battery details and PV input data before the next polling cycle starts. | 180     |
+| `BATTERY_DETAILS_POLLING_INTERVAL` | See below                                                                               | 180                            |
 | `PARAMETER_POLLING_INTERVAL`       | Time in seconds between fetching parameter data (system-output-power, charging limits). | 180                            |
 | `GROWATT_API_MODE`                 | Growatt API mode, either `app`, `web`, `web+app`                                        | web+app                        |
 | `GROWATT_USERNAME`                 | Your Growatt account username (required)                                                | -                              |
@@ -44,6 +44,11 @@ You can configure `nexa-mqtt` using the following environment variables:
 | `HOMEASSISTANT_SWITCH_AS_SELECT`   | Publish 'switch' entities as 'select'. Set to 'True' for OpenHAB, see below             | false                          |
 
 Adjust these settings to fit your environment and requirements.
+
+Battery details and PV input data are fetched from historical, not real-time data. `nexa-mqtt` tries to fetch data that is at most 5 seconds old.
+If that fails it retries after 5 seconds, if that still fails it retries after `BATTERY_DETAILS_POLLING_INTERVAL` seconds.
+
+In **`app`** mode the PV input data is not available and battery details *may* not be available.
 
 ---
 

@@ -2,7 +2,6 @@ package growatt_web
 
 import (
 	"fmt"
-	"log/slog"
 	"nexa-mqtt/internal/misc"
 	"nexa-mqtt/pkg/models"
 	"time"
@@ -34,13 +33,7 @@ func devicePayload(device models.NoahDevicePayload, status GrowattNoahStatusObj,
 	return payload
 }
 
-func batteryPayload(historyData GrowattNoahHistoryData, i int) models.BatteryPayload {
-	tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, time.Local)
-	if err != nil {
-		slog.Error("GrowattNoahHistoryData.Time invalid time format", "historyData.Time", historyData.Time, "error", err.Error())
-		tm = time.Time{}
-	}
-
+func batteryPayload(historyData GrowattNoahHistoryData, tm time.Time, i int) models.BatteryPayload {
 	switch i {
 	case 0:
 		return models.BatteryPayload{
@@ -75,13 +68,7 @@ func batteryPayload(historyData GrowattNoahHistoryData, i int) models.BatteryPay
 	panic(fmt.Errorf("growatt_web.batteryPayload: invalid index %d", i))
 }
 
-func pvPayload(historyData GrowattNoahHistoryData, i int) models.PvPayload {
-	tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, time.Local)
-	if err != nil {
-		slog.Error("GrowattNoahHistoryData.Time invalid time format", "historyData.Time", historyData.Time, "error", err.Error())
-		tm = time.Time{}
-	}
-
+func pvPayload(historyData GrowattNoahHistoryData, tm time.Time, i int) models.PvPayload {
 	switch i {
 	case 0:
 		return models.PvPayload{
