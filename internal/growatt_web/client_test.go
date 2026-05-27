@@ -118,7 +118,7 @@ func TestLogin_Ok(t *testing.T) {
 func TestLogin_ErrResult(t *testing.T) {
 	mockHttpClient, client := setupClientMocks(t)
 
-	mockHttpClient.OnLogin("user", "secret", GrowattResult{Result: -1}, nil)
+	mockHttpClient.OnLogin("user", "secret", GrowattResult{Response[any]{Result: -1}}, nil)
 
 	err := client.Login()
 

@@ -28,6 +28,10 @@ func (e *MockEndpoint) PublishBatteryDetails(device models.NoahDevicePayload, de
 	e.Called(device, details)
 }
 
+func (e *MockEndpoint) PublishPvDetails(device models.NoahDevicePayload, details []models.PvPayload) {
+	e.Called(device, details)
+}
+
 func (e *MockEndpoint) PublishParameterData(device models.NoahDevicePayload, param models.ParameterPayload) {
 	e.Called(device, param)
 }

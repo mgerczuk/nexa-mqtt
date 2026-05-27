@@ -3,6 +3,7 @@ package growatt_web
 import (
 	"nexa-mqtt/pkg/models"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -56,37 +57,50 @@ func Test_batteryPayload(t *testing.T) {
 		Battery4Soc:       77,
 		Battery4Temp:      38.0,
 	}
+	tm := time.Now().Truncate(time.Second)
 
-	payload := batteryPayload(historyData, 0)
+	payload := batteryPayload(historyData, tm, 0)
 
-	assert.Equal(t, "Serial123", payload.SerialNumber)
-	assert.Equal(t, 44.0, payload.Soc)
-	assert.Equal(t, 35.0, payload.Temperature)
+	assert.Equal(t, models.BatteryPayload{
+		Time:         tm,
+		SerialNumber: "Serial123",
+		Soc:          44.0,
+		Temperature:  35.0,
+	}, payload)
 
-	payload = batteryPayload(historyData, 1)
+	payload = batteryPayload(historyData, tm, 1)
 
-	assert.Equal(t, "Serial223", payload.SerialNumber)
-	assert.Equal(t, 55.0, payload.Soc)
-	assert.Equal(t, 36.0, payload.Temperature)
+	assert.Equal(t, models.BatteryPayload{
+		Time:         tm,
+		SerialNumber: "Serial223",
+		Soc:          55.0,
+		Temperature:  36.0,
+	}, payload)
 
-	payload = batteryPayload(historyData, 2)
+	payload = batteryPayload(historyData, tm, 2)
 
-	assert.Equal(t, "Serial323", payload.SerialNumber)
-	assert.Equal(t, 66.0, payload.Soc)
-	assert.Equal(t, 37.0, payload.Temperature)
+	assert.Equal(t, models.BatteryPayload{
+		Time:         tm,
+		SerialNumber: "Serial323",
+		Soc:          66.0,
+		Temperature:  37.0,
+	}, payload)
 
-	payload = batteryPayload(historyData, 3)
+	payload = batteryPayload(historyData, tm, 3)
 
-	assert.Equal(t, "Serial423", payload.SerialNumber)
-	assert.Equal(t, 77.0, payload.Soc)
-	assert.Equal(t, 38.0, payload.Temperature)
+	assert.Equal(t, models.BatteryPayload{
+		Time:         tm,
+		SerialNumber: "Serial423",
+		Soc:          77.0,
+		Temperature:  38.0,
+	}, payload)
 
 	defer func() {
 		if r := recover(); r != nil {
 		}
 	}()
 
-	payload = batteryPayload(historyData, 4)
+	payload = batteryPayload(historyData, tm, 4)
 	t.Errorf("Test failed, panic was expected")
 }
 

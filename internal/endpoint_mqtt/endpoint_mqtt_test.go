@@ -8,6 +8,7 @@ import (
 	"nexa-mqtt/pkg/models"
 	"sync"
 	"testing"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/stretchr/testify/assert"
@@ -138,6 +139,20 @@ func TestSetDevices(t *testing.T) {
 						StateTopic: "test/device123/BAT1",
 					},
 				},
+				PVs: []homeassistant.PVInfo{
+					{
+						StateTopic: "test/device123/PV0",
+					},
+					{
+						StateTopic: "test/device123/PV1",
+					},
+					{
+						StateTopic: "test/device123/PV2",
+					},
+					{
+						StateTopic: "test/device123/PV3",
+					},
+				},
 			},
 			{
 				SerialNumber:          "device234",
@@ -148,6 +163,20 @@ func TestSetDevices(t *testing.T) {
 					{
 						Alias:      "C",
 						StateTopic: "test/device234/BAT0",
+					},
+				},
+				PVs: []homeassistant.PVInfo{
+					{
+						StateTopic: "test/device234/PV0",
+					},
+					{
+						StateTopic: "test/device234/PV1",
+					},
+					{
+						StateTopic: "test/device234/PV2",
+					},
+					{
+						StateTopic: "test/device234/PV3",
 					},
 				},
 			},
@@ -187,6 +216,20 @@ func TestSetDevices(t *testing.T) {
 				ParameterStateTopic:   "test/device345/parameters",
 				ParameterCommandTopic: "test/device345/parameters/set",
 				Batteries:             nil,
+				PVs: []homeassistant.PVInfo{
+					{
+						StateTopic: "test/device345/PV0",
+					},
+					{
+						StateTopic: "test/device345/PV1",
+					},
+					{
+						StateTopic: "test/device345/PV2",
+					},
+					{
+						StateTopic: "test/device345/PV3",
+					},
+				},
 			},
 		},
 	)
@@ -251,7 +294,7 @@ func TestPublishBatteryDetails_Success(t *testing.T) {
 		"test/device123/BAT0",
 		byte(0),
 		false,
-		`{"serial":"","soc":0,"temp":0}`,
+		`{"time":"0001-01-01T00:00:00Z","serial":"","soc":0,"temp":0}`,
 	).Return(mockToken)
 
 	endpoint := &Endpoint{
@@ -278,21 +321,21 @@ func TestPublishBatteryDetails_SuccessMult(t *testing.T) {
 		"test/device123/BAT0",
 		byte(0),
 		false,
-		`{"serial":"E","soc":20,"temp":0}`,
+		`{"time":"0001-01-01T00:00:00Z","serial":"E","soc":20,"temp":0}`,
 	).Return(mockToken)
 	mockClient.On(
 		"Publish",
 		"test/device123/BAT1",
 		byte(0),
 		false,
-		`{"serial":"F","soc":30,"temp":0}`,
+		`{"time":"0001-01-01T00:00:00Z","serial":"F","soc":30,"temp":0}`,
 	).Return(mockToken)
 	mockClient.On(
 		"Publish",
 		"test/device123/BAT2",
 		byte(0),
 		false,
-		`{"serial":"G","soc":40,"temp":0}`,
+		`{"time":"0001-01-01T00:00:00Z","serial":"G","soc":40,"temp":0}`,
 	).Return(mockToken)
 
 	endpoint := &Endpoint{
@@ -324,6 +367,80 @@ func TestPublishBatteryDetails_Fail(t *testing.T) {
 	details := []models.BatteryPayload{{Soc: math.NaN()}}
 
 	endpoint.PublishBatteryDetails(device, details)
+
+	mockClient.AssertExpectations(t)
+}
+
+func TestPublishPvDetails_Success(t *testing.T) {
+	mockClient := new(MockMqttClient)
+	mockToken := NewMockToken()
+
+	tm, _ := time.ParseInLocation("2006-01-02 15:04:05", "2025-05-21 10:54:51", time.Local)
+	expectedTime := tm.Format(time.RFC3339)
+
+	mockClient.On(
+		"Publish",
+		"test/device123/PV0",
+		byte(0),
+		false,
+		`{"time":"`+expectedTime+`","voltage":33.15,"current":1.72,"temp":23}`,
+	).Return(mockToken)
+	mockClient.On(
+		"Publish",
+		"test/device123/PV1",
+		byte(0),
+		false,
+		`{"time":"`+expectedTime+`","voltage":30.35,"current":1.77,"temp":23}`,
+	).Return(mockToken)
+	mockClient.On(
+		"Publish",
+		"test/device123/PV2",
+		byte(0),
+		false,
+		`{"time":"`+expectedTime+`","voltage":7.13,"current":0,"temp":20.5}`,
+	).Return(mockToken)
+	mockClient.On(
+		"Publish",
+		"test/device123/PV3",
+		byte(0),
+		false,
+		`{"time":"`+expectedTime+`","voltage":7.09,"current":0.03,"temp":20.5}`,
+	).Return(mockToken)
+
+	endpoint := &Endpoint{
+		opts: Options{
+			MqttClient:  mockClient,
+			TopicPrefix: "test",
+		},
+	}
+
+	device := models.NoahDevicePayload{Serial: "device123"}
+	details := []models.PvPayload{
+		{Time: tm, Voltage: 33.15, Current: 1.72, Temp: 23.0},
+		{Time: tm, Voltage: 30.35, Current: 1.77, Temp: 23.0},
+		{Time: tm, Voltage: 7.13, Current: 0.0, Temp: 20.5},
+		{Time: tm, Voltage: 7.09, Current: 0.03, Temp: 20.5},
+	}
+
+	endpoint.PublishPvDetails(device, details)
+
+	mockClient.AssertExpectations(t)
+}
+
+func TestPublishPvDetails_Fail(t *testing.T) {
+	mockClient := new(MockMqttClient)
+
+	endpoint := &Endpoint{
+		opts: Options{
+			MqttClient:  mockClient,
+			TopicPrefix: "test",
+		},
+	}
+
+	device := models.NoahDevicePayload{Serial: "device123"}
+	details := []models.PvPayload{{Voltage: math.NaN()}}
+
+	endpoint.PublishPvDetails(device, details)
 
 	mockClient.AssertExpectations(t)
 }

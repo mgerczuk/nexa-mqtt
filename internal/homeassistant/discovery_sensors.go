@@ -174,6 +174,19 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 		sensors = append(sensors, []Sensor{
 			{
 				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Timestamp", b.Alias),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "time"),
+					DeviceClass: DeviceClassTimestamp,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    b.StateTopic,
+					ValueTemplate: "{{ value_json.time }}",
+				},
+			},
+			{
+				CommonConfig: CommonConfig{
 					Name:        fmt.Sprintf("%s SoC", b.Alias),
 					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, b.Alias, "soc"),
 					DeviceClass: DeviceClassBattery,
@@ -197,6 +210,70 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				},
 				StateConfig: StateConfig{
 					StateTopic:    b.StateTopic,
+					ValueTemplate: "{{ value_json.temp }}",
+				},
+				StateClass:        StateClassMeasurement,
+				UnitOfMeasurement: UnitCelsius,
+			},
+		}...)
+	}
+
+	for i, pv := range info.PVs {
+		name := fmt.Sprintf("PV%d", i)
+		sensors = append(sensors, []Sensor{
+			{
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Timestamp", name),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, name, "time"),
+					DeviceClass: DeviceClassTimestamp,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    pv.StateTopic,
+					ValueTemplate: "{{ value_json.time }}",
+				},
+			},
+			{
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Voltage", name),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, name, "voltage"),
+					DeviceClass: DeviceClassVoltage,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    pv.StateTopic,
+					ValueTemplate: "{{ value_json.voltage }}",
+				},
+				StateClass:        StateClassMeasurement,
+				UnitOfMeasurement: UnitVoltage,
+			},
+			{
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Current", name),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, name, "current"),
+					DeviceClass: DeviceClassCurrent,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    pv.StateTopic,
+					ValueTemplate: "{{ value_json.current }}",
+				},
+				StateClass:        StateClassMeasurement,
+				UnitOfMeasurement: UnitCurrent,
+			},
+			{
+				CommonConfig: CommonConfig{
+					Name:        fmt.Sprintf("%s Temperature", name),
+					UniqueId:    fmt.Sprintf("%s_%s_%s", info.SerialNumber, name, "temp"),
+					DeviceClass: DeviceClassTemperature,
+					Device:      device,
+					Origin:      origin,
+				},
+				StateConfig: StateConfig{
+					StateTopic:    pv.StateTopic,
 					ValueTemplate: "{{ value_json.temp }}",
 				},
 				StateClass:        StateClassMeasurement,
