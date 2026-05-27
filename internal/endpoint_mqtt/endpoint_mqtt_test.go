@@ -375,35 +375,36 @@ func TestPublishPvDetails_Success(t *testing.T) {
 	mockClient := new(MockMqttClient)
 	mockToken := NewMockToken()
 
-	time, _ := time.ParseInLocation("2006-01-02 15:04:05", "2025-05-21 10:54:51", time.Local)
+	tm, _ := time.ParseInLocation("2006-01-02 15:04:05", "2025-05-21 10:54:51", time.Local)
+	expectedTime := tm.Format(time.RFC3339)
 
 	mockClient.On(
 		"Publish",
 		"test/device123/PV0",
 		byte(0),
 		false,
-		`{"time":"2025-05-21T10:54:51+02:00","voltage":33.15,"current":1.72,"temp":23}`,
+		`{"time":"`+expectedTime+`","voltage":33.15,"current":1.72,"temp":23}`,
 	).Return(mockToken)
 	mockClient.On(
 		"Publish",
 		"test/device123/PV1",
 		byte(0),
 		false,
-		`{"time":"2025-05-21T10:54:51+02:00","voltage":30.35,"current":1.77,"temp":23}`,
+		`{"time":"`+expectedTime+`","voltage":30.35,"current":1.77,"temp":23}`,
 	).Return(mockToken)
 	mockClient.On(
 		"Publish",
 		"test/device123/PV2",
 		byte(0),
 		false,
-		`{"time":"2025-05-21T10:54:51+02:00","voltage":7.13,"current":0,"temp":20.5}`,
+		`{"time":"`+expectedTime+`","voltage":7.13,"current":0,"temp":20.5}`,
 	).Return(mockToken)
 	mockClient.On(
 		"Publish",
 		"test/device123/PV3",
 		byte(0),
 		false,
-		`{"time":"2025-05-21T10:54:51+02:00","voltage":7.09,"current":0.03,"temp":20.5}`,
+		`{"time":"`+expectedTime+`","voltage":7.09,"current":0.03,"temp":20.5}`,
 	).Return(mockToken)
 
 	endpoint := &Endpoint{
@@ -415,10 +416,10 @@ func TestPublishPvDetails_Success(t *testing.T) {
 
 	device := models.NoahDevicePayload{Serial: "device123"}
 	details := []models.PvPayload{
-		{Time: time, Voltage: 33.15, Current: 1.72, Temp: 23.0},
-		{Time: time, Voltage: 30.35, Current: 1.77, Temp: 23.0},
-		{Time: time, Voltage: 7.13, Current: 0.0, Temp: 20.5},
-		{Time: time, Voltage: 7.09, Current: 0.03, Temp: 20.5},
+		{Time: tm, Voltage: 33.15, Current: 1.72, Temp: 23.0},
+		{Time: tm, Voltage: 30.35, Current: 1.77, Temp: 23.0},
+		{Time: tm, Voltage: 7.13, Current: 0.0, Temp: 20.5},
+		{Time: tm, Voltage: 7.09, Current: 0.03, Temp: 20.5},
 	}
 
 	endpoint.PublishPvDetails(device, details)
