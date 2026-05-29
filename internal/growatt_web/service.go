@@ -143,6 +143,8 @@ func (g *GrowattService) poll(ctx context.Context, device models.NoahDevicePaylo
 			durationToWait, lastTimestamp, retryDuration = dc.Next(lastTimestamp, retryDuration)
 			timerBatteryPolling.Reset(durationToWait)
 
+			slog.Debug("next battery & pv polling in", slog.String("durationToWait", durationToWait.String()), slog.Time("lastTimestamp", lastTimestamp), slog.String("retryDuration", retryDuration.String()))
+
 		case <-tickerParameter.C:
 			g.pollParameterData(device)
 
