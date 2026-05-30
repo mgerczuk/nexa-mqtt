@@ -42,6 +42,8 @@ func (h *httpClient) postForm(url string, data url.Values, responseBody any) err
 		return err
 	}
 
+	//slog.Debug("HTTP Request (web)", slog.String("url", url), slog.Any("data", data), slog.Int("status_code", resp.StatusCode), slog.String("response_body", string(b)))
+
 	if resp.StatusCode != 200 {
 		err := fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
 		slog.Error("StatusCode != 200 (web)", slog.String("error", err.Error()))

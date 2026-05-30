@@ -33,6 +33,7 @@ You can configure `nexa-mqtt` using the following environment variables:
 | `GROWATT_PASSWORD`                 | Your Growatt account password (required)                                                | -                              |
 | `GROWATT_SERVER_URL_WEB`           | Growatt server url for web apis                                                         | https://openapi.growatt.com    |
 | `GROWATT_SERVER_URL_APP`           | Growatt server url for app apis                                                         | https://server-api.growatt.com |
+| `GROWATT_TZ`                       | IANA time zone the NEXA is running in, e.g. "Europe/Berlin", "America/New_York", ... This is probably set by the country in the app configuration. If not given, the host's time zone is used.<br>**Note**: when using the Home Assistant Docker container the host time zone is always UTC! The Alpine base image does not support time zones so be sure to use this setting! | - |
 | `MQTT_BROKER_URL`                  | Full URL of the MQTT Broker e.g. tls://x.eu.hivemq.cloud.<br>If empty, the URL is created as `tcp://{MQTT_HOST}:{MQTT_PORT}` | - |
 | `MQTT_HOST`                        | Address of your MQTT broker (required if `MQTT_BROKER_URL` is empty)                    | -                              |
 | `MQTT_PORT`                        | Port number of your MQTT broker                                                         | 1883                           |

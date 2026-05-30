@@ -2,10 +2,13 @@ package config
 
 import (
 	"errors"
+	"fmt"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	_ "time/tzdata"
 )
 
 type Config struct {
@@ -24,6 +27,7 @@ type Growatt struct {
 	ServerUrlApp string
 	Username     string
 	Password     string
+	Location     *time.Location
 }
 
 type Mqtt struct {
@@ -57,6 +61,7 @@ func Get() Config {
 				ServerUrlApp: getEnv("GROWATT_SERVER_URL_APP", "https://server-api.growatt.com"),
 				Username:     getEnv("GROWATT_USERNAME", ""),
 				Password:     getEnv("GROWATT_PASSWORD", ""),
+				Location:     getLocation(getEnv("GROWATT_TZ", "")),
 			},
 			Mqtt: Mqtt{
 				BrokerURL:   getEnv("MQTT_BROKER_URL", ""),
@@ -87,6 +92,9 @@ func Validate() error {
 	if len(config.Growatt.Password) == 0 {
 		return errors.New("GROWATT_PASSWORD is required")
 	}
+	if config.Growatt.Location == nil {
+		return fmt.Errorf("GROWATT_TZ '%s' is invalid", getEnv("GROWATT_TZ", ""))
+	}
 	return nil
 }
 
@@ -110,4 +118,17 @@ func s2bool(s string, fallback bool) bool {
 		return b
 	}
 	return fallback
+}
+
+func getLocation(s string) *time.Location {
+	if s == "" {
+		return time.Local
+	}
+
+	location, err := time.LoadLocation(s)
+	if err != nil {
+		return nil
+	}
+
+	return location
 }

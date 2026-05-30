@@ -17,6 +17,7 @@ type Options struct {
 	PollingInterval               time.Duration
 	BatteryDetailsPollingInterval time.Duration
 	ParameterPollingInterval      time.Duration
+	Location                      time.Location
 }
 
 type DurationCalculator interface {
@@ -192,7 +193,7 @@ func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload, las
 		} else {
 			historyData := history.Obj.Datas[0]
 
-			tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, time.Local)
+			tm, err := time.ParseInLocation("2006-01-02 15:04:05", historyData.Time, &g.opts.Location)
 			if err != nil {
 				slog.Error("GrowattNoahHistoryData.Time invalid time format", "historyData.Time", historyData.Time, "error", err.Error())
 				tm = time.Time{}
