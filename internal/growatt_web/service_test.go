@@ -83,9 +83,12 @@ func TestSetEndpoint(t *testing.T) {
 	assert.Equal(t, nil, service.endpoint)
 
 	ep := &MockEndpoint{}
+	ep.On("SetParameterApplier", service).Return()
+
 	service.SetEndpoint(ep)
 
 	assert.Equal(t, ep, service.endpoint)
+	ep.AssertExpectations(t)
 }
 
 func Test_enumerateDevices_GetPlantListFails(t *testing.T) {
