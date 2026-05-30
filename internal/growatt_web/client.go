@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -157,4 +158,80 @@ func (h *Client) GetNoahTotals(plantId int, serial string) (*GrowattNoahTotals, 
 		return nil, err
 	}
 	return &result, nil
+}
+
+type SetResponse struct {
+	Msg     string `json:"msg"`
+	Success bool   `json:"success"`
+}
+
+func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
+	p := math.Max(0, math.Min(1000, power))
+	var result SetResponse
+	if err := h.postForm(h.serverUrl+"/tcpSet.do", url.Values{
+		"action":    {"noahSet"},
+		"serialNum": {serialNumber},
+		"type":      {"system_out_put_power"},
+		"param1":    {fmt.Sprintf("%d", mode)},
+		"param2":    {fmt.Sprintf("%.0f", p)},
+	}, &result); err != nil {
+		return err
+	}
+	if !result.Success {
+		return errors.New(result.Msg)
+	}
+	return nil
+}
+
+func (h *Client) SetChargingSocLowLimit(serialNumber string, dischargeLimit float64) error {
+	d := math.Max(0, math.Min(30, dischargeLimit))
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/tcpSet.do", url.Values{
+		"action":    {"noahSet"},
+		"serialNum": {serialNumber},
+		"type":      {"charging_soc_low_limit"},
+		"param1":    {fmt.Sprintf("%.0f", d)},
+	}, &data); err != nil {
+		return err
+	}
+	if !data.Success {
+		return errors.New(data.Msg)
+	}
+
+	return nil
+}
+
+func (h *Client) SetChargingSocHighLimit(serialNumber string, chargingLimit float64) error {
+	c := math.Max(70, math.Min(100, chargingLimit))
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/tcpSet.do", url.Values{
+		"action":    {"noahSet"},
+		"serialNum": {serialNumber},
+		"type":      {"charging_soc_high_limit"},
+		"param1":    {fmt.Sprintf("%.0f", c)},
+	}, &data); err != nil {
+		return err
+	}
+	if !data.Success {
+		return errors.New(data.Msg)
+	}
+
+	return nil
+}
+
+func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/tcpSet.do", url.Values{
+		"action":    {"noahSet"},
+		"serialNum": {serialNumber},
+		"type":      {"allow_grid_charging"},
+		"param1":    {fmt.Sprintf("%d", allow)},
+	}, &data); err != nil {
+		return err
+	}
+	if !data.Success {
+		return errors.New(data.Msg)
+	}
+
+	return nil
 }

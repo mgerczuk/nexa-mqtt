@@ -64,6 +64,81 @@ func (g *GrowattService) StopPolling() {
 
 func (g *GrowattService) SetEndpoint(e endpoint.Endpoint) {
 	g.endpoint = e
+	if e != nil {
+		e.SetParameterApplier(g)
+	}
+}
+
+func (g *GrowattService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) error {
+	slog.Info("trying to set default system output power (web)", slog.String("device", device.Serial), slog.Any("mode", mode), slog.Float64("power", power))
+
+	modeAsInt := models.IntFromWorkMode(mode)
+	if modeAsInt < 0 {
+		slog.Error("unable to set default system output power (web). Invalid mode", slog.String("device", device.Serial), slog.String("mode", string(mode)))
+		return fmt.Errorf("invalid work mode %s", mode)
+	}
+
+	slog.Info("set default system output power (web)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", power))
+	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, power); err != nil {
+		slog.Error("unable to set default system output power (web)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit float64, dischargeLimit float64) error {
+	slog.Info("trying to set charging limits (web)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
+
+	slog.Info("set charging limit low (web)", slog.String("device", device.Serial), slog.Float64("dischargeLimit", dischargeLimit))
+	if err := g.client.SetChargingSocLowLimit(device.Serial, dischargeLimit); err != nil {
+		slog.Error("unable to set charging limit low (web)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+		return err
+	}
+
+	slog.Info("set charging limit high (web)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit))
+	if err := g.client.SetChargingSocHighLimit(device.Serial, chargingLimit); err != nil {
+		slog.Error("unable to set charging limit high (web)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+		return err
+	}
+
+	return nil
+}
+
+func (g *GrowattService) SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error {
+	slog.Info("trying to set allow grid charging (web)", slog.String("device", device.Serial), slog.Any("allow", allow))
+
+	slog.Info("set allow grid charging (web)", slog.String("device", device.Serial), slog.Int("allow", misc.OnOffToInt(allow)))
+	if err := g.client.SetAllowGridCharging(device.Serial, misc.OnOffToInt(allow)); err != nil {
+		slog.Error("unable to set allow grid charging (web)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+		return err
+	}
+	return nil
+}
+
+func (g *GrowattService) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error {
+	slog.Info("trying to set grid connection control (web)", slog.String("device", device.Serial), slog.Any("offlineEnable", offlineEnable))
+	return nil
+}
+
+func (g *GrowattService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
+	slog.Info("trying to set ac couple power control (web)", slog.String("device", device.Serial), slog.Any("_1000WEnable", _1000WEnable))
+	return nil
+}
+
+func (g *GrowattService) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
+	slog.Info("trying to set light load enable (web)", slog.String("device", device.Serial), slog.Any("enable", enable))
+	return nil
+}
+
+func (g *GrowattService) SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error {
+	slog.Info("trying to set never power off (web)", slog.String("device", device.Serial), slog.Any("enable", enable))
+	return nil
+}
+
+func (g *GrowattService) SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error {
+	slog.Info("trying to set backflow (web)", slog.String("device", device.Serial), slog.Any("enableLimit", enableLimit), slog.Float64("powerSettingPercent", powerSettingPercent))
+	return nil
 }
 
 func (g *GrowattService) enumerateDevices() []models.NoahDevicePayload {
