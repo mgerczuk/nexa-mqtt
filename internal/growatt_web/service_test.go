@@ -1125,3 +1125,50 @@ func TestPolling_multipleTimes(t *testing.T) {
 	mockEndpoint.AssertNumberOfCalls(t, "PublishPvDetails", nLoops+1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", nLoops+1)
 }
+
+func TestDefaultDurationCalculator_Initial(t *testing.T) {
+	calculator := &defaultDurationCalculator{}
+
+	initDur, initRetryDur := calculator.Initial()
+	assert.Equal(t, time.Duration(0), initDur)
+	assert.Equal(t, time.Second*5, initRetryDur)
+}
+
+func TestDefaultDurationCalculator_Next(t *testing.T) {
+	calculator := &defaultDurationCalculator{}
+
+	lastTimeStamp := time.Now()
+	retryDur := time.Second * 5
+
+	nextDur, nextTimeStamp, nextRetryDur := calculator.Next(lastTimeStamp, retryDur)
+
+	assert.Equal(t, time.Duration(185*time.Second), nextDur.Round(time.Millisecond))
+	assert.Equal(t, lastTimeStamp, nextTimeStamp)
+	assert.Equal(t, time.Second*5, nextRetryDur)
+}
+
+func TestDefaultDurationCalculator_Next2(t *testing.T) {
+	calculator := &defaultDurationCalculator{defaultDuration: time.Second * 180}
+
+	lastTimeStamp := time.Now().Add(-200 * time.Second)
+	retryDur := time.Second * 5
+
+	nextDur, nextTimeStamp, nextRetryDur := calculator.Next(lastTimeStamp, retryDur)
+
+	assert.Equal(t, retryDur, nextDur)
+	assert.Equal(t, lastTimeStamp, nextTimeStamp)
+	assert.Equal(t, calculator.defaultDuration, nextRetryDur)
+}
+
+func TestDefaultDurationCalculator_Next3(t *testing.T) {
+	calculator := &defaultDurationCalculator{defaultDuration: time.Second * 180}
+
+	lastTimeStamp := time.Time{}
+	retryDur := time.Second * 5
+
+	nextDur, nextTimeStamp, nextRetryDur := calculator.Next(lastTimeStamp, retryDur)
+
+	assert.Equal(t, calculator.defaultDuration, nextDur)
+	assert.Equal(t, lastTimeStamp, nextTimeStamp)
+	assert.Equal(t, time.Second*5, nextRetryDur)
+}
