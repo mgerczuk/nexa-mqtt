@@ -91,6 +91,259 @@ func TestSetEndpoint(t *testing.T) {
 	ep.AssertExpectations(t)
 }
 
+func TestSetOutputPowerW_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: true})
+
+	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetOutputPowerW(device, models.WorkMode("invalid"), 100)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetOutputPowerW_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: false})
+
+	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetChargingLimits_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: true})
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: true})
+
+	err := service.SetChargingLimits(device, 95, 10)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetChargingLimits_LowFails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: false})
+	//mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: true})
+
+	err := service.SetChargingLimits(device, 95, 10)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetChargingLimits_HighFails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: true})
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: false})
+
+	err := service.SetChargingLimits(device, 95, 10)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAllowGridCharging_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: true})
+
+	err := service.SetAllowGridCharging(device, models.ON)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAllowGridCharging_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetAllowGridCharging(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAllowGridCharging_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: false})
+
+	err := service.SetAllowGridCharging(device, models.ON)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControl_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: true})
+
+	err := service.SetGridConnectionControl(device, models.OFF)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControl_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetGridConnectionControl(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetGridConnectionControl_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: false})
+
+	err := service.SetGridConnectionControl(device, models.OFF)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: true})
+
+	err := service.SetAcCouplePowerControl(device, models.ON)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetAcCouplePowerControl(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAcCouplePowerControl_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: false})
+
+	err := service.SetAcCouplePowerControl(device, models.ON)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: true})
+
+	err := service.SetLightLoadEnable(device, models.OFF)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetLightLoadEnable(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetLightLoadEnable_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: false})
+
+	err := service.SetLightLoadEnable(device, models.OFF)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: true})
+
+	err := service.SetNeverPowerOff(device, models.ON)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetNeverPowerOff(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetNeverPowerOff_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: false})
+
+	err := service.SetNeverPowerOff(device, models.ON)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_Ok(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: true})
+
+	err := service.SetBackflow(device, models.ON, 15.0)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_Invalid(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	err := service.SetBackflow(device, models.OnOff("invalid"), 15.0)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetBackflow_Fails(t *testing.T) {
+	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: false})
+
+	err := service.SetBackflow(device, models.ON, 15.0)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
 func Test_enumerateDevices_GetPlantListFails(t *testing.T) {
 	mockHttpClient, service, _, _ := setupGrowattServiceMocks(t)
 

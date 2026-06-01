@@ -198,22 +198,34 @@ func (c *Client) SetChargingSocLowLimit(serialNumber string, dischargeLimit floa
 
 // "Set Exportlimit" setting
 func (h *Client) SetAntiBackflowSetting(serialNumber string, enableLimit int, powerSettingPercent float64) error {
+	if enableLimit != 0 && enableLimit != 1 {
+		return errors.New("enableLimit must be 0 or 1")
+	}
 	val := math.Max(0, math.Min(100, powerSettingPercent))
 	return h.tcpset(serialNumber, "anti_back_flow_setting", fmt.Sprintf("%d", enableLimit), fmt.Sprintf("%.0f", val))
 }
 
 // "Power+ Function" setting
 func (c *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
+	if _1000WEnable != 0 && _1000WEnable != 1 {
+		return errors.New("_1000WEnable must be 0 or 1")
+	}
 	return c.tcpset(serialNumber, "ac_couple_power_control", fmt.Sprintf("%d", _1000WEnable))
 }
 
 // "Off-Grid Enable" setting
 func (c *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
+	if offlineEnable != 0 && offlineEnable != 1 {
+		return errors.New("offlineEnable must be 0 or 1")
+	}
 	return c.tcpset(serialNumber, "grid_connection_control", fmt.Sprintf("%d", offlineEnable))
 }
 
 // "AC Always On" setting
 func (c *Client) SetLightLoadEnable(serialNumber string, enable int) error {
+	if enable != 0 && enable != 1 {
+		return errors.New("enable must be 0 or 1")
+	}
 	return c.tcpset(serialNumber, "light_load_enable", fmt.Sprintf("%d", enable))
 }
 
@@ -230,10 +242,16 @@ func (c *Client) SetAcCoupleEnable(serialNumber string, enabled int) error {
 
 // "Draw power from the grid" setting
 func (c *Client) SetAllowGridCharging(serialNumber string, allow int) error {
+	if allow != 0 && allow != 1 {
+		return errors.New("allow must be 0 or 1")
+	}
 	return c.tcpset(serialNumber, "allow_grid_charging", fmt.Sprintf("%d", allow))
 }
 
 // "Always On" setting
 func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
+	if enable != 0 && enable != 1 {
+		return errors.New("enable must be 0 or 1")
+	}
 	return h.tcpset(serialNumber, "never_power_off", fmt.Sprintf("%d", enable))
 }

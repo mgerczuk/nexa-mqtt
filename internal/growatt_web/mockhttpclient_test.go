@@ -203,3 +203,54 @@ func (m *MockHttpClient) OnGetNoahTotals(plantId int, serial string, result Grow
 
 	return call.Return(err)
 }
+
+func (m *MockHttpClient) OnSet1Params(serialNumber, _type, param1 string, err error, response SetResponse) *mock.Call {
+	call := m.On(
+		"postForm",
+		"https://openapi.growatt.com/tcpSet.do",
+		url.Values{
+			"action":    {"noahSet"},
+			"serialNum": {serialNumber},
+			"type":      {_type},
+			"param1":    {param1},
+		},
+		&SetResponse{},
+	)
+
+	if err == nil {
+		call = call.Run(
+			func(args mock.Arguments) {
+				responseBody := args.Get(2).(*SetResponse)
+				*responseBody = response
+			},
+		)
+	}
+
+	return call.Return(err)
+}
+
+func (m *MockHttpClient) OnSet2Params(serialNumber, _type, param1, param2 string, err error, response SetResponse) *mock.Call {
+	call := m.On(
+		"postForm",
+		"https://openapi.growatt.com/tcpSet.do",
+		url.Values{
+			"action":    {"noahSet"},
+			"serialNum": {serialNumber},
+			"type":      {_type},
+			"param1":    {param1},
+			"param2":    {param2},
+		},
+		&SetResponse{},
+	)
+
+	if err == nil {
+		call = call.Run(
+			func(args mock.Arguments) {
+				responseBody := args.Get(2).(*SetResponse)
+				*responseBody = response
+			},
+		)
+	}
+
+	return call.Return(err)
+}
