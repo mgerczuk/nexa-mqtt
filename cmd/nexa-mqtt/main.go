@@ -32,10 +32,10 @@ func main() {
 		misc.Panic(err)
 	}
 
-	slog.Info("nexa-mqtt started", slog.String("version", version), slog.String("commit", commit))
+	fmt.Fprintf(os.Stdout, "--- nexa-mqtt started (version: %s, commit: %s)\n", version, commit)
 
 	if currentUser, err := user.Current(); err == nil {
-		slog.Info("running as", slog.String("username", currentUser.Username), slog.String("uid", currentUser.Uid))
+		fmt.Fprintf(os.Stdout, "    running as user: %s (uid: %s)\n", currentUser.Username, currentUser.Uid)
 	}
 
 	app := NewApp(cfg)
@@ -138,7 +138,6 @@ func NewApp(cfg config.Config) *App {
 			misc.Panic(err)
 		}
 
-		slog.Warn("web mode does not support setting parameters")
 		return &App{
 			mode:           mode,
 			cfg:            cfg,

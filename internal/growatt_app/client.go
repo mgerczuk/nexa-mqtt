@@ -198,7 +198,7 @@ func (h *Client) nexaSet(serialNumber string, settingType string, params ...stri
 		return errors.New(data.Msg)
 	}
 
-	return nil 
+	return nil
 }
 
 func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
@@ -233,6 +233,7 @@ func (h *Client) SetLightLoadEnable(serialNumber string, enable int) error {
 // "Always On" setting
 func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
 	return h.nexaSet(serialNumber, "never_power_off", fmt.Sprintf("%d", enable))
+}
 
 // "Export Limitation" setting
 func (h *Client) SetBackflow(serialNumber string, enableLimit int, powerSettingPercent float64) error {
