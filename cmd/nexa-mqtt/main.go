@@ -79,6 +79,8 @@ func (a *App) onMqttConnect(client mqtt.Client) {
 		HaClient:    haService,
 	})
 
+	client.Publish(fmt.Sprintf("%s/availability", a.cfg.Mqtt.TopicPrefix), 1, true, "online")
+
 	switch a.mode {
 	case "app":
 		a.growattApp.SetEndpoint(mqttEndpoint)
@@ -196,7 +198,8 @@ func connectMqtt(mqttCfg config.Mqtt, app *App) {
 		AddBroker(brokerUrl).
 		SetClientID(mqttCfg.ClientId).
 		SetUsername(mqttCfg.Username).
-		SetPassword(mqttCfg.Password)
+		SetPassword(mqttCfg.Password).
+		SetWill(fmt.Sprintf("%s/availability", mqttCfg.TopicPrefix), "offline", 1, true)
 
 	opts.OnConnect = func(client mqtt.Client) {
 		slog.Info("connected to mqtt broker")
