@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
@@ -45,17 +46,17 @@ func newClient(serverUrl string, username string, password string) *Client {
 	}
 }
 
-func (h *Client) postForm(url string, data url.Values, responseBody any) error {
-	err := h.client.postForm(url, data, responseBody)
+func (c *Client) postForm(url string, data url.Values, responseBody any) error {
+	err := c.client.postForm(url, data, responseBody)
 	if err != nil {
 		notLoggedIn := strings.Contains(err.Error(), "invalid character '<' looking for beginning of value")
 		if notLoggedIn {
 			slog.Warn("re-login (web)", slog.String("error", err.Error()))
-			if err := h.Login(); err != nil {
+			if err := c.Login(); err != nil {
 				slog.Error("could not re-login", slog.String("error", err.Error()))
 				misc.Panic(err)
 			}
-			return h.postForm(url, data, responseBody)
+			return c.postForm(url, data, responseBody)
 		} else {
 			return err
 		}
@@ -64,11 +65,11 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) error {
 	return nil
 }
 
-func (h *Client) Login() error {
+func (c *Client) Login() error {
 	var result GrowattResult
-	if err := h.postForm(h.serverUrl+"/login", url.Values{
-		"account":  {h.username},
-		"password": {h.password},
+	if err := c.postForm(c.serverUrl+"/login", url.Values{
+		"account":  {c.username},
+		"password": {c.password},
 	}, &result); err != nil {
 		return err
 	}
@@ -78,17 +79,17 @@ func (h *Client) Login() error {
 	return nil
 }
 
-func (h *Client) GetPlantList() ([]GrowattPlant, error) {
+func (c *Client) GetPlantList() ([]GrowattPlant, error) {
 	var result []GrowattPlant
-	if err := h.postForm(h.serverUrl+"/index/getPlantListTitle", url.Values{}, &result); err != nil {
+	if err := c.postForm(c.serverUrl+"/index/getPlantListTitle", url.Values{}, &result); err != nil {
 		return nil, err
 	}
 	return result, nil
 }
 
-func (h *Client) GetPlantDevices(plantId string) (*GrowattPlantDevices, error) {
+func (c *Client) GetPlantDevices(plantId string) (*GrowattPlantDevices, error) {
 	var result GrowattPlantDevices
-	if err := h.postForm(h.serverUrl+"/panel/getDevicesByPlantList", url.Values{
+	if err := c.postForm(c.serverUrl+"/panel/getDevicesByPlantList", url.Values{
 		"plantId":  {plantId},
 		"currPage": {"1"},
 	}, &result); err != nil {
@@ -97,9 +98,9 @@ func (h *Client) GetPlantDevices(plantId string) (*GrowattPlantDevices, error) {
 	return &result, nil
 }
 
-func (h *Client) GetNoahList(plantId int) (*GrowattNoahList, error) {
+func (c *Client) GetNoahList(plantId int) (*GrowattNoahList, error) {
 	var result GrowattNoahList
-	if err := h.postForm(h.serverUrl+"/device/getNoahList", url.Values{
+	if err := c.postForm(c.serverUrl+"/device/getNoahList", url.Values{
 		"plantId":  {fmt.Sprintf("%d", plantId)},
 		"currPage": {"1"},
 	}, &result); err != nil {
@@ -108,9 +109,9 @@ func (h *Client) GetNoahList(plantId int) (*GrowattNoahList, error) {
 	return &result, nil
 }
 
-func (h *Client) GetNoahDetails(plantId int, serial string) (*GrowattNoahList, error) {
+func (c *Client) GetNoahDetails(plantId int, serial string) (*GrowattNoahList, error) {
 	var result GrowattNoahList
-	if err := h.postForm(h.serverUrl+"/device/getNoahList", url.Values{
+	if err := c.postForm(c.serverUrl+"/device/getNoahList", url.Values{
 		"plantId":  {fmt.Sprintf("%d", plantId)},
 		"deviceSn": {serial},
 		"currPage": {"1"},
@@ -120,7 +121,7 @@ func (h *Client) GetNoahDetails(plantId int, serial string) (*GrowattNoahList, e
 	return &result, nil
 }
 
-func (h *Client) GetNoahHistory(serial string, startDate string, endDate string) (*GrowattNoahHistory, error) {
+func (c *Client) GetNoahHistory(serial string, startDate string, endDate string) (*GrowattNoahHistory, error) {
 	if startDate == "" {
 		startDate = time.Now().Format("2006-01-02")
 	}
@@ -128,7 +129,7 @@ func (h *Client) GetNoahHistory(serial string, startDate string, endDate string)
 		endDate = time.Now().Format("2006-01-02")
 	}
 	var result GrowattNoahHistory
-	if err := h.postForm(h.serverUrl+"/device/getNoahHistory", url.Values{
+	if err := c.postForm(c.serverUrl+"/device/getNoahHistory", url.Values{
 		"deviceSn":  {serial},
 		"start":     {"0"},
 		"startDate": {startDate},
@@ -139,9 +140,9 @@ func (h *Client) GetNoahHistory(serial string, startDate string, endDate string)
 	return &result, nil
 }
 
-func (h *Client) GetNoahStatus(plantId int, serial string) (*GrowattNoahStatus, error) {
+func (c *Client) GetNoahStatus(plantId int, serial string) (*GrowattNoahStatus, error) {
 	var result GrowattNoahStatus
-	if err := h.postForm(fmt.Sprintf(h.serverUrl+"/panel/noah/getNoahStatusData?plantId=%d", plantId), url.Values{
+	if err := c.postForm(fmt.Sprintf(c.serverUrl+"/panel/noah/getNoahStatusData?plantId=%d", plantId), url.Values{
 		"deviceSn": {serial},
 	}, &result); err != nil {
 		return nil, err
@@ -149,12 +150,108 @@ func (h *Client) GetNoahStatus(plantId int, serial string) (*GrowattNoahStatus, 
 	return &result, nil
 }
 
-func (h *Client) GetNoahTotals(plantId int, serial string) (*GrowattNoahTotals, error) {
+func (c *Client) GetNoahTotals(plantId int, serial string) (*GrowattNoahTotals, error) {
 	var result GrowattNoahTotals
-	if err := h.postForm(fmt.Sprintf(h.serverUrl+"/panel/noah/getNoahTotalData?plantId=%d", plantId), url.Values{
+	if err := c.postForm(fmt.Sprintf(c.serverUrl+"/panel/noah/getNoahTotalData?plantId=%d", plantId), url.Values{
 		"deviceSn": {serial},
 	}, &result); err != nil {
 		return nil, err
 	}
 	return &result, nil
+}
+
+type SetResponse struct {
+	Msg     string `json:"msg"`
+	Success bool   `json:"success"`
+}
+
+func (c *Client) tcpset(serialNumber string, _type string, params ...string) error {
+	body := url.Values{
+		"action":    {"noahSet"},
+		"serialNum": {serialNumber},
+		"type":      {_type},
+	}
+	for i, param := range params {
+		body.Set(fmt.Sprintf("param%d", i+1), param)
+	}
+	var result SetResponse
+	if err := c.postForm(c.serverUrl+"/tcpSet.do", body, &result); err != nil {
+		return err
+	}
+	if !result.Success {
+		return errors.New(result.Msg)
+	}
+	return nil
+}
+
+// "Charge Upper Limit SOC" setting
+func (h *Client) SetChargingSocHighLimit(serialNumber string, chargingLimit float64) error {
+	val := math.Max(70, math.Min(100, chargingLimit))
+	return h.tcpset(serialNumber, "charging_soc_high_limit", fmt.Sprintf("%.0f", val))
+}
+
+// "Discharge Lower Limit SOC" setting
+func (c *Client) SetChargingSocLowLimit(serialNumber string, dischargeLimit float64) error {
+	val := math.Max(0, math.Min(30, dischargeLimit))
+	return c.tcpset(serialNumber, "charging_soc_low_limit", fmt.Sprintf("%.0f", val))
+}
+
+// "Set Exportlimit" setting
+func (h *Client) SetAntiBackflowSetting(serialNumber string, enableLimit int, powerSettingPercent float64) error {
+	if enableLimit != 0 && enableLimit != 1 {
+		return errors.New("enableLimit must be 0 or 1")
+	}
+	val := math.Max(0, math.Min(100, powerSettingPercent))
+	return h.tcpset(serialNumber, "anti_back_flow_setting", fmt.Sprintf("%d", enableLimit), fmt.Sprintf("%.0f", val))
+}
+
+// "Power+ Function" setting
+func (c *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
+	if _1000WEnable != 0 && _1000WEnable != 1 {
+		return errors.New("_1000WEnable must be 0 or 1")
+	}
+	return c.tcpset(serialNumber, "ac_couple_power_control", fmt.Sprintf("%d", _1000WEnable))
+}
+
+// "Off-Grid Enable" setting
+func (c *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
+	if offlineEnable != 0 && offlineEnable != 1 {
+		return errors.New("offlineEnable must be 0 or 1")
+	}
+	return c.tcpset(serialNumber, "grid_connection_control", fmt.Sprintf("%d", offlineEnable))
+}
+
+// "AC Always On" setting
+func (c *Client) SetLightLoadEnable(serialNumber string, enable int) error {
+	if enable != 0 && enable != 1 {
+		return errors.New("enable must be 0 or 1")
+	}
+	return c.tcpset(serialNumber, "light_load_enable", fmt.Sprintf("%d", enable))
+}
+
+// "System Default Output Power" setting
+func (c *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
+	val := math.Max(0, math.Min(1000, power))
+	return c.tcpset(serialNumber, "system_out_put_power", fmt.Sprintf("%d", mode), fmt.Sprintf("%.0f", val))
+}
+
+// "AC Couple Enable" setting - not used
+func (c *Client) SetAcCoupleEnable(serialNumber string, enabled int) error {
+	return c.tcpset(serialNumber, "ac_couple_enable", fmt.Sprintf("%d", enabled))
+}
+
+// "Draw power from the grid" setting
+func (c *Client) SetAllowGridCharging(serialNumber string, allow int) error {
+	if allow != 0 && allow != 1 {
+		return errors.New("allow must be 0 or 1")
+	}
+	return c.tcpset(serialNumber, "allow_grid_charging", fmt.Sprintf("%d", allow))
+}
+
+// "Always On" setting
+func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
+	if enable != 0 && enable != 1 {
+		return errors.New("enable must be 0 or 1")
+	}
+	return h.tcpset(serialNumber, "never_power_off", fmt.Sprintf("%d", enable))
 }

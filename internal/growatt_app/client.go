@@ -182,15 +182,16 @@ func (h *Client) GetBatteryData(serialNumber string) (*BatteryInfo, error) {
 	return &data, nil
 }
 
-func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
-	p := math.Max(0, math.Min(1000, power))
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
+func (h *Client) nexaSet(serialNumber string, settingType string, params ...string) error {
+	body := url.Values{
 		"serialNum": {serialNumber},
-		"type":      {"system_out_put_power"},
-		"param1":    {fmt.Sprintf("%d", mode)},
-		"param2":    {fmt.Sprintf("%.0f", p)},
-	}, &data); err != nil {
+		"type":      {settingType},
+	}
+	for i, param := range params {
+		body.Set(fmt.Sprintf("param%d", i+1), param)
+	}
+	var data SetResponse
+	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", body, &data); err != nil {
 		return err
 	}
 	if data.Result <= 0 {
@@ -198,124 +199,43 @@ func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 	}
 
 	return nil
+}
+
+func (h *Client) SetSystemOutputPower(serialNumber string, mode int, power float64) error {
+	p := math.Max(0, math.Min(1000, power))
+	return h.nexaSet(serialNumber, "system_out_put_power", fmt.Sprintf("%d", mode), fmt.Sprintf("%.0f", p))
 }
 
 func (h *Client) SetChargingSoc(serialNumber string, chargingLimit float64, dischargeLimit float64) error {
 	c := math.Max(70, math.Min(100, chargingLimit))
 	d := math.Max(0, math.Min(30, dischargeLimit))
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"charging_soc"},
-		"param1":    {fmt.Sprintf("%.0f", c)},
-		"param2":    {fmt.Sprintf("%.0f", d)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "charging_soc", fmt.Sprintf("%.0f", c), fmt.Sprintf("%.0f", d))
 }
 
 func (h *Client) SetAllowGridCharging(serialNumber string, allow int) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"allow_grid_charging"},
-		"param1":    {fmt.Sprintf("%d", allow)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "allow_grid_charging", fmt.Sprintf("%d", allow))
 }
 
 func (h *Client) SetGridConnectionControl(serialNumber string, offlineEnable int) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"grid_connection_control"},
-		"param1":    {fmt.Sprintf("%d", offlineEnable)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "grid_connection_control", fmt.Sprintf("%d", offlineEnable))
 }
 
 // "Power+ Function" setting
 func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"ac_couple_power_control"},
-		"param1":    {fmt.Sprintf("%d", _1000WEnable)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "ac_couple_power_control", fmt.Sprintf("%d", _1000WEnable))
 }
 
 // "AC Always On" setting
 func (h *Client) SetLightLoadEnable(serialNumber string, enable int) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"light_load_enable"},
-		"param1":    {fmt.Sprintf("%d", enable)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "light_load_enable", fmt.Sprintf("%d", enable))
 }
 
 // "Always On" setting
 func (h *Client) SetNeverPowerOff(serialNumber string, enable int) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"never_power_off"},
-		"param1":    {fmt.Sprintf("%d", enable)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "never_power_off", fmt.Sprintf("%d", enable))
 }
 
 // "Export Limitation" setting
 func (h *Client) SetBackflow(serialNumber string, enableLimit int, powerSettingPercent float64) error {
-	var data SetResponse
-	if err := h.postForm(h.serverUrl+"/noahDeviceApi/nexa/set", url.Values{
-		"serialNum": {serialNumber},
-		"type":      {"backflow_setting"},
-		"param1":    {fmt.Sprintf("%d", enableLimit)},
-		"param2":    {fmt.Sprintf("%.0f", powerSettingPercent)},
-	}, &data); err != nil {
-		return err
-	}
-	if data.Result <= 0 {
-		return errors.New(data.Msg)
-	}
-
-	return nil
+	return h.nexaSet(serialNumber, "backflow_setting", fmt.Sprintf("%d", enableLimit), fmt.Sprintf("%.0f", powerSettingPercent))
 }
