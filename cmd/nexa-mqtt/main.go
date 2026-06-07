@@ -133,7 +133,7 @@ func NewApp(cfg config.Config) *App {
 			PollingInterval:               cfg.PollingInterval,
 			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
-			Location:                      *cfg.Growatt.Location,
+			Location:                      cfg.Growatt.Location,
 		})
 
 		if err := growattService.Login(); err != nil {
@@ -156,7 +156,7 @@ func NewApp(cfg config.Config) *App {
 			PollingInterval:               cfg.PollingInterval,
 			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
-			Location:                      *cfg.Growatt.Location,
+			Location:                      cfg.Growatt.Location,
 		})
 
 		if err := growattService.Login(); err != nil {

@@ -169,3 +169,20 @@ type NoahDevicePayload struct {
 type NoahDeviceBatteryPayload struct {
 	Alias string `json:"alias"`
 }
+
+type ServiceHealth struct {
+	Status      string    `json:"status"`
+	LastSuccess time.Time `json:"last_success"`
+	Message     string    `json:"message,omitempty"`
+}
+
+func (h *ServiceHealth) UpdateSuccess() {
+	h.Status = "ok"
+	h.LastSuccess = time.Now().Round(time.Second)
+	h.Message = ""
+}
+
+func (h *ServiceHealth) UpdateError(err error) {
+	h.Status = "error"
+	h.Message = err.Error()
+}

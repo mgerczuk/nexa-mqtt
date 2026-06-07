@@ -21,3 +21,7 @@ func parameterStateTopic(topicPrefix string, serialNumber string) string {
 func parameterCommandTopic(topicPrefix string, serialNumber string) string {
 	return fmt.Sprintf("%s/%s/parameters/set", topicPrefix, serialNumber)
 }
+
+func healthTopic(topicPrefix string, serialNumber string) string {
+	return fmt.Sprintf("%s/%s/health", topicPrefix, serialNumber)
+}

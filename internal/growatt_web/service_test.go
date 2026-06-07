@@ -40,8 +40,14 @@ func setupGrowattServiceMocks(t *testing.T) (*MockHttpClient, *GrowattService, m
 	endpoint := MockEndpoint{}
 
 	service := GrowattService{
+		opts: Options{
+			Location: time.Local,
+		},
 		client:   &client,
 		endpoint: &endpoint,
+		health: models.ServiceHealth{
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+		},
 	}
 
 	device := models.NoahDevicePayload{
@@ -92,9 +98,15 @@ func TestSetEndpoint(t *testing.T) {
 }
 
 func TestSetOutputPowerW_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
 
@@ -103,7 +115,15 @@ func TestSetOutputPowerW_Ok(t *testing.T) {
 }
 
 func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid work mode: invalid",
+		})
 
 	err := service.SetOutputPowerW(device, models.WorkMode("invalid"), 100)
 
@@ -112,9 +132,16 @@ func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
 }
 
 func TestSetOutputPowerW_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: false, Msg: "set output power failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set output power failed",
+		})
 
 	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
 
@@ -123,10 +150,16 @@ func TestSetOutputPowerW_Fails(t *testing.T) {
 }
 
 func TestSetChargingLimits_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: true})
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -135,10 +168,16 @@ func TestSetChargingLimits_Ok(t *testing.T) {
 }
 
 func TestSetChargingLimits_LowFails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: false})
-	//mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: true})
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: false, Msg: "set low limit failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set low limit failed",
+		})
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -147,10 +186,17 @@ func TestSetChargingLimits_LowFails(t *testing.T) {
 }
 
 func TestSetChargingLimits_HighFails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: true})
-	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: false, Msg: "set high limit failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set high limit failed",
+		})
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -159,9 +205,15 @@ func TestSetChargingLimits_HighFails(t *testing.T) {
 }
 
 func TestSetAllowGridCharging_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetAllowGridCharging(device, models.ON)
 
@@ -170,7 +222,15 @@ func TestSetAllowGridCharging_Ok(t *testing.T) {
 }
 
 func TestSetAllowGridCharging_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetAllowGridCharging(device, models.OnOff("invalid"))
 
@@ -179,9 +239,16 @@ func TestSetAllowGridCharging_Invalid(t *testing.T) {
 }
 
 func TestSetAllowGridCharging_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: false, Msg: "set allow grid charging failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set allow grid charging failed",
+		})
 
 	err := service.SetAllowGridCharging(device, models.ON)
 
@@ -190,9 +257,15 @@ func TestSetAllowGridCharging_Fails(t *testing.T) {
 }
 
 func TestSetGridConnectionControl_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetGridConnectionControl(device, models.OFF)
 
@@ -201,7 +274,15 @@ func TestSetGridConnectionControl_Ok(t *testing.T) {
 }
 
 func TestSetGridConnectionControl_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetGridConnectionControl(device, models.OnOff("invalid"))
 
@@ -210,9 +291,16 @@ func TestSetGridConnectionControl_Invalid(t *testing.T) {
 }
 
 func TestSetGridConnectionControl_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: false, Msg: "set grid connection control failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set grid connection control failed",
+		})
 
 	err := service.SetGridConnectionControl(device, models.OFF)
 
@@ -221,9 +309,15 @@ func TestSetGridConnectionControl_Fails(t *testing.T) {
 }
 
 func TestSetAcCouplePowerControl_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetAcCouplePowerControl(device, models.ON)
 
@@ -232,7 +326,15 @@ func TestSetAcCouplePowerControl_Ok(t *testing.T) {
 }
 
 func TestSetAcCouplePowerControl_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetAcCouplePowerControl(device, models.OnOff("invalid"))
 
@@ -241,9 +343,16 @@ func TestSetAcCouplePowerControl_Invalid(t *testing.T) {
 }
 
 func TestSetAcCouplePowerControl_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: false, Msg: "set ac couple power control failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set ac couple power control failed",
+		})
 
 	err := service.SetAcCouplePowerControl(device, models.ON)
 
@@ -252,9 +361,15 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 }
 
 func TestSetLightLoadEnable_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetLightLoadEnable(device, models.OFF)
 
@@ -263,7 +378,15 @@ func TestSetLightLoadEnable_Ok(t *testing.T) {
 }
 
 func TestSetLightLoadEnable_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetLightLoadEnable(device, models.OnOff("invalid"))
 
@@ -272,9 +395,16 @@ func TestSetLightLoadEnable_Invalid(t *testing.T) {
 }
 
 func TestSetLightLoadEnable_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: false, Msg: "set light load enable failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set light load enable failed",
+		})
 
 	err := service.SetLightLoadEnable(device, models.OFF)
 
@@ -283,9 +413,15 @@ func TestSetLightLoadEnable_Fails(t *testing.T) {
 }
 
 func TestSetNeverPowerOff_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetNeverPowerOff(device, models.ON)
 
@@ -294,7 +430,15 @@ func TestSetNeverPowerOff_Ok(t *testing.T) {
 }
 
 func TestSetNeverPowerOff_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetNeverPowerOff(device, models.OnOff("invalid"))
 
@@ -303,9 +447,16 @@ func TestSetNeverPowerOff_Invalid(t *testing.T) {
 }
 
 func TestSetNeverPowerOff_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: false, Msg: "set never power off failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set never power off failed",
+		})
 
 	err := service.SetNeverPowerOff(device, models.ON)
 
@@ -314,9 +465,15 @@ func TestSetNeverPowerOff_Fails(t *testing.T) {
 }
 
 func TestSetBackflow_Ok(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	err := service.SetBackflow(device, models.ON, 15.0)
 
@@ -325,7 +482,15 @@ func TestSetBackflow_Ok(t *testing.T) {
 }
 
 func TestSetBackflow_Invalid(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "invalid ON/OFF value: invalid",
+		})
 
 	err := service.SetBackflow(device, models.OnOff("invalid"), 15.0)
 
@@ -334,9 +499,16 @@ func TestSetBackflow_Invalid(t *testing.T) {
 }
 
 func TestSetBackflow_Fails(t *testing.T) {
-	mockHttpClient, service, device, _ := setupGrowattServiceMocks(t)
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
-	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: false})
+	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: false, Msg: "set backflow failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "set backflow failed",
+		})
 
 	err := service.SetBackflow(device, models.ON, 15.0)
 
@@ -382,11 +554,11 @@ func Test_enumerateDevices_GetNoahHistoryFails(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
 	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
+	dev2 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -407,11 +579,11 @@ func Test_enumerateDevices_GetNoahHistoryNoData(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
 	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
+	dev2 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
 
 	today := time.Now().Format("2006-01-02")
@@ -433,12 +605,12 @@ func Test_enumerateDevices_Ok(t *testing.T) {
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial123", PlantID: "1", DeviceModel: "NEXA 2000", Version: "10.10.07.07.4016"},
 		{Sn: "Serial234", PlantID: "1", DeviceModel: "NEXA 2001"},
 	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
-	dev2 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	dev2 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: "Serial345", PlantID: "2", DeviceModel: "NEXA 2002"},
 	}}}
 	mockHttpClient.OnGetNoahList(2, dev2, nil)
@@ -512,6 +684,12 @@ func Test_pollStatus_OkCharge(t *testing.T) {
 			Status:                "on_grid",
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	service.pollStatus(device)
 
@@ -555,6 +733,12 @@ func Test_pollStatus_OkDischarge(t *testing.T) {
 			Status:                "on_grid",
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	service.pollStatus(device)
 
@@ -566,6 +750,14 @@ func Test_pollStatus_GetNoahStatusFails(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnGetNoahStatus(device.PlantId, device.Serial, GrowattNoahStatus{}, errors.New("GetNoahStatus fails"))
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "GetNoahStatus fails",
+		})
 
 	service.pollStatus(device)
 
@@ -588,6 +780,14 @@ func Test_pollStatus_GetNoahTotalsFails(t *testing.T) {
 			}}}, nil)
 	mockHttpClient.OnGetNoahTotals(device.PlantId, device.Serial, GrowattNoahTotals{}, errors.New("GetNoahTotals fails"))
 
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "GetNoahTotals fails",
+		})
+
 	service.pollStatus(device)
 
 	mockHttpClient.AssertExpectations(t)
@@ -609,7 +809,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	antiBackflowEnable := models.ON
 	antiBackflowPowerPercentage := 37.0
 
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{
 			ChargingSocHighLimit:        "95",
 			ChargingSocLowLimit:         "11",
@@ -642,6 +842,12 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	service.pollParameterData(device)
 
@@ -654,6 +860,14 @@ func Test_pollParameterData_GetNoahDetailsFails(t *testing.T) {
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, errors.New("GetNoahDetails fails"))
 
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "GetNoahDetails fails",
+		})
+
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)
@@ -664,6 +878,14 @@ func Test_pollParameterData_GetNoahDetailsNoData(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
 	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{}, nil)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "no devices available",
+		})
 
 	service.pollParameterData(device)
 
@@ -724,7 +946,6 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 			{Time: tm, SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
 		},
 	)
-
 	mockEndpoint.On(
 		"PublishPvDetails",
 		device,
@@ -735,6 +956,13 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 			{Time: tm, Voltage: 7.09, Current: 0.03, Temp: 20.5},
 		},
 	)
+	mockEndpoint.On(
+		"PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	lastTimestamp := service.pollBatteryDetails(device, tm.Add(-3*time.Minute))
 
@@ -748,6 +976,14 @@ func Test_pollBatteryDetails_OnGetNoahHistoryFails(t *testing.T) {
 
 	today := time.Now().Format("2006-01-02")
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{}, errors.New("OnGetNoahHistory fails"))
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "OnGetNoahHistory fails",
+		})
 
 	lastTimestamp := service.pollBatteryDetails(device, time.Time{})
 
@@ -763,6 +999,8 @@ func Test_pollBatteryDetails_GetNoahHistoryNoData(t *testing.T) {
 	mockHttpClient.OnGetNoahHistory(device.Serial, today, today, GrowattNoahHistory{}, nil)
 
 	lastTimestamp := service.pollBatteryDetails(device, time.Time{})
+
+	// no health data
 
 	assert.True(t, lastTimestamp.IsZero())
 	mockHttpClient.AssertExpectations(t)
@@ -821,7 +1059,6 @@ func Test_pollBatteryDetails_InvalidDate(t *testing.T) {
 			{Time: time.Time{}, SerialNumber: "serial127", Soc: 66.0, Temperature: 36.0},
 		},
 	)
-
 	mockEndpoint.On(
 		"PublishPvDetails",
 		device,
@@ -832,6 +1069,12 @@ func Test_pollBatteryDetails_InvalidDate(t *testing.T) {
 			{Time: time.Time{}, Voltage: 7.09, Current: 0.03, Temp: 20.5},
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	lastTimestamp := service.pollBatteryDetails(device, time.Time{})
 
@@ -898,7 +1141,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	}
 	mockHttpClient.OnGetPlantList(plantList, nil)
 
-	dev1 := GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	dev1 := GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{Sn: device.Serial, PlantID: strconv.Itoa(device.PlantId)},
 	}}}
 	mockHttpClient.OnGetNoahList(1, dev1, nil)
@@ -1010,6 +1253,12 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
 
+	mockEndpoint.On(
+		"PublishHealth",
+		device,
+		mock.MatchedBy(func(h models.ServiceHealth) bool { return h.Status == "ok" }),
+	).Run(func(args mock.Arguments) { wg.Done() })
+
 	// ----- pollParameterData
 
 	chargingLimit := 95.0
@@ -1024,7 +1273,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	antiBackflowEnable := models.ON
 	antiBackflowPowerPercentage := 45.0
 
-	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PageResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
+	mockHttpClient.OnGetNoahDetails(device.PlantId, device.Serial, GrowattNoahList{PagedListResponse[GrowattNoahListData]{Datas: []GrowattNoahListData{
 		{
 			ChargingSocHighLimit:        "95",
 			ChargingSocLowLimit:         "11",
@@ -1082,7 +1331,7 @@ func TestPolling_once(t *testing.T) {
 
 	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
-	wg.Add(4)
+	wg.Add(7)
 
 	service.StartPolling(&MockDurationCalculator{})
 	time.Sleep(1 * time.Millisecond)
@@ -1097,6 +1346,7 @@ func TestPolling_once(t *testing.T) {
 	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishPvDetails", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishHealth", 3)
 }
 
 func TestPolling_multipleTimes(t *testing.T) {
@@ -1110,7 +1360,7 @@ func TestPolling_multipleTimes(t *testing.T) {
 	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
 	nLoops := 3
-	wg.Add((nLoops + 1) * 4)
+	wg.Add((nLoops + 1) * 7)
 
 	service.StartPolling(&MockDurationCalculator{})
 	time.Sleep(time.Duration(nLoops*millisRate+millisRate/2) * time.Millisecond)
@@ -1124,6 +1374,7 @@ func TestPolling_multipleTimes(t *testing.T) {
 	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", nLoops+1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishPvDetails", nLoops+1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishHealth", 3*(nLoops+1))
 }
 
 func TestDefaultDurationCalculator_Initial(t *testing.T) {

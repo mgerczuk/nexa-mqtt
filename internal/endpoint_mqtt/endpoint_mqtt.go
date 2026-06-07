@@ -135,6 +135,15 @@ func (e *Endpoint) PublishParameterData(device models.NoahDevicePayload, param m
 	}
 }
 
+func (e *Endpoint) PublishHealth(device models.NoahDevicePayload, health models.ServiceHealth) {
+	if b, err := json.Marshal(health); err != nil {
+		slog.Error("could not marshal health data", slog.String("error", err.Error()))
+	} else {
+		e.opts.MqttClient.Publish(healthTopic(e.opts.TopicPrefix, device.Serial), 0, false, string(b))
+		slog.Debug("health data sent to mqtt", slog.String("data", string(b)))
+	}
+}
+
 const debounceDelay = 500 * time.Millisecond
 
 func (e *Endpoint) parametersSubscription(dev models.NoahDevicePayload) func(client mqtt.Client, message mqtt.Message) {

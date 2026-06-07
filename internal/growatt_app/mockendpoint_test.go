@@ -35,3 +35,7 @@ func (e *MockEndpoint) PublishPvDetails(device models.NoahDevicePayload, details
 func (e *MockEndpoint) PublishParameterData(device models.NoahDevicePayload, param models.ParameterPayload) {
 	e.Called(device, param)
 }
+
+func (e *MockEndpoint) PublishHealth(device models.NoahDevicePayload, health models.ServiceHealth) {
+	e.Called(device, health)
+}
