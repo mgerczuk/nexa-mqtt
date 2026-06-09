@@ -4,6 +4,7 @@ import (
 	"errors"
 	"nexa-mqtt/pkg/models"
 	"testing"
+	"time"
 )
 
 // ----- Test functions -----------------------------------------------------
@@ -57,6 +58,12 @@ func Test_pollStatus_Ok(t *testing.T) {
 			Status:                "on_grid",
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	service.pollStatus(device)
 
@@ -71,6 +78,13 @@ func Test_pollStatus_Fail(t *testing.T) {
 		device.Serial,
 		NoahStatusObj{},
 		errors.New("pollStatus fails"))
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "pollStatus fails",
+		})
 
 	service.pollStatus(device)
 
@@ -108,6 +122,12 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 
 	service.pollBatteryDetails(device)
 
@@ -123,6 +143,13 @@ func Test_pollBatteryDetails_Fail(t *testing.T) {
 		BatteryInfoObj{},
 		errors.New("pollBatteryDetails fails"),
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "pollBatteryDetails fails",
+		})
 
 	service.pollBatteryDetails(device)
 
@@ -182,7 +209,12 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	)
-
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "ok",
+			LastSuccess: time.Now().Round(time.Second),
+		})
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)
@@ -198,6 +230,13 @@ func Test_pollParameterData_Fail(t *testing.T) {
 		errors.New("pollParameterData fails"),
 	)
 
+	mockEndpoint.On("PublishHealth",
+		device,
+		models.ServiceHealth{
+			Status:      "error",
+			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
+			Message:     "pollParameterData fails",
+		})
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)

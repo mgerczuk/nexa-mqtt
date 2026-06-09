@@ -22,6 +22,7 @@ type Options struct {
 type GrowattAppService struct {
 	opts     Options
 	client   *Client
+	health   models.ServiceHealth
 	devices  []models.NoahDevicePayload
 	endpoint endpoint.Endpoint
 	loggedIn bool
@@ -132,132 +133,159 @@ func (g *GrowattAppService) ensureParameterLogin() error {
 	return nil
 }
 
+func (g *GrowattAppService) publishHealth(device models.NoahDevicePayload, err error) {
+	if err != nil {
+		g.health.UpdateError(err)
+	} else {
+		g.health.UpdateSuccess()
+	}
+	g.endpoint.PublishHealth(device, g.health)
+}
+
 func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) error {
 	slog.Info("trying to set default system output power (app)", slog.String("device", device.Serial), slog.String("mode", string(mode)), slog.Float64("power", power))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set default system output power (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
 	modeAsInt := models.IntFromWorkMode(mode)
 	if modeAsInt < 0 {
 		slog.Error("unable to set default system output power (app). Invalid mode", slog.String("device", device.Serial), slog.String("mode", string(mode)))
-		return fmt.Errorf("invalid work mode %s", mode)
-	}
-
-	slog.Info("set default system output power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", power))
-	if err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, power); err != nil {
-		slog.Error("unable to set default system output power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+		err := fmt.Errorf("invalid work mode: %s", mode)
+		g.publishHealth(device, err)
 		return err
 	}
 
-	return nil
+	slog.Info("set default system output power (app)", slog.String("device", device.Serial), slog.Int("mode", modeAsInt), slog.Float64("power", power))
+	err := g.client.SetSystemOutputPower(device.Serial, modeAsInt, power)
+	if err != nil {
+		slog.Error("unable to set default system output power (app)", slog.String("error", err.Error()), slog.String("device", device.Serial))
+	}
+
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetChargingLimits(device models.NoahDevicePayload, chargingLimit float64, dischargeLimit float64) error {
 	slog.Info("trying to set charging limits (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set charging limits (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
 	slog.Info("set charging limit (app)", slog.String("device", device.Serial), slog.Float64("chargingLimit", chargingLimit), slog.Float64("dischargeLimit", dischargeLimit))
-	if err := g.client.SetChargingSoc(device.Serial, chargingLimit, dischargeLimit); err != nil {
+	err := g.client.SetChargingSoc(device.Serial, chargingLimit, dischargeLimit)
+	if err != nil {
 		slog.Error("unable to set charging limits (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetAllowGridCharging(device models.NoahDevicePayload, allow models.OnOff) error {
 	slog.Info("trying to set allow charging  (app)", slog.String("device", device.Serial), slog.String("allow", string(allow)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set allow charging (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetAllowGridCharging(device.Serial, misc.OnOffToInt(allow)); err != nil {
+	err := g.client.SetAllowGridCharging(device.Serial, misc.OnOffToInt(allow))
+	if err != nil {
 		slog.Error("unable to set allow charging (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetGridConnectionControl(device models.NoahDevicePayload, offlineEnable models.OnOff) error {
 	slog.Info("trying to set grid connection  (app)", slog.String("device", device.Serial), slog.String("offlineEnable", string(offlineEnable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set grid connection (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetGridConnectionControl(device.Serial, misc.OnOffToInt(offlineEnable)); err != nil {
+	err := g.client.SetGridConnectionControl(device.Serial, misc.OnOffToInt(offlineEnable))
+	if err != nil {
 		slog.Error("unable to set grid connection (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayload, _1000WEnable models.OnOff) error {
 	slog.Info("trying to set ac couple power control  (app)", slog.String("device", device.Serial), slog.String("1000WEnable", string(_1000WEnable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetACCouplePowerControl(device.Serial, misc.OnOffToInt(_1000WEnable)); err != nil {
+	err := g.client.SetACCouplePowerControl(device.Serial, misc.OnOffToInt(_1000WEnable))
+	if err != nil {
 		slog.Error("unable to set ac couple power control (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
 	slog.Info("trying to set light load enable (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set light load enable (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetLightLoadEnable(device.Serial, misc.OnOffToInt(enable)); err != nil {
+	err := g.client.SetLightLoadEnable(device.Serial, misc.OnOffToInt(enable))
+	if err != nil {
 		slog.Error("unable to set light load enable (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error {
 	slog.Info("trying to set never power off (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set set never power off (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetNeverPowerOff(device.Serial, misc.OnOffToInt(enable)); err != nil {
+	err := g.client.SetNeverPowerOff(device.Serial, misc.OnOffToInt(enable))
+	if err != nil {
 		slog.Error("unable to set set never power off (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error {
 	slog.Info("trying to set backflow (app)", slog.String("device", device.Serial), slog.String("enableLimit", string(enableLimit)), slog.Float64("powerSettingPercent", powerSettingPercent))
 	if err := g.ensureParameterLogin(); err != nil {
 		slog.Error("unable to set backflow (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
 		return err
 	}
 
-	if err := g.client.SetBackflow(device.Serial, misc.OnOffToInt(enableLimit), powerSettingPercent); err != nil {
+	err := g.client.SetBackflow(device.Serial, misc.OnOffToInt(enableLimit), powerSettingPercent)
+	if err != nil {
 		slog.Error("unable to set backflow (app)", slog.String("error", err.Error()))
-		return err
 	}
 
-	return nil
+	g.publishHealth(device, err)
+	return err
 }
 
 func (g *GrowattAppService) poll(ctx context.Context) {
