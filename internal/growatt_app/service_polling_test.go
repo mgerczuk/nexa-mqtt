@@ -4,7 +4,8 @@ import (
 	"errors"
 	"nexa-mqtt/pkg/models"
 	"testing"
-	"time"
+
+	"github.com/stretchr/testify/mock"
 )
 
 // ----- Test functions -----------------------------------------------------
@@ -60,10 +61,7 @@ func Test_pollStatus_Ok(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollStatus(device)
 
@@ -80,11 +78,7 @@ func Test_pollStatus_Fail(t *testing.T) {
 		errors.New("pollStatus fails"))
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "pollStatus fails",
-		})
+		mock.MatchedBy(matchHealthError("pollStatus fails")))
 
 	service.pollStatus(device)
 
@@ -124,10 +118,7 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollBatteryDetails(device)
 
@@ -145,11 +136,7 @@ func Test_pollBatteryDetails_Fail(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "pollBatteryDetails fails",
-		})
+		mock.MatchedBy(matchHealthError("pollBatteryDetails fails")))
 
 	service.pollBatteryDetails(device)
 
@@ -211,10 +198,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)
@@ -232,11 +216,7 @@ func Test_pollParameterData_Fail(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "pollParameterData fails",
-		})
+		mock.MatchedBy(matchHealthError("pollParameterData fails")))
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)

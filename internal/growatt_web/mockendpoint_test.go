@@ -36,6 +36,6 @@ func (e *MockEndpoint) PublishParameterData(device models.NoahDevicePayload, par
 	e.Called(device, param)
 }
 
-func (e *MockEndpoint) PublishHealth(device models.NoahDevicePayload, health models.ServiceHealth) {
+func (e *MockEndpoint) PublishHealth(device models.NoahDevicePayload, health *models.ServiceHealth) {
 	e.Called(device, health)
 }

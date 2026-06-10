@@ -25,6 +25,14 @@ func randSerial(n int) string {
 	return string(b)
 }
 
+func matchHealthOk(h *models.ServiceHealth) bool {
+	return h.Status == "ok"
+}
+
+func matchHealthError(msg string) func(h *models.ServiceHealth) bool {
+	return func(h *models.ServiceHealth) bool { return h.Status == "error" && h.Message == msg }
+}
+
 func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppService, models.NoahDevicePayload, *MockEndpoint) {
 	mockHttpClient := MockHttpClient{}
 	jar, err := cookiejar.New(nil)
@@ -43,9 +51,7 @@ func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppServi
 	service := GrowattAppService{
 		client:   &client,
 		endpoint: &endpoint,
-		health: models.ServiceHealth{
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-		},
+		health:   models.NewServiceHealth(),
 	}
 
 	device := models.NoahDevicePayload{
@@ -296,10 +302,7 @@ func TestSetOutputPowerW_Ok(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "350", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
@@ -316,11 +319,7 @@ func TestSetOutputPowerW_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
@@ -336,11 +335,7 @@ func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
 
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid work mode: invalid_mode",
-		})
+		mock.MatchedBy(matchHealthError("invalid work mode: invalid_mode")))
 
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("invalid_mode"), 350.0)
@@ -357,11 +352,7 @@ func TestSetOutputPowerW_SetFailed(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "350", errors.New("SetSystemOutputPower fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetSystemOutputPower fails",
-		})
+		mock.MatchedBy(matchHealthError("SetSystemOutputPower fails")))
 
 	service.loggedIn = true
 	result := service.SetOutputPowerW(device, models.WorkMode("battery_first"), 350.0)
@@ -378,10 +369,7 @@ func TestSetChargingLimits_Ok(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "charging_soc", "75", "25", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetChargingLimits(device, 75.0, 25.0)
@@ -398,11 +386,7 @@ func TestSetChargingLimits_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetChargingLimits(device, 75.0, 25.0)
@@ -419,11 +403,7 @@ func TestSetChargingLimits_SetFail(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "charging_soc", "75", "25", errors.New("SetChargingSoc fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetChargingSoc fails",
-		})
+		mock.MatchedBy(matchHealthError("SetChargingSoc fails")))
 
 	service.loggedIn = true
 	result := service.SetChargingLimits(device, 75.0, 25.0)
@@ -440,10 +420,7 @@ func TestSetAllowGridChargingService_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetAllowGridCharging(device, models.ON)
@@ -460,11 +437,7 @@ func TestSetAllowGridChargingService_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetAllowGridCharging(device, models.ON)
@@ -481,11 +454,7 @@ func TestSetAllowGridChargingService_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "allow_grid_charging", "0", errors.New("SetAllowGridCharging fails"), SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetAllowGridCharging fails",
-		})
+		mock.MatchedBy(matchHealthError("SetAllowGridCharging fails")))
 
 	service.loggedIn = true
 	result := service.SetAllowGridCharging(device, models.OFF)
@@ -502,10 +471,7 @@ func TestSetGridConnectionControlService_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "0", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetGridConnectionControl(device, models.OFF)
@@ -522,11 +488,7 @@ func TestSetGridConnectionControl_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetGridConnectionControl(device, models.ON)
@@ -543,11 +505,7 @@ func TestSetGridConnectionControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "grid_connection_control", "1", errors.New("SetGridConnectionControl fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetGridConnectionControl fails",
-		})
+		mock.MatchedBy(matchHealthError("SetGridConnectionControl fails")))
 
 	service.loggedIn = true
 	result := service.SetGridConnectionControl(device, models.ON)
@@ -564,10 +522,7 @@ func TestSetAcCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "0", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetAcCouplePowerControl(device, models.OFF)
@@ -584,11 +539,7 @@ func TestSetAcCouplePowerControl_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetAcCouplePowerControl(device, models.ON)
@@ -605,11 +556,7 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_power_control", "1", errors.New("SetAcCouplePowerControl fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetAcCouplePowerControl fails",
-		})
+		mock.MatchedBy(matchHealthError("SetAcCouplePowerControl fails")))
 
 	service.loggedIn = true
 	result := service.SetAcCouplePowerControl(device, models.ON)
@@ -626,10 +573,7 @@ func TestSetLightLoadEnable_ServiceOk(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "light_load_enable", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetLightLoadEnable(device, models.ON)
@@ -646,11 +590,7 @@ func TestSetLightLoadEnable_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetLightLoadEnable(device, models.ON)
@@ -667,11 +607,7 @@ func TestSetLightLoadEnable_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "light_load_enable", "0", errors.New("SetLightLoadEnable fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetLightLoadEnable fails",
-		})
+		mock.MatchedBy(matchHealthError("SetLightLoadEnable fails")))
 
 	service.loggedIn = true
 	result := service.SetLightLoadEnable(device, models.OFF)
@@ -688,10 +624,7 @@ func TestSetNeverPowerOff_ServiceOk(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "never_power_off", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetNeverPowerOff(device, models.ON)
@@ -708,11 +641,7 @@ func TestSetNeverPowerOff_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetNeverPowerOff(device, models.ON)
@@ -729,11 +658,7 @@ func TestSetNeverPowerOff_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Param(device.Serial, "never_power_off", "0", errors.New("SetNeverPowerOff fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetNeverPowerOff fails",
-		})
+		mock.MatchedBy(matchHealthError("SetNeverPowerOff fails")))
 
 	service.loggedIn = true
 	result := service.SetNeverPowerOff(device, models.OFF)
@@ -750,10 +675,7 @@ func TestSetBackflow_ServiceOk(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "backflow_setting", "1", "50", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.loggedIn = true
 	result := service.SetBackflow(device, models.ON, 50)
@@ -770,11 +692,7 @@ func TestSetBackflow_LoginFail(t *testing.T) {
 	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "Login fails",
-		})
+		mock.MatchedBy(matchHealthError("Login fails")))
 
 	service.loggedIn = false
 	result := service.SetBackflow(device, models.ON, 50)
@@ -791,11 +709,7 @@ func TestSetBackflow_Fails(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "backflow_setting", "0", "50", errors.New("SetBackflow fails"), SetResponse{})
 	endpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "SetBackflow fails",
-		})
+		mock.MatchedBy(matchHealthError("SetBackflow fails")))
 
 	service.loggedIn = true
 	result := service.SetBackflow(device, models.OFF, 50)
@@ -956,6 +870,12 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	).Run(func(args mock.Arguments) { wg.Done() })
+
+	mockEndpoint.On(
+		"PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk),
+	).Run(func(args mock.Arguments) { wg.Done() })
 }
 
 func TestPolling_once(t *testing.T) {
@@ -968,7 +888,7 @@ func TestPolling_once(t *testing.T) {
 
 	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
-	wg.Add(3)
+	wg.Add(6)
 
 	service.StartPolling()
 	service.StopPolling()
@@ -981,6 +901,7 @@ func TestPolling_once(t *testing.T) {
 	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", 1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", 1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishHealth", 3)
 }
 
 func TestPolling_multipleTimes(t *testing.T) {
@@ -994,7 +915,7 @@ func TestPolling_multipleTimes(t *testing.T) {
 	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
 	nLoops := 2
-	wg.Add((nLoops + 1) * 3)
+	wg.Add((nLoops + 1) * 6)
 
 	service.StartPolling()
 	time.Sleep(time.Duration(nLoops*5+3) * time.Millisecond)
@@ -1007,4 +928,5 @@ func TestPolling_multipleTimes(t *testing.T) {
 	mockEndpoint.AssertNumberOfCalls(t, "PublishDeviceStatus", nLoops+1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishBatteryDetails", nLoops+1)
 	mockEndpoint.AssertNumberOfCalls(t, "PublishParameterData", nLoops+1)
+	mockEndpoint.AssertNumberOfCalls(t, "PublishHealth", (nLoops+1)*3)
 }

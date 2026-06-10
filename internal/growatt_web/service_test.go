@@ -24,6 +24,14 @@ func randSerial(n int) string {
 	return string(b)
 }
 
+func matchHealthOk(h *models.ServiceHealth) bool {
+	return h.Status == "ok"
+}
+
+func matchHealthError(msg string) func(h *models.ServiceHealth) bool {
+	return func(h *models.ServiceHealth) bool { return h.Status == "error" && h.Message == msg }
+}
+
 func setupGrowattServiceMocks(t *testing.T) (*MockHttpClient, *GrowattService, models.NoahDevicePayload, *MockEndpoint) {
 	mockHttpClient := MockHttpClient{}
 	jar, err := cookiejar.New(nil)
@@ -45,9 +53,7 @@ func setupGrowattServiceMocks(t *testing.T) (*MockHttpClient, *GrowattService, m
 		},
 		client:   &client,
 		endpoint: &endpoint,
-		health: models.ServiceHealth{
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-		},
+		health:   models.NewServiceHealth(),
 	}
 
 	device := models.NoahDevicePayload{
@@ -103,10 +109,7 @@ func TestSetOutputPowerW_Ok(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
 
@@ -119,11 +122,7 @@ func TestSetOutputPowerW_InvalidWorkmode(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid work mode: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid work mode: invalid")))
 
 	err := service.SetOutputPowerW(device, models.WorkMode("invalid"), 100)
 
@@ -137,11 +136,7 @@ func TestSetOutputPowerW_Fails(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "system_out_put_power", "1", "100", nil, SetResponse{Success: false, Msg: "set output power failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set output power failed",
-		})
+		mock.MatchedBy(matchHealthError("set output power failed")))
 
 	err := service.SetOutputPowerW(device, models.WorkMode(models.WorkModeBatteryFirst), 100)
 
@@ -156,10 +151,7 @@ func TestSetChargingLimits_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -173,11 +165,7 @@ func TestSetChargingLimits_LowFails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_low_limit", "10", nil, SetResponse{Success: false, Msg: "set low limit failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set low limit failed",
-		})
+		mock.MatchedBy(matchHealthError("set low limit failed")))
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -192,11 +180,7 @@ func TestSetChargingLimits_HighFails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "charging_soc_high_limit", "95", nil, SetResponse{Success: false, Msg: "set high limit failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set high limit failed",
-		})
+		mock.MatchedBy(matchHealthError("set high limit failed")))
 
 	err := service.SetChargingLimits(device, 95, 10)
 
@@ -210,10 +194,7 @@ func TestSetAllowGridCharging_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetAllowGridCharging(device, models.ON)
 
@@ -226,11 +207,7 @@ func TestSetAllowGridCharging_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetAllowGridCharging(device, models.OnOff("invalid"))
 
@@ -244,11 +221,7 @@ func TestSetAllowGridCharging_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "allow_grid_charging", "1", nil, SetResponse{Success: false, Msg: "set allow grid charging failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set allow grid charging failed",
-		})
+		mock.MatchedBy(matchHealthError("set allow grid charging failed")))
 
 	err := service.SetAllowGridCharging(device, models.ON)
 
@@ -262,10 +235,7 @@ func TestSetGridConnectionControl_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetGridConnectionControl(device, models.OFF)
 
@@ -278,11 +248,7 @@ func TestSetGridConnectionControl_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetGridConnectionControl(device, models.OnOff("invalid"))
 
@@ -296,11 +262,7 @@ func TestSetGridConnectionControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "grid_connection_control", "0", nil, SetResponse{Success: false, Msg: "set grid connection control failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set grid connection control failed",
-		})
+		mock.MatchedBy(matchHealthError("set grid connection control failed")))
 
 	err := service.SetGridConnectionControl(device, models.OFF)
 
@@ -314,10 +276,7 @@ func TestSetAcCouplePowerControl_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetAcCouplePowerControl(device, models.ON)
 
@@ -330,11 +289,7 @@ func TestSetAcCouplePowerControl_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetAcCouplePowerControl(device, models.OnOff("invalid"))
 
@@ -348,11 +303,7 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_power_control", "1", nil, SetResponse{Success: false, Msg: "set ac couple power control failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set ac couple power control failed",
-		})
+		mock.MatchedBy(matchHealthError("set ac couple power control failed")))
 
 	err := service.SetAcCouplePowerControl(device, models.ON)
 
@@ -366,10 +317,7 @@ func TestSetLightLoadEnable_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetLightLoadEnable(device, models.OFF)
 
@@ -382,11 +330,7 @@ func TestSetLightLoadEnable_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetLightLoadEnable(device, models.OnOff("invalid"))
 
@@ -400,11 +344,7 @@ func TestSetLightLoadEnable_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "light_load_enable", "0", nil, SetResponse{Success: false, Msg: "set light load enable failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set light load enable failed",
-		})
+		mock.MatchedBy(matchHealthError("set light load enable failed")))
 
 	err := service.SetLightLoadEnable(device, models.OFF)
 
@@ -418,10 +358,7 @@ func TestSetNeverPowerOff_Ok(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetNeverPowerOff(device, models.ON)
 
@@ -434,11 +371,7 @@ func TestSetNeverPowerOff_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetNeverPowerOff(device, models.OnOff("invalid"))
 
@@ -452,11 +385,7 @@ func TestSetNeverPowerOff_Fails(t *testing.T) {
 	mockHttpClient.OnSet1Params(device.Serial, "never_power_off", "1", nil, SetResponse{Success: false, Msg: "set never power off failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set never power off failed",
-		})
+		mock.MatchedBy(matchHealthError("set never power off failed")))
 
 	err := service.SetNeverPowerOff(device, models.ON)
 
@@ -470,10 +399,7 @@ func TestSetBackflow_Ok(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: true})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	err := service.SetBackflow(device, models.ON, 15.0)
 
@@ -486,11 +412,7 @@ func TestSetBackflow_Invalid(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "invalid ON/OFF value: invalid",
-		})
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
 
 	err := service.SetBackflow(device, models.OnOff("invalid"), 15.0)
 
@@ -504,11 +426,7 @@ func TestSetBackflow_Fails(t *testing.T) {
 	mockHttpClient.OnSet2Params(device.Serial, "anti_back_flow_setting", "1", "15", nil, SetResponse{Success: false, Msg: "set backflow failed"})
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "set backflow failed",
-		})
+		mock.MatchedBy(matchHealthError("set backflow failed")))
 
 	err := service.SetBackflow(device, models.ON, 15.0)
 
@@ -686,10 +604,7 @@ func Test_pollStatus_OkCharge(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollStatus(device)
 
@@ -735,10 +650,7 @@ func Test_pollStatus_OkDischarge(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollStatus(device)
 
@@ -753,11 +665,7 @@ func Test_pollStatus_GetNoahStatusFails(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "GetNoahStatus fails",
-		})
+		mock.MatchedBy(matchHealthError("GetNoahStatus fails")))
 
 	service.pollStatus(device)
 
@@ -782,11 +690,7 @@ func Test_pollStatus_GetNoahTotalsFails(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "GetNoahTotals fails",
-		})
+		mock.MatchedBy(matchHealthError("GetNoahTotals fails")))
 
 	service.pollStatus(device)
 
@@ -844,10 +748,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollParameterData(device)
 
@@ -862,11 +763,7 @@ func Test_pollParameterData_GetNoahDetailsFails(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "GetNoahDetails fails",
-		})
+		mock.MatchedBy(matchHealthError("GetNoahDetails fails")))
 
 	service.pollParameterData(device)
 
@@ -881,11 +778,7 @@ func Test_pollParameterData_GetNoahDetailsNoData(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "no devices available",
-		})
+		mock.MatchedBy(matchHealthError("no devices available")))
 
 	service.pollParameterData(device)
 
@@ -959,10 +852,7 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 	mockEndpoint.On(
 		"PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	lastTimestamp := service.pollBatteryDetails(device, tm.Add(-3*time.Minute))
 
@@ -979,11 +869,7 @@ func Test_pollBatteryDetails_OnGetNoahHistoryFails(t *testing.T) {
 
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "error",
-			LastSuccess: time.Now().Add(-10 * time.Second).Round(time.Second),
-			Message:     "OnGetNoahHistory fails",
-		})
+		mock.MatchedBy(matchHealthError("OnGetNoahHistory fails")))
 
 	lastTimestamp := service.pollBatteryDetails(device, time.Time{})
 
@@ -1071,10 +957,7 @@ func Test_pollBatteryDetails_InvalidDate(t *testing.T) {
 	)
 	mockEndpoint.On("PublishHealth",
 		device,
-		models.ServiceHealth{
-			Status:      "ok",
-			LastSuccess: time.Now().Round(time.Second),
-		})
+		mock.MatchedBy(matchHealthOk))
 
 	lastTimestamp := service.pollBatteryDetails(device, time.Time{})
 
@@ -1256,7 +1139,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	mockEndpoint.On(
 		"PublishHealth",
 		device,
-		mock.MatchedBy(func(h models.ServiceHealth) bool { return h.Status == "ok" }),
+		mock.MatchedBy(matchHealthOk),
 	).Run(func(args mock.Arguments) { wg.Done() })
 
 	// ----- pollParameterData

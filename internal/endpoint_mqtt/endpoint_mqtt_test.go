@@ -478,8 +478,9 @@ func TestPublishParameterData_Success(t *testing.T) {
 func TestPublishOkHealth(t *testing.T) {
 	mockClient := new(MockMqttClient)
 	mockToken := NewMockToken()
-	health := models.ServiceHealth{}
-	health.UpdateSuccess()
+	device := models.NoahDevicePayload{Serial: "device123"}
+	health := models.NewServiceHealth()
+	health.UpdateSuccess(device.Serial)
 
 	mockClient.On(
 		"Publish",
@@ -495,19 +496,53 @@ func TestPublishOkHealth(t *testing.T) {
 			TopicPrefix: "test",
 		},
 	}
-	device := models.NoahDevicePayload{Serial: "device123"}
 
-	endpoint.PublishHealth(device, health)
+	endpoint.PublishHealth(device, &health)
+
+	// further UpdateSuccess will not be published
+
+	health.UpdateSuccess(device.Serial)
+	endpoint.PublishHealth(device, &health)
 
 	mockClient.AssertExpectations(t)
 }
 
-func TestPublishErrorHealth(t *testing.T) {
+func TestPublishErrorHealthNotYetSuccess(t *testing.T) {
 	mockClient := new(MockMqttClient)
 	mockToken := NewMockToken()
-	health := models.ServiceHealth{}
-	health.LastSuccess = time.Now().Add(-1 * time.Hour).Round(time.Second)
-	health.UpdateError(fmt.Errorf("test error"))
+	device := models.NoahDevicePayload{Serial: "device123"}
+	health := models.NewServiceHealth()
+
+	health.UpdateError(device.Serial, fmt.Errorf("test error"))
+
+	mockClient.On(
+		"Publish",
+		"test/device123/health",
+		byte(0),
+		false,
+		fmt.Sprintf(`{"status":"error","message":"%v"}`, health.Message),
+	).Return(mockToken)
+
+	endpoint := &Endpoint{
+		opts: Options{
+			MqttClient:  mockClient,
+			TopicPrefix: "test",
+		},
+	}
+
+	endpoint.PublishHealth(device, &health)
+
+	mockClient.AssertExpectations(t)
+}
+
+func TestPublishErrorHealthAfterSuccess(t *testing.T) {
+	mockClient := new(MockMqttClient)
+	mockToken := NewMockToken()
+	device := models.NoahDevicePayload{Serial: "device123"}
+
+	health := models.NewServiceHealth()
+	health.UpdateSuccess(device.Serial)
+	health.UpdateError(device.Serial, fmt.Errorf("test error"))
 
 	mockClient.On(
 		"Publish",
@@ -524,9 +559,17 @@ func TestPublishErrorHealth(t *testing.T) {
 		},
 	}
 
-	device := models.NoahDevicePayload{Serial: "device123"}
+	endpoint.PublishHealth(device, &health)
 
-	endpoint.PublishHealth(device, health)
+	mockClient.On(
+		"Publish",
+		"test/device123/health",
+		byte(0),
+		false,
+		fmt.Sprintf(`{"status":"error","last_success":"%v","message":"%v"}`, health.LastSuccess.Format(time.RFC3339), health.Message),
+	).Return(mockToken)
+
+	health.UpdateError(device.Serial, fmt.Errorf("another test error"))
 
 	mockClient.AssertExpectations(t)
 }

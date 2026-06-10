@@ -38,6 +38,7 @@ func NewGrowattService(options Options) *GrowattService {
 	return &GrowattService{
 		opts:   options,
 		client: newClient(options.ServerUrl, options.Username, options.Password),
+		health: models.NewServiceHealth(),
 	}
 }
 
@@ -73,11 +74,11 @@ func (g *GrowattService) SetEndpoint(e endpoint.Endpoint) {
 
 func (g *GrowattService) publishHealth(device models.NoahDevicePayload, err error) {
 	if err != nil {
-		g.health.UpdateError(err)
+		g.health.UpdateError(device.Serial, err)
 	} else {
-		g.health.UpdateSuccess()
+		g.health.UpdateSuccess(device.Serial)
 	}
-	g.endpoint.PublishHealth(device, g.health)
+	g.endpoint.PublishHealth(device, &g.health)
 }
 
 func (g *GrowattService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) error {
@@ -339,44 +340,44 @@ func (g *GrowattService) poll(ctx context.Context, device models.NoahDevicePaylo
 func (g *GrowattService) pollStatus(device models.NoahDevicePayload) {
 	if status, err := g.client.GetNoahStatus(device.PlantId, device.Serial); err != nil {
 		slog.Error("could not get device data", slog.String("error", err.Error()), slog.String("device", device.Serial))
-		g.health.UpdateError(err)
+		g.health.UpdateError(device.Serial, err)
 	} else {
 		if totals, err := g.client.GetNoahTotals(device.PlantId, device.Serial); err != nil {
 			slog.Error("could not get device totals", slog.String("error", err.Error()), slog.String("device", device.Serial))
-			g.health.UpdateError(err)
+			g.health.UpdateError(device.Serial, err)
 		} else {
 			payload := devicePayload(device, status.Obj, totals.Obj)
 			g.endpoint.PublishDeviceStatus(device, payload)
-			g.health.UpdateSuccess()
+			g.health.UpdateSuccess(device.Serial)
 		}
 	}
-	g.endpoint.PublishHealth(device, g.health)
+	g.endpoint.PublishHealth(device, &g.health)
 }
 
 func (g *GrowattService) pollParameterData(device models.NoahDevicePayload) {
 	if details, err := g.client.GetNoahDetails(device.PlantId, device.Serial); err != nil {
 		slog.Error("could not get device details data", slog.String("error", err.Error()))
-		g.health.UpdateError(err)
+		g.health.UpdateError(device.Serial, err)
 	} else {
 		if len(details.Datas) != 1 {
 			slog.Error("could not get device details data", slog.String("device", device.Serial))
-			g.health.UpdateError(fmt.Errorf("no devices available"))
+			g.health.UpdateError(device.Serial, fmt.Errorf("no devices available"))
 		} else {
 			paramPayload := parameterPayload(details.Datas[0])
 
 			g.endpoint.PublishParameterData(device, paramPayload)
-			g.health.UpdateSuccess()
+			g.health.UpdateSuccess(device.Serial)
 		}
 	}
-	g.endpoint.PublishHealth(device, g.health)
+	g.endpoint.PublishHealth(device, &g.health)
 }
 
 func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload, lastTimestamp time.Time) time.Time {
 
 	if history, err := g.client.GetNoahHistory(device.Serial, "", ""); err != nil {
 		slog.Error("could not get device history", slog.String("error", err.Error()), slog.String("device", device.Serial))
-		g.health.UpdateError(err)
-		g.endpoint.PublishHealth(device, g.health)
+		g.health.UpdateError(device.Serial, err)
+		g.endpoint.PublishHealth(device, &g.health)
 	} else {
 		if len(history.Obj.Datas) == 0 {
 			slog.Info("could not get device history, data empty", slog.String("device", device.Serial))
@@ -408,8 +409,8 @@ func (g *GrowattService) pollBatteryDetails(device models.NoahDevicePayload, las
 
 			g.endpoint.PublishPvDetails(device, pvs)
 
-			g.health.UpdateSuccess()
-			g.endpoint.PublishHealth(device, g.health)
+			g.health.UpdateSuccess(device.Serial)
+			g.endpoint.PublishHealth(device, &g.health)
 			return tm
 		}
 	}

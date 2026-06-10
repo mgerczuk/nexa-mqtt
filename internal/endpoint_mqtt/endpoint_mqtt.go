@@ -135,13 +135,19 @@ func (e *Endpoint) PublishParameterData(device models.NoahDevicePayload, param m
 	}
 }
 
-func (e *Endpoint) PublishHealth(device models.NoahDevicePayload, health models.ServiceHealth) {
-	if b, err := json.Marshal(health); err != nil {
-		slog.Error("could not marshal health data", slog.String("error", err.Error()))
-	} else {
-		e.opts.MqttClient.Publish(healthTopic(e.opts.TopicPrefix, device.Serial), 0, false, string(b))
-		slog.Debug("health data sent to mqtt", slog.String("data", string(b)))
+func (e *Endpoint) PublishHealth(device models.NoahDevicePayload, health *models.ServiceHealth) {
+	health.StateLock.Lock()
+	defer health.StateLock.Unlock()
+
+	if health.Send[device.Serial] {
+		if b, err := json.Marshal(health); err != nil {
+			slog.Error("could not marshal health data", slog.String("error", err.Error()))
+		} else {
+			e.opts.MqttClient.Publish(healthTopic(e.opts.TopicPrefix, device.Serial), 0, false, string(b))
+			slog.Debug("health data sent to mqtt", slog.String("data", string(b)))
+		}
 	}
+	health.Send[device.Serial] = false
 }
 
 const debounceDelay = 500 * time.Millisecond

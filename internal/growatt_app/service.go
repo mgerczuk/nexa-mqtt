@@ -33,6 +33,7 @@ func NewGrowattAppService(options Options) *GrowattAppService {
 	return &GrowattAppService{
 		opts:     options,
 		client:   newClient(options.ServerUrl, options.Username, options.Password),
+		health:   models.NewServiceHealth(),
 		loggedIn: false,
 	}
 }
@@ -51,7 +52,9 @@ func (g *GrowattAppService) StartPolling() {
 	g.enumerateDevices()
 	var ctx context.Context
 	ctx, g.cancel = context.WithCancel(context.Background())
-	go g.poll(ctx)
+	for _, device := range g.devices {
+		go g.poll(ctx, device)
+	}
 }
 
 func (g *GrowattAppService) StopPolling() {
@@ -135,11 +138,11 @@ func (g *GrowattAppService) ensureParameterLogin() error {
 
 func (g *GrowattAppService) publishHealth(device models.NoahDevicePayload, err error) {
 	if err != nil {
-		g.health.UpdateError(err)
+		g.health.UpdateError(device.Serial, err)
 	} else {
-		g.health.UpdateSuccess()
+		g.health.UpdateSuccess(device.Serial)
 	}
-	g.endpoint.PublishHealth(device, g.health)
+	g.endpoint.PublishHealth(device, &g.health)
 }
 
 func (g *GrowattAppService) SetOutputPowerW(device models.NoahDevicePayload, mode models.WorkMode, power float64) error {
@@ -288,7 +291,7 @@ func (g *GrowattAppService) SetBackflow(device models.NoahDevicePayload, enableL
 	return err
 }
 
-func (g *GrowattAppService) poll(ctx context.Context) {
+func (g *GrowattAppService) poll(ctx context.Context, device models.NoahDevicePayload) {
 	slog.Info("start polling growatt (app)",
 		slog.Int("interval", int(g.opts.PollingInterval/time.Second)),
 		slog.Int("battery-details-interval", int(g.opts.BatteryDetailsPollingInterval/time.Second)),
@@ -301,28 +304,21 @@ func (g *GrowattAppService) poll(ctx context.Context) {
 	tickerParameter := time.NewTicker(g.opts.ParameterPollingInterval)
 	defer tickerParameter.Stop()
 
-	for _, device := range g.devices {
-		g.pollStatus(device)
-		g.pollBatteryDetails(device)
-		g.pollParameterData(device)
-	}
+	g.pollStatus(device)
+	g.pollBatteryDetails(device)
+	g.pollParameterData(device)
 
 	for {
 		select {
 		case <-tickerPolling.C:
-			for _, device := range g.devices {
-				g.pollStatus(device)
-			}
+			g.pollStatus(device)
 
 		case <-tickerBatteryDetails.C:
-			for _, device := range g.devices {
-				g.pollBatteryDetails(device)
-			}
+			g.pollBatteryDetails(device)
 
 		case <-tickerParameter.C:
-			for _, device := range g.devices {
-				g.pollParameterData(device)
-			}
+			g.pollParameterData(device)
+
 		case <-ctx.Done():
 			slog.Info("stop polling growatt (app)")
 			return
