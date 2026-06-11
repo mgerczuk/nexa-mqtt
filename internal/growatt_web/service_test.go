@@ -1191,7 +1191,7 @@ func setupPoll(wg *sync.WaitGroup, mockHttpClient *MockHttpClient, device models
 	).Run(func(args mock.Arguments) { wg.Done() })
 }
 
-const millisRate = 10
+const millisRate = 100
 
 type MockDurationCalculator struct {
 }
