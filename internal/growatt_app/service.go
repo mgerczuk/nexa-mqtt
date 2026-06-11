@@ -20,21 +20,33 @@ type Options struct {
 	ParameterPollingInterval      time.Duration
 }
 type GrowattAppService struct {
-	opts     Options
-	client   *Client
-	health   models.ServiceHealth
-	devices  []models.NoahDevicePayload
-	endpoint endpoint.Endpoint
-	loggedIn bool
-	cancel   context.CancelFunc
+	opts             Options
+	client           *Client
+	health           models.ServiceHealth
+	devices          []models.NoahDevicePayload
+	endpoint         endpoint.Endpoint
+	loggedIn         bool
+	cancel           context.CancelFunc
+	parameterTrigger map[string]chan struct{}
+	query            endpoint.ParameterQuery
 }
 
 func NewGrowattAppService(options Options) *GrowattAppService {
-	return &GrowattAppService{
-		opts:     options,
-		client:   newClient(options.ServerUrl, options.Username, options.Password),
-		health:   models.NewServiceHealth(),
-		loggedIn: false,
+	service := GrowattAppService{
+		opts:             options,
+		client:           newClient(options.ServerUrl, options.Username, options.Password),
+		health:           models.NewServiceHealth(),
+		loggedIn:         false,
+		parameterTrigger: make(map[string]chan struct{}),
+	}
+	service.query = &service
+	return &service
+}
+
+func (g *GrowattAppService) TriggerParameterPolling(device models.NoahDevicePayload) {
+	select {
+	case g.parameterTrigger[device.Serial] <- struct{}{}:
+	default: // Trigger already pending
 	}
 }
 
@@ -53,6 +65,7 @@ func (g *GrowattAppService) StartPolling() {
 	var ctx context.Context
 	ctx, g.cancel = context.WithCancel(context.Background())
 	for _, device := range g.devices {
+		g.parameterTrigger[device.Serial] = make(chan struct{}, 1)
 		go g.poll(ctx, device)
 	}
 }
@@ -126,6 +139,10 @@ func (g *GrowattAppService) SetEndpoint(e endpoint.Endpoint) {
 	g.endpoint = e
 }
 
+func (g *GrowattAppService) SetParameterQuery(q endpoint.ParameterQuery) {
+	g.query = q
+}
+
 func (g *GrowattAppService) ensureParameterLogin() error {
 	if !g.loggedIn {
 		if err := g.Login(); err != nil {
@@ -141,6 +158,7 @@ func (g *GrowattAppService) publishHealth(device models.NoahDevicePayload, err e
 		g.health.UpdateError(device.Serial, err)
 	} else {
 		g.health.UpdateSuccess(device.Serial)
+		g.query.TriggerParameterPolling(device)
 	}
 	g.endpoint.PublishHealth(device, &g.health)
 }
@@ -318,6 +336,16 @@ func (g *GrowattAppService) poll(ctx context.Context, device models.NoahDevicePa
 
 		case <-tickerParameter.C:
 			g.pollParameterData(device)
+
+		case <-g.parameterTrigger[device.Serial]:
+			g.pollParameterData(device)
+
+			tickerParameter.Stop()
+			select {
+			case <-tickerParameter.C:
+			default:
+			}
+			tickerParameter.Reset(g.opts.ParameterPollingInterval)
 
 		case <-ctx.Done():
 			slog.Info("stop polling growatt (app)")

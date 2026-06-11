@@ -95,6 +95,8 @@ func (a *App) onMqttConnect(client mqtt.Client) {
 	case "web+app":
 		a.growattService.SetEndpoint(mqttEndpoint)
 		a.growattService.StartPolling(growatt_web.NewDefaultDurationCalculator(a.growattService))
+		a.growattApp.SetEndpoint(mqttEndpoint)
+		a.growattApp.SetParameterQuery(a.growattService)
 		mqttEndpoint.SetParameterApplier(a.growattApp)
 	}
 }

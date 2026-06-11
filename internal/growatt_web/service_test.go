@@ -51,9 +51,10 @@ func setupGrowattServiceMocks(t *testing.T) (*MockHttpClient, *GrowattService, m
 		opts: Options{
 			Location: time.Local,
 		},
-		client:   &client,
-		endpoint: &endpoint,
-		health:   models.NewServiceHealth(),
+		client:           &client,
+		endpoint:         &endpoint,
+		health:           models.NewServiceHealth(),
+		parameterTrigger: make(map[string]chan struct{}),
 	}
 
 	device := models.NoahDevicePayload{
@@ -1208,16 +1209,16 @@ func TestPolling_once(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 	var wg sync.WaitGroup
 
-	service.opts.PollingInterval = time.Duration(5 * time.Millisecond)
-	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Millisecond)
-	service.opts.ParameterPollingInterval = time.Duration(5 * time.Millisecond)
+	service.opts.PollingInterval = time.Duration(5 * time.Second)
+	service.opts.BatteryDetailsPollingInterval = time.Duration(5 * time.Second)
+	service.opts.ParameterPollingInterval = time.Duration(5 * time.Second)
 
 	setupPoll(&wg, mockHttpClient, device, mockEndpoint)
 
 	wg.Add(7)
 
 	service.StartPolling(&MockDurationCalculator{})
-	time.Sleep(1 * time.Millisecond)
+	time.Sleep(10 * time.Millisecond)
 	service.StopPolling()
 	time.Sleep(10 * time.Millisecond)
 

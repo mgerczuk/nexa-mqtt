@@ -11,7 +11,7 @@ import (
 // ----- Test functions -----------------------------------------------------
 
 func Test_pollStatus_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
 		device.Serial,
@@ -70,7 +70,7 @@ func Test_pollStatus_Ok(t *testing.T) {
 }
 
 func Test_pollStatus_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
 		device.Serial,
@@ -87,7 +87,7 @@ func Test_pollStatus_Fail(t *testing.T) {
 }
 
 func Test_pollBatteryDetails_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
 		device.Serial,
@@ -127,7 +127,7 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 }
 
 func Test_pollBatteryDetails_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
 		device.Serial,
@@ -145,7 +145,7 @@ func Test_pollBatteryDetails_Fail(t *testing.T) {
 }
 
 func Test_pollParameterData_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	nexaInfo := NexaInfoObj{}
 
@@ -206,7 +206,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 }
 
 func Test_pollParameterData_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahInfo(
 		device.Serial,

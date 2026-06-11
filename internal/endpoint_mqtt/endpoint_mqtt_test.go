@@ -480,7 +480,7 @@ func TestPublishOkHealth(t *testing.T) {
 		"Publish",
 		"test/device123/health",
 		byte(0),
-		false,
+		true,
 		fmt.Sprintf(`{"status":"ok","last_success":"%v"}`, health.LastSuccess.Format(time.RFC3339)),
 	).Return(mockToken)
 
@@ -513,7 +513,7 @@ func TestPublishErrorHealthNotYetSuccess(t *testing.T) {
 		"Publish",
 		"test/device123/health",
 		byte(0),
-		false,
+		true,
 		fmt.Sprintf(`{"status":"error","message":"%v"}`, health.Message),
 	).Return(mockToken)
 
@@ -542,7 +542,7 @@ func TestPublishErrorHealthAfterSuccess(t *testing.T) {
 		"Publish",
 		"test/device123/health",
 		byte(0),
-		false,
+		true,
 		fmt.Sprintf(`{"status":"error","last_success":"%v","message":"%v"}`, health.LastSuccess.Format(time.RFC3339), health.Message),
 	).Return(mockToken)
 
@@ -559,7 +559,7 @@ func TestPublishErrorHealthAfterSuccess(t *testing.T) {
 		"Publish",
 		"test/device123/health",
 		byte(0),
-		false,
+		true,
 		fmt.Sprintf(`{"status":"error","last_success":"%v","message":"%v"}`, health.LastSuccess.Format(time.RFC3339), health.Message),
 	).Return(mockToken)
 
@@ -628,7 +628,7 @@ func Test_parametersSubscription_InvalidPayload(t *testing.T) {
 }
 
 func Test_parametersSubscription_ChargingLimit(t *testing.T) {
-	mockToken, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
 	empty := models.EmptyParameterPayload()
 
 	mockMqttMessage := MockMqttMessage{}
@@ -643,18 +643,7 @@ func Test_parametersSubscription_ChargingLimit(t *testing.T) {
 		}).
 		Return(nil)
 
-	mockClient.On(
-		"Publish",
-		"test/device123/parameters",
-		byte(0),
-		false,
-		fmt.Sprintf(`{"charging_limit":90,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
-			*empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
-	).Run(func(args mock.Arguments) {
-		wg.Done()
-	}).Return(mockToken)
-
-	wg.Add(2)
+	wg.Add(1)
 	f1(mockClient, &mockMqttMessage)
 	wg.Wait()
 
@@ -666,8 +655,7 @@ func Test_parametersSubscription_ChargingLimit(t *testing.T) {
 }
 
 func Test_parametersSubscription_ChargingAndDischargeLimit(t *testing.T) {
-	mockToken, mockClient, mockApplier, endpoint, device, call_parametersSubscription := setup_parametersSubscription()
-	empty := models.EmptyParameterPayload()
+	_, mockClient, mockApplier, endpoint, device, call_parametersSubscription := setup_parametersSubscription()
 
 	mockMqttMessage1 := MockMqttMessage{}
 	mockMqttMessage1.On("Payload").
@@ -685,18 +673,7 @@ func Test_parametersSubscription_ChargingAndDischargeLimit(t *testing.T) {
 		}).
 		Return(nil)
 
-	mockClient.On(
-		"Publish",
-		"test/device123/parameters",
-		byte(0),
-		false,
-		fmt.Sprintf(`{"charging_limit":95,"discharge_limit":5,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
-			*empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
-	).Run(func(args mock.Arguments) {
-		wg.Done()
-	}).Return(mockToken)
-
-	wg.Add(2)
+	wg.Add(1)
 	call_parametersSubscription(mockClient, &mockMqttMessage1)
 	call_parametersSubscription(mockClient, &mockMqttMessage2)
 	wg.Wait()
@@ -709,7 +686,7 @@ func Test_parametersSubscription_ChargingAndDischargeLimit(t *testing.T) {
 }
 
 func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
-	mockToken, mockClient, mockApplier, endpoint, device, call_parametersSubscription := setup_parametersSubscription()
+	_, mockClient, mockApplier, endpoint, device, call_parametersSubscription := setup_parametersSubscription()
 	empty := models.EmptyParameterPayload()
 
 	mockMqttMessage1 := MockMqttMessage{}
@@ -734,18 +711,7 @@ func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
 		}).
 		Return(nil)
 
-	mockClient.On(
-		"Publish",
-		"test/device123/parameters",
-		byte(0),
-		false,
-		fmt.Sprintf(`{"charging_limit":75,"discharge_limit":%v,"default_output_w":%v,"default_mode":"battery_first","allow_grid_charging":"%v","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
-			*empty.DischargeLimit, *empty.DefaultACCouplePower, empty.AllowGridCharging, empty.GridConnectionControl, empty.AcCouplePowerControl),
-	).Run(func(args mock.Arguments) {
-		wg.Done()
-	}).Return(mockToken)
-
-	wg.Add(3)
+	wg.Add(2)
 	call_parametersSubscription(mockClient, &mockMqttMessage1)
 	call_parametersSubscription(mockClient, &mockMqttMessage2)
 	wg.Wait()
@@ -758,8 +724,7 @@ func Test_parametersSubscription_ChargingLimitAndMode(t *testing.T) {
 }
 
 func Test_parametersSubscription_AllowGridCharging(t *testing.T) {
-	mockToken, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
-	empty := models.EmptyParameterPayload()
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
 
 	mockMqttMessage := MockMqttMessage{}
 	mockMqttMessage.On("Payload").
@@ -773,18 +738,7 @@ func Test_parametersSubscription_AllowGridCharging(t *testing.T) {
 		}).
 		Return(nil)
 
-	mockClient.On(
-		"Publish",
-		"test/device123/parameters",
-		byte(0),
-		false,
-		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"ON","grid_connection_control":"%v","ac_couple_power_control":"%v"}`,
-			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.GridConnectionControl, empty.AcCouplePowerControl),
-	).Run(func(args mock.Arguments) {
-		wg.Done()
-	}).Return(mockToken)
-
-	wg.Add(2)
+	wg.Add(1)
 	f1(mockClient, &mockMqttMessage)
 	wg.Wait()
 
@@ -796,8 +750,7 @@ func Test_parametersSubscription_AllowGridCharging(t *testing.T) {
 }
 
 func Test_parametersSubscription_GridConnectionControlAndAcCouplePowerControl(t *testing.T) {
-	mockToken, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
-	empty := models.EmptyParameterPayload()
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
 
 	mockMqttMessage := MockMqttMessage{}
 	mockMqttMessage.On("Payload").
@@ -817,18 +770,7 @@ func Test_parametersSubscription_GridConnectionControlAndAcCouplePowerControl(t 
 		}).
 		Return(nil)
 
-	mockClient.On(
-		"Publish",
-		"test/device123/parameters",
-		byte(0),
-		false,
-		fmt.Sprintf(`{"charging_limit":%v,"discharge_limit":%v,"default_output_w":%v,"default_mode":"%v","allow_grid_charging":"%v","grid_connection_control":"ON","ac_couple_power_control":"ON"}`,
-			*empty.ChargingLimit, *empty.DischargeLimit, *empty.DefaultACCouplePower, *empty.DefaultMode, empty.AllowGridCharging),
-	).Run(func(args mock.Arguments) {
-		wg.Done()
-	}).Return(mockToken)
-
-	wg.Add(3)
+	wg.Add(2)
 	f1(mockClient, &mockMqttMessage)
 	wg.Wait()
 

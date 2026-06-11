@@ -26,19 +26,28 @@ type DurationCalculator interface {
 }
 
 type GrowattService struct {
-	opts     Options
-	client   *Client
-	health   models.ServiceHealth
-	devices  []models.NoahDevicePayload
-	endpoint endpoint.Endpoint
-	cancel   context.CancelFunc
+	opts             Options
+	client           *Client
+	health           models.ServiceHealth
+	devices          []models.NoahDevicePayload
+	endpoint         endpoint.Endpoint
+	cancel           context.CancelFunc
+	parameterTrigger map[string]chan struct{}
 }
 
 func NewGrowattService(options Options) *GrowattService {
 	return &GrowattService{
-		opts:   options,
-		client: newClient(options.ServerUrl, options.Username, options.Password),
-		health: models.NewServiceHealth(),
+		opts:             options,
+		client:           newClient(options.ServerUrl, options.Username, options.Password),
+		health:           models.NewServiceHealth(),
+		parameterTrigger: make(map[string]chan struct{}),
+	}
+}
+
+func (g *GrowattService) TriggerParameterPolling(device models.NoahDevicePayload) {
+	select {
+	case g.parameterTrigger[device.Serial] <- struct{}{}:
+	default: // Trigger already pending
 	}
 }
 
@@ -57,6 +66,7 @@ func (g *GrowattService) StartPolling(dc DurationCalculator) {
 	var ctx context.Context
 	ctx, g.cancel = context.WithCancel(context.Background())
 	for _, device := range g.devices {
+		g.parameterTrigger[device.Serial] = make(chan struct{}, 1)
 		go g.poll(ctx, device, dc)
 	}
 }
@@ -77,6 +87,7 @@ func (g *GrowattService) publishHealth(device models.NoahDevicePayload, err erro
 		g.health.UpdateError(device.Serial, err)
 	} else {
 		g.health.UpdateSuccess(device.Serial)
+		g.TriggerParameterPolling(device)
 	}
 	g.endpoint.PublishHealth(device, &g.health)
 }
@@ -329,6 +340,16 @@ func (g *GrowattService) poll(ctx context.Context, device models.NoahDevicePaylo
 
 		case <-tickerParameter.C:
 			g.pollParameterData(device)
+
+		case <-g.parameterTrigger[device.Serial]:
+			g.pollParameterData(device)
+
+			tickerParameter.Stop()
+			select {
+			case <-tickerParameter.C:
+			default:
+			}
+			tickerParameter.Reset(g.opts.ParameterPollingInterval)
 
 		case <-ctx.Done():
 			slog.Info("stop polling growatt (web)")
