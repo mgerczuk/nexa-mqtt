@@ -20,7 +20,8 @@ func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic: info.StateTopic(),
+				// value_json.status may be "online", "offline", "heating", ...
 				ValueTemplate: fmt.Sprintf("{{ 'offline' if value_json.status == '%s' else 'online' }}", models.Offline),
 			},
 			PayloadOff: "offline",
@@ -36,11 +37,27 @@ func generateBinarySensorDiscoveryPayload(appVersion string, info DeviceInfo) []
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic: info.StateTopic(),
+				// value_json.status may be "online", "offline", "heating", ...
 				ValueTemplate: fmt.Sprintf("{{ 'heating' if value_json.status == '%s' else 'not-heating' }}", models.Heating),
 			},
 			PayloadOff: "not-heating",
 			PayloadOn:  "heating",
+		},
+		{
+			CommonConfig: CommonConfig{
+				Name:        "API Health",
+				UniqueId:    fmt.Sprintf("%s_api_health", info.SerialNumber),
+				DeviceClass: DeviceClassConnectivity,
+				Device:      device,
+				Origin:      origin,
+			},
+			StateConfig: StateConfig{
+				StateTopic:    info.HealthTopic(),
+				ValueTemplate: "{{ value_json.status }}",
+			},
+			PayloadOff: "error",
+			PayloadOn:  "ok",
 		},
 	}
 

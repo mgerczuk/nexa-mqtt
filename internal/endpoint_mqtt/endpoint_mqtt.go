@@ -69,15 +69,13 @@ func (e *Endpoint) SetDevices(devices []models.NoahDevicePayload) {
 		}
 
 		haDevices = append(haDevices, homeassistant.DeviceInfo{
-			SerialNumber:          dev.Serial,
-			Model:                 dev.Model,
-			Version:               dev.Version,
-			Alias:                 dev.Alias,
-			StateTopic:            deviceStateTopic(e.opts.TopicPrefix, dev.Serial),
-			ParameterStateTopic:   parameterStateTopic(e.opts.TopicPrefix, dev.Serial),
-			ParameterCommandTopic: parameterCommandTopic(e.opts.TopicPrefix, dev.Serial),
-			Batteries:             bats,
-			PVs:                   pvs,
+			SerialNumber: dev.Serial,
+			Model:        dev.Model,
+			Version:      dev.Version,
+			Alias:        dev.Alias,
+			TopicPrefix:  e.opts.TopicPrefix,
+			Batteries:    bats,
+			PVs:          pvs,
 		})
 	}
 

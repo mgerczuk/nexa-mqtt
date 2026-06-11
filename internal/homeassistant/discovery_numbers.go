@@ -17,11 +17,11 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.default_output_w }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"default_output_w\": {{ value }}}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -40,11 +40,11 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.charging_limit }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"charging_limit\": {{ value }}}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -63,11 +63,11 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.discharge_limit }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"discharge_limit\": {{ value }}}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -86,11 +86,11 @@ func generateNumberDiscoveryPayload(appVersion string, info DeviceInfo) []Number
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.anti_backflow_power_percentage }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"anti_backflow_power_percentage\": {{ value }}}",
 			},
 			StateClass:        StateClassMeasurement,

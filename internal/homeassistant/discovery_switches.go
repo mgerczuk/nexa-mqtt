@@ -17,11 +17,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.allow_grid_charging }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"allow_grid_charging\": \"{{ value }}\"}",
 			},
 		},
@@ -33,11 +33,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.grid_connection_control }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"grid_connection_control\": \"{{ value }}\"}",
 			},
 		},
@@ -49,11 +49,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.ac_couple_power_control }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"ac_couple_power_control\": \"{{ value }}\"}",
 			},
 		},
@@ -65,11 +65,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.light_load_enable }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"light_load_enable\": \"{{ value }}\"}",
 			},
 		},
@@ -81,11 +81,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.never_power_off }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"never_power_off\": \"{{ value }}\"}",
 			},
 		},
@@ -97,11 +97,11 @@ func generateSwitchDiscoveryPayload(appVersion string, info DeviceInfo) []Switch
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.anti_backflow_enable }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"anti_backflow_enable\": \"{{ value }}\"}",
 			},
 		},

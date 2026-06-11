@@ -60,6 +60,7 @@ func (s *Service) sendDiscovery() {
 	for _, d := range s.devices {
 		sensors := generateSensorDiscoveryPayload(s.options.Version, d)
 		for _, sensor := range sensors {
+			sensor.AvailabilityTopic = d.AvailabilityTopic()
 			if b, err := json.Marshal(sensor); err != nil {
 				slog.Error("could not marshal sensor discovery payload", slog.Any("sensor", sensor))
 			} else {
@@ -70,6 +71,7 @@ func (s *Service) sendDiscovery() {
 
 		selects := generateSelectDiscoveryPayload(s.options.Version, d)
 		for _, sel := range selects {
+			sel.AvailabilityTopic = d.AvailabilityTopic()
 			if b, err := json.Marshal(sel); err != nil {
 				slog.Error("could not marshal select discovery payload", slog.Any("select", sel))
 			} else {
@@ -80,6 +82,7 @@ func (s *Service) sendDiscovery() {
 
 		numbers := generateNumberDiscoveryPayload(s.options.Version, d)
 		for _, number := range numbers {
+			number.AvailabilityTopic = d.AvailabilityTopic()
 			if b, err := json.Marshal(number); err != nil {
 				slog.Error("could not marshal number discovery payload", slog.Any("number", number))
 			} else {
@@ -90,6 +93,7 @@ func (s *Service) sendDiscovery() {
 
 		binarySensors := generateBinarySensorDiscoveryPayload(s.options.Version, d)
 		for _, sensor := range binarySensors {
+			sensor.AvailabilityTopic = d.AvailabilityTopic()
 			if b, err := json.Marshal(sensor); err != nil {
 				slog.Error("could not marshal binary sensor discovery payload", slog.Any("sensor", sensor))
 			} else {
@@ -107,6 +111,7 @@ func (s *Service) sendDiscovery() {
 					CommandConfig: sw.CommandConfig,
 					Options:       []string{string(models.OFF), string(models.ON)},
 				}
+				sel.AvailabilityTopic = d.AvailabilityTopic()
 				if b, err := json.Marshal(sel); err != nil {
 					slog.Error("could not marshal select discovery payload", slog.Any("select", sel))
 				} else {
@@ -114,6 +119,7 @@ func (s *Service) sendDiscovery() {
 					s.options.MqttClient.Publish(topic, 0, false, string(b))
 				}
 			} else {
+				sw.AvailabilityTopic = d.AvailabilityTopic()
 				if b, err := json.Marshal(sw); err != nil {
 					slog.Error("could not marshal switch discovery payload", slog.Any("sensor", sw))
 				} else {

@@ -19,7 +19,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.ac_w }}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -35,7 +35,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.solar_w }}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -51,7 +51,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.charge_w }}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -67,7 +67,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.discharge_w }}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -82,7 +82,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.generation_total_kwh }}",
 			},
 			StateClass:        StateClassTotalIncreasing,
@@ -97,7 +97,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.generation_today_kwh }}",
 			},
 			StateClass:        StateClassTotalIncreasing,
@@ -112,7 +112,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.soc }}",
 			},
 			StateClass:        StateClassMeasurement,
@@ -127,7 +127,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:   origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.battery_num }}",
 			},
 			StateClass: StateClassMeasurement,
@@ -141,7 +141,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.work_mode }}",
 			},
 			Options: []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst, models.SmartSelfUse},
@@ -155,7 +155,7 @@ func generateSensorDiscoveryPayload(appVersion string, info DeviceInfo) []Sensor
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.StateTopic,
+				StateTopic:    info.StateTopic(),
 				ValueTemplate: "{{ value_json.status }}",
 			},
 			Options: []string{

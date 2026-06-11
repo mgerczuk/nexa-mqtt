@@ -125,10 +125,8 @@ func TestSetDevices(t *testing.T) {
 		"SetDevices",
 		[]homeassistant.DeviceInfo{
 			{
-				SerialNumber:          "device123",
-				StateTopic:            "test/device123",
-				ParameterStateTopic:   "test/device123/parameters",
-				ParameterCommandTopic: "test/device123/parameters/set",
+				SerialNumber: "device123",
+				TopicPrefix:  "test",
 				Batteries: []homeassistant.BatteryInfo{
 					{
 						Alias:      "A",
@@ -155,10 +153,8 @@ func TestSetDevices(t *testing.T) {
 				},
 			},
 			{
-				SerialNumber:          "device234",
-				StateTopic:            "test/device234",
-				ParameterStateTopic:   "test/device234/parameters",
-				ParameterCommandTopic: "test/device234/parameters/set",
+				SerialNumber: "device234",
+				TopicPrefix:  "test",
 				Batteries: []homeassistant.BatteryInfo{
 					{
 						Alias:      "C",
@@ -211,11 +207,9 @@ func TestSetDevices(t *testing.T) {
 		"SetDevices",
 		[]homeassistant.DeviceInfo{
 			{
-				SerialNumber:          "device345",
-				StateTopic:            "test/device345",
-				ParameterStateTopic:   "test/device345/parameters",
-				ParameterCommandTopic: "test/device345/parameters/set",
-				Batteries:             nil,
+				SerialNumber: "device345",
+				TopicPrefix:  "test",
+				Batteries:    nil,
 				PVs: []homeassistant.PVInfo{
 					{
 						StateTopic: "test/device345/PV0",
