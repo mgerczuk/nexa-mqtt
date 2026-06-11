@@ -168,6 +168,33 @@ You can update the device's parameter settings by posting a message to the follo
 
 You can set a property individually or any combination of properties. The value pairs `charging_limit`, `discharge_limit` and `default_output_w`, `default_mode` are set together. If one of them is missing in the payload the cached previous value is used. A debounce timer of 500 ms is used to combine payloads with individual properties to a combined payload. That means that any setting of a value is executed after a delay of 500 ms.
 
+## API Health
+
+- **Topic:** `nexa2mqtt/{DEVICE_SERIAL}/health`
+- **Description:** State of API calls to app or web interface.
+- **Example:** `nexa2mqtt/1234567890/health`
+- **Example Payload:**
+```json
+{
+   "status":"error", // ok or error
+   "last_success":"2026-05-21T03:43:29+02:00", // time of last successful api call
+   "message":"Post \"https://openapi.growatt.com/panel/noah/getNoahStatusData?plantId=37665926\": read: connection reset by peer"
+}
+```
+
+This topic is updated for every failed api call and once for the first successful api call after an error.
+
+## Availability
+
+- **Topic:** `nexa2mqtt/availability`
+- **Description:** Shows if `nexa-mqtt` is running (online) or not (offline)
+- **Example:** `nexa2mqtt/1234567890/health`
+- **Example Payload:**
+```
+online
+```
+
+This value of this topic is stored permanently in the MQTT broker after the first run of `nexa-mqtt`. Home Assistant Entities are unavailable when this topic is `offline`.
 
 ---
 
