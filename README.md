@@ -15,9 +15,9 @@ The application features Home Assistant auto-discovery, allowing your NEXA devic
 
 `nexa-mqtt` supports three API modes:
 
-*   **`app`**: (previous default) This mode utilizes the Shine App APIs.  These APIs offer faster data updates and support setting parameters. However, they are the least stable, as they are prone to change with new app updates.  They are also subject to strict rate limits, which may result in IP bans.
-*   **`web`**: This mode uses the Growatt Website APIs. These APIs provide a more stable way to fetch data. This mode also supports setting parameters.
-*   **`web+app`**: (current default) This mode combines the best of both worlds. It uses the Growatt Website APIs for data fetching (for stability) and the App APIs for setting parameters.
+*   **`app`**: This mode utilizes the Shine App APIs.  These APIs offer faster data updates and support setting parameters. However, they are the least stable, as they are prone to change with new app updates.  They are also subject to strict rate limits, which may result in IP bans.
+*   **`web`**: (default) This mode uses the Growatt Website APIs. These APIs provide a more stable way to fetch data. This mode also supports setting parameters.
+*   **`web+app`**: (deprecated) This mode uses the Growatt Website APIs for data fetching (for stability) and the App APIs for setting parameters. This was necessary before the Growatt Website API supported setting of parameters.
 
 
 You can configure `nexa-mqtt` using the following environment variables:

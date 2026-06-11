@@ -49,9 +49,10 @@ func setupGrowattAppServiceMock(t *testing.T) (*MockHttpClient, *GrowattAppServi
 	endpoint := MockEndpoint{}
 
 	service := GrowattAppService{
-		client:   &client,
-		endpoint: &endpoint,
-		health:   models.NewServiceHealth(),
+		client:           &client,
+		endpoint:         &endpoint,
+		health:           models.NewServiceHealth(),
+		parameterTrigger: make(map[string]chan struct{}),
 	}
 
 	device := models.NoahDevicePayload{

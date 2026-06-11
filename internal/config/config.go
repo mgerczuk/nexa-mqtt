@@ -56,7 +56,7 @@ func Get() Config {
 			BatteryDetailsPollingInterval: time.Duration(s2i(getEnv("BATTERY_DETAILS_POLLING_INTERVAL", "180"))) * time.Second,
 			ParameterPollingInterval:      time.Duration(s2i(getEnv("PARAMETER_POLLING_INTERVAL", "180"))) * time.Second,
 			Growatt: Growatt{
-				APIMode:      getEnv("GROWATT_API_MODE", "web+app"),
+				APIMode:      getEnv("GROWATT_API_MODE", "web"),
 				ServerUrlWeb: getEnv("GROWATT_SERVER_URL_WEB", "https://openapi.growatt.com"),
 				ServerUrlApp: getEnv("GROWATT_SERVER_URL_APP", "https://server-api.growatt.com"),
 				Username:     getEnv("GROWATT_USERNAME", ""),
