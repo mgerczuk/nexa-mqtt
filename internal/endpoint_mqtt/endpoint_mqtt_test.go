@@ -481,7 +481,7 @@ func TestPublishOkHealth(t *testing.T) {
 		"test/device123/health",
 		byte(0),
 		true,
-		fmt.Sprintf(`{"status":"ok","last_success":"%v"}`, health.LastSuccess.Format(time.RFC3339)),
+		`{"status":"ok"}`,
 	).Return(mockToken)
 
 	endpoint := &Endpoint{

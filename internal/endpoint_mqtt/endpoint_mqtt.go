@@ -138,11 +138,21 @@ func (e *Endpoint) PublishHealth(device models.NoahDevicePayload, health *models
 	defer health.StateLock.Unlock()
 
 	if health.Send[device.Serial] {
+		var lastSuccess *time.Time
+		if health.Status == "ok" {
+			lastSuccess = health.LastSuccess
+			health.LastSuccess = nil
+		}
+
 		if b, err := json.Marshal(health); err != nil {
 			slog.Error("could not marshal health data", slog.String("error", err.Error()))
 		} else {
 			e.opts.MqttClient.Publish(healthTopic(e.opts.TopicPrefix, device.Serial), 0, true, string(b))
 			slog.Debug("health data sent to mqtt", slog.String("data", string(b)))
+		}
+
+		if health.Status == "ok" {
+			health.LastSuccess = lastSuccess
 		}
 	}
 	health.Send[device.Serial] = false

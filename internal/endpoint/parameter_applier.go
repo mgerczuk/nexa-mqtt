@@ -12,7 +12,3 @@ type ParameterApplier interface {
 	SetNeverPowerOff(device models.NoahDevicePayload, enable models.OnOff) error
 	SetBackflow(device models.NoahDevicePayload, enableLimit models.OnOff, powerSettingPercent float64) error
 }
-
-type ParameterQuery interface {
-	TriggerParameterPolling(device models.NoahDevicePayload)
-}
