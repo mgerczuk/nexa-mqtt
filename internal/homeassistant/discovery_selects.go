@@ -19,11 +19,11 @@ func generateSelectDiscoveryPayload(appVersion string, info DeviceInfo) []Select
 				Origin:      origin,
 			},
 			StateConfig: StateConfig{
-				StateTopic:    info.ParameterStateTopic,
+				StateTopic:    info.ParameterStateTopic(),
 				ValueTemplate: "{{ value_json.default_mode }}",
 			},
 			CommandConfig: CommandConfig{
-				CommandTopic:    info.ParameterCommandTopic,
+				CommandTopic:    info.ParameterCommandTopic(),
 				CommandTemplate: "{\"default_mode\": \"{{ value }}\"}",
 			},
 			Options:   []string{models.WorkModeLoadFirst, models.WorkModeBatteryFirst, models.SmartSelfUse},

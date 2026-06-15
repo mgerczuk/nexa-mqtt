@@ -69,15 +69,13 @@ func (e *Endpoint) SetDevices(devices []models.NoahDevicePayload) {
 		}
 
 		haDevices = append(haDevices, homeassistant.DeviceInfo{
-			SerialNumber:          dev.Serial,
-			Model:                 dev.Model,
-			Version:               dev.Version,
-			Alias:                 dev.Alias,
-			StateTopic:            deviceStateTopic(e.opts.TopicPrefix, dev.Serial),
-			ParameterStateTopic:   parameterStateTopic(e.opts.TopicPrefix, dev.Serial),
-			ParameterCommandTopic: parameterCommandTopic(e.opts.TopicPrefix, dev.Serial),
-			Batteries:             bats,
-			PVs:                   pvs,
+			SerialNumber: dev.Serial,
+			Model:        dev.Model,
+			Version:      dev.Version,
+			Alias:        dev.Alias,
+			TopicPrefix:  e.opts.TopicPrefix,
+			Batteries:    bats,
+			PVs:          pvs,
 		})
 	}
 
@@ -133,6 +131,31 @@ func (e *Endpoint) PublishParameterData(device models.NoahDevicePayload, param m
 
 		e.lastParameter = param
 	}
+}
+
+func (e *Endpoint) PublishHealth(device models.NoahDevicePayload, health *models.ServiceHealth) {
+	health.StateLock.Lock()
+	defer health.StateLock.Unlock()
+
+	if health.Send[device.Serial] {
+		var lastSuccess *time.Time
+		if health.Status == "ok" {
+			lastSuccess = health.LastSuccess
+			health.LastSuccess = nil
+		}
+
+		if b, err := json.Marshal(health); err != nil {
+			slog.Error("could not marshal health data", slog.String("error", err.Error()))
+		} else {
+			e.opts.MqttClient.Publish(healthTopic(e.opts.TopicPrefix, device.Serial), 0, true, string(b))
+			slog.Debug("health data sent to mqtt", slog.String("data", string(b)))
+		}
+
+		if health.Status == "ok" {
+			health.LastSuccess = lastSuccess
+		}
+	}
+	health.Send[device.Serial] = false
 }
 
 const debounceDelay = 500 * time.Millisecond
@@ -205,6 +228,4 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 
 	e.newParameter = models.ParameterPayload{}
 	e.publishTimer = nil
-
-	go e.PublishParameterData(dev, e.lastParameter)
 }

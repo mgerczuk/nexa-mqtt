@@ -6,7 +6,7 @@ type Response[T any] struct {
 	Obj    T      `json:"obj"`
 }
 
-type PageResponse[T any] struct {
+type PagedListResponse[T any] struct {
 	CurrPage int  `json:"currPage"`
 	Pages    int  `json:"pages"`
 	PageSize int  `json:"pageSize"`
@@ -27,7 +27,7 @@ type GrowattPlant struct {
 
 type GrowattPlantDevices struct {
 	Response[struct {
-		PageResponse[struct {
+		PagedListResponse[struct {
 			DeviceType      string `json:"deviceType"`
 			PtoStatus       string `json:"ptoStatus"`
 			ShellyDeviceSn  string `json:"shellyDeviceSn"`
@@ -76,7 +76,7 @@ type GrowattNoahListData struct {
 }
 
 type GrowattNoahList struct {
-	PageResponse[GrowattNoahListData]
+	PagedListResponse[GrowattNoahListData]
 }
 
 type GrowattNoahHistoryData struct {

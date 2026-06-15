@@ -69,12 +69,13 @@ const (
 )
 
 type CommonConfig struct {
-	Name        string      `json:"name"`
-	UniqueId    string      `json:"unique_id,omitempty"`
-	Icon        Icon        `json:"icon,omitempty"`
-	DeviceClass DeviceClass `json:"device_class,omitempty"`
-	Device      Device      `json:"device,omitempty"`
-	Origin      Origin      `json:"origin,omitempty"`
+	Name              string      `json:"name"`
+	UniqueId          string      `json:"unique_id,omitempty"`
+	Icon              Icon        `json:"icon,omitempty"`
+	DeviceClass       DeviceClass `json:"device_class,omitempty"`
+	Device            Device      `json:"device,omitempty"`
+	Origin            Origin      `json:"origin,omitempty"`
+	AvailabilityTopic string      `json:"availability_topic,omitempty"`
 }
 
 type StateConfig struct {

@@ -48,20 +48,20 @@ func main() {
 }
 
 type App struct {
-	mode           string
-	cfg            config.Config
-	growattService *growatt_web.GrowattService
-	growattApp     *growatt_app.GrowattAppService
+	mode              string
+	cfg               config.Config
+	growattWebService *growatt_web.GrowattService
+	growattAppService *growatt_app.GrowattAppService
 }
 
 func (a *App) onMqttDisconnect() {
-	if a.growattService != nil {
-		a.growattService.StopPolling()
-		a.growattService.SetEndpoint(nil)
+	if a.growattWebService != nil {
+		a.growattWebService.StopPolling()
+		a.growattWebService.SetEndpoint(nil)
 	}
-	if a.growattApp != nil {
-		a.growattApp.StopPolling()
-		a.growattApp.SetEndpoint(nil)
+	if a.growattAppService != nil {
+		a.growattAppService.StopPolling()
+		a.growattAppService.SetEndpoint(nil)
 	}
 }
 
@@ -79,21 +79,25 @@ func (a *App) onMqttConnect(client mqtt.Client) {
 		HaClient:    haService,
 	})
 
+	client.Publish(fmt.Sprintf("%s/availability", a.cfg.Mqtt.TopicPrefix), 1, true, "online")
+
 	switch a.mode {
 	case "app":
-		a.growattApp.SetEndpoint(mqttEndpoint)
-		a.growattApp.StartPolling()
-		mqttEndpoint.SetParameterApplier(a.growattApp)
+		a.growattAppService.SetEndpoint(mqttEndpoint)
+		a.growattAppService.StartPolling()
+		mqttEndpoint.SetParameterApplier(a.growattAppService)
 
 	case "web":
-		a.growattService.SetEndpoint(mqttEndpoint)
-		a.growattService.StartPolling(growatt_web.NewDefaultDurationCalculator(a.growattService))
-		mqttEndpoint.SetParameterApplier(a.growattService)
+		a.growattWebService.SetEndpoint(mqttEndpoint)
+		a.growattWebService.StartPolling(growatt_web.NewDefaultDurationCalculator(a.growattWebService))
+		mqttEndpoint.SetParameterApplier(a.growattWebService)
 
 	case "web+app":
-		a.growattService.SetEndpoint(mqttEndpoint)
-		a.growattService.StartPolling(growatt_web.NewDefaultDurationCalculator(a.growattService))
-		mqttEndpoint.SetParameterApplier(a.growattApp)
+		a.growattWebService.SetEndpoint(mqttEndpoint)
+		a.growattWebService.StartPolling(growatt_web.NewDefaultDurationCalculator(a.growattWebService))
+		a.growattAppService.SetEndpoint(mqttEndpoint)
+		a.growattAppService.SetParameterQuery(a.growattWebService)
+		mqttEndpoint.SetParameterApplier(a.growattAppService)
 	}
 }
 
@@ -117,9 +121,9 @@ func NewApp(cfg config.Config) *App {
 			misc.Panic(err)
 		}
 		return &App{
-			mode:       mode,
-			cfg:        cfg,
-			growattApp: growattApp,
+			mode:              mode,
+			cfg:               cfg,
+			growattAppService: growattApp,
 		}
 
 	case "web":
@@ -131,7 +135,7 @@ func NewApp(cfg config.Config) *App {
 			PollingInterval:               cfg.PollingInterval,
 			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
-			Location:                      *cfg.Growatt.Location,
+			Location:                      cfg.Growatt.Location,
 		})
 
 		if err := growattService.Login(); err != nil {
@@ -140,9 +144,9 @@ func NewApp(cfg config.Config) *App {
 		}
 
 		return &App{
-			mode:           mode,
-			cfg:            cfg,
-			growattService: growattService,
+			mode:              mode,
+			cfg:               cfg,
+			growattWebService: growattService,
 		}
 
 	case "web+app":
@@ -154,7 +158,7 @@ func NewApp(cfg config.Config) *App {
 			PollingInterval:               cfg.PollingInterval,
 			BatteryDetailsPollingInterval: cfg.BatteryDetailsPollingInterval,
 			ParameterPollingInterval:      cfg.ParameterPollingInterval,
-			Location:                      *cfg.Growatt.Location,
+			Location:                      cfg.Growatt.Location,
 		})
 
 		if err := growattService.Login(); err != nil {
@@ -172,10 +176,10 @@ func NewApp(cfg config.Config) *App {
 		})
 
 		return &App{
-			mode:           mode,
-			cfg:            cfg,
-			growattService: growattService,
-			growattApp:     growattApp,
+			mode:              mode,
+			cfg:               cfg,
+			growattWebService: growattService,
+			growattAppService: growattApp,
 		}
 
 	default:
@@ -196,7 +200,8 @@ func connectMqtt(mqttCfg config.Mqtt, app *App) {
 		AddBroker(brokerUrl).
 		SetClientID(mqttCfg.ClientId).
 		SetUsername(mqttCfg.Username).
-		SetPassword(mqttCfg.Password)
+		SetPassword(mqttCfg.Password).
+		SetWill(fmt.Sprintf("%s/availability", mqttCfg.TopicPrefix), "offline", 1, true)
 
 	opts.OnConnect = func(client mqtt.Client) {
 		slog.Info("connected to mqtt broker")

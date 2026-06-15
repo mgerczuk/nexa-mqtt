@@ -4,12 +4,14 @@ import (
 	"errors"
 	"nexa-mqtt/pkg/models"
 	"testing"
+
+	"github.com/stretchr/testify/mock"
 )
 
 // ----- Test functions -----------------------------------------------------
 
 func Test_pollStatus_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
 		device.Serial,
@@ -57,6 +59,9 @@ func Test_pollStatus_Ok(t *testing.T) {
 			Status:                "on_grid",
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollStatus(device)
 
@@ -65,12 +70,15 @@ func Test_pollStatus_Ok(t *testing.T) {
 }
 
 func Test_pollStatus_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahStatus(
 		device.Serial,
 		NoahStatusObj{},
 		errors.New("pollStatus fails"))
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("pollStatus fails")))
 
 	service.pollStatus(device)
 
@@ -79,7 +87,7 @@ func Test_pollStatus_Fail(t *testing.T) {
 }
 
 func Test_pollBatteryDetails_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
 		device.Serial,
@@ -108,6 +116,9 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 			{SerialNumber: "serial125", Soc: 78.0, Temperature: 41.0},
 		},
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk))
 
 	service.pollBatteryDetails(device)
 
@@ -116,13 +127,16 @@ func Test_pollBatteryDetails_Ok(t *testing.T) {
 }
 
 func Test_pollBatteryDetails_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetBatteryData(
 		device.Serial,
 		BatteryInfoObj{},
 		errors.New("pollBatteryDetails fails"),
 	)
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("pollBatteryDetails fails")))
 
 	service.pollBatteryDetails(device)
 
@@ -131,7 +145,7 @@ func Test_pollBatteryDetails_Fail(t *testing.T) {
 }
 
 func Test_pollParameterData_Ok(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	nexaInfo := NexaInfoObj{}
 
@@ -182,7 +196,9 @@ func Test_pollParameterData_Ok(t *testing.T) {
 			AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 		},
 	)
-
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk))
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)
@@ -190,7 +206,7 @@ func Test_pollParameterData_Ok(t *testing.T) {
 }
 
 func Test_pollParameterData_Fail(t *testing.T) {
-	mockHttpClient, service, device, mockEndpoint := setupGrowattAppServiceMock(t)
+	mockHttpClient, service, device, mockEndpoint, _ := setupGrowattAppServiceMock(t)
 
 	mockHttpClient.OnGetNoahInfo(
 		device.Serial,
@@ -198,6 +214,9 @@ func Test_pollParameterData_Fail(t *testing.T) {
 		errors.New("pollParameterData fails"),
 	)
 
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("pollParameterData fails")))
 	service.pollParameterData(device)
 
 	mockHttpClient.AssertExpectations(t)
