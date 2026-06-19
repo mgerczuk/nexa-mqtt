@@ -26,6 +26,7 @@ func (h *httpClient) postForm(url string, data url.Values, responseBody any) err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36")
+
 	resp, err := h.client.Do(req)
 	if err != nil {
 		slog.Error("http.Client.Do failed (web)", slog.String("error", err.Error()))
@@ -42,17 +43,17 @@ func (h *httpClient) postForm(url string, data url.Values, responseBody any) err
 		return err
 	}
 
-	//slog.Debug("HTTP Request (web)", slog.String("url", url), slog.Any("data", data), slog.Int("status_code", resp.StatusCode), slog.String("response_body", string(b)))
+	slog.Debug("HTTP Request (web)", slog.String("url", url), slog.Any("data", data), slog.Int("status_code", resp.StatusCode), slog.String("response_body", string(b)))
 
 	if resp.StatusCode != 200 {
-		err := fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		err := fmt.Errorf("request failed (web): (HTTP %s)", resp.Status)
 		slog.Error("StatusCode != 200 (web)", slog.String("error", err.Error()))
 		return err
 	}
 
 	if responseBody != nil {
 		if err := json.Unmarshal(b, &responseBody); err != nil {
-			slog.Error("json.Unmarshal failed (web)", slog.String("error", err.Error()), slog.String("body", string(b)), slog.String("url", url))
+			slog.Error("json.Unmarshal failed (web)", slog.String("error", err.Error()))
 			return err
 		}
 	}

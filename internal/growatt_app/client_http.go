@@ -29,6 +29,7 @@ func (h *httpClient) postForm(url string, token string, data url.Values, respons
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	}
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) SamsungBrowser/27.0 Chrome/125.0.0.0 Mobile Safari/537.36")
+
 	resp, err := h.client.Do(req)
 	if err != nil {
 		slog.Error("http.Client.Do failed (app)", slog.String("error", err.Error()))
@@ -45,15 +46,17 @@ func (h *httpClient) postForm(url string, token string, data url.Values, respons
 		return err
 	}
 
+	slog.Debug("HTTP Request (web)", slog.String("url", url), slog.Any("data", data), slog.Int("status_code", resp.StatusCode), slog.String("response_body", string(b)))
+
 	if resp.StatusCode != 200 {
-		err := fmt.Errorf("request failed: (HTTP %s) %s", resp.Status, string(b))
+		err := fmt.Errorf("request failed (app): (HTTP %s)", resp.Status)
 		slog.Error("StatusCode != 200 (app)", slog.String("error", err.Error()))
 		return err
 	}
 
 	if responseBody != nil {
 		if err := json.Unmarshal(b, &responseBody); err != nil {
-			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()), slog.String("body", string(b)), slog.String("url", url))
+			slog.Error("json.Unmarshal failed (app)", slog.String("error", err.Error()))
 			return err
 		}
 	}

@@ -58,7 +58,7 @@ func (h *Client) postForm(url string, data url.Values, responseBody any) error {
 			strings.Contains(err.Error(), "invalid character '<' looking for beginning of value")
 
 		if notLoggedIn {
-			slog.Warn("re-login", slog.String("error", err.Error()))
+			slog.Info("re-login (app)")
 			if err := h.Login(); err != nil {
 				slog.Error("could not re-login", slog.String("error", err.Error()))
 				misc.Panic(err)
