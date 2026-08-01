@@ -812,3 +812,80 @@ func Test_parametersSubscription_AcCoupleEnable(t *testing.T) {
 	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
 }
 
+func Test_parametersSubscription_LightLoadEnable(t *testing.T) {
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
+
+	mockMqttMessage := MockMqttMessage{}
+	mockMqttMessage.On("Payload").
+		Return([]byte(`{"light_load_enable":"ON"}`))
+
+	var wg sync.WaitGroup
+
+	mockApplier.On("SetLightLoadEnable", device, models.ON).
+		Run(func(args mock.Arguments) {
+			wg.Done()
+		}).
+		Return(nil)
+
+	wg.Add(1)
+	f1(mockClient, &mockMqttMessage)
+	wg.Wait()
+
+	mockMqttMessage.AssertExpectations(t)
+	mockApplier.AssertExpectations(t)
+	mockClient.AssertExpectations(t)
+
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
+}
+
+func Test_parametersSubscription_NeverPowerOff(t *testing.T) {
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
+
+	mockMqttMessage := MockMqttMessage{}
+	mockMqttMessage.On("Payload").
+		Return([]byte(`{"never_power_off":"ON"}`))
+
+	var wg sync.WaitGroup
+
+	mockApplier.On("SetNeverPowerOff", device, models.ON).
+		Run(func(args mock.Arguments) {
+			wg.Done()
+		}).
+		Return(nil)
+
+	wg.Add(1)
+	f1(mockClient, &mockMqttMessage)
+	wg.Wait()
+
+	mockMqttMessage.AssertExpectations(t)
+	mockApplier.AssertExpectations(t)
+	mockClient.AssertExpectations(t)
+
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
+}
+
+func Test_parameterSubscription_AntiBackflow(t *testing.T) {
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
+
+	mockMqttMessage := MockMqttMessage{}
+	mockMqttMessage.On("Payload").
+		Return([]byte(`{"anti_backflow_enable":"ON","anti_backflow_power_percentage":80}`))
+
+	var wg sync.WaitGroup
+
+	mockApplier.On("SetBackflow", device, models.ON, 80.0).
+		Run(func(args mock.Arguments) {
+			wg.Done()
+		}).
+		Return(nil)
+
+	wg.Add(1)
+	f1(mockClient, &mockMqttMessage)
+	wg.Wait()
+
+	mockMqttMessage.AssertExpectations(t)
+	mockApplier.AssertExpectations(t)
+	mockClient.AssertExpectations(t)
+
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
+}

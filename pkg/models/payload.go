@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -140,6 +139,18 @@ func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
 	if src.AcCoupleEnable != "" {
 		p.AcCoupleEnable = src.AcCoupleEnable
 	}
+	if src.LightLoadEnable != "" {
+		p.LightLoadEnable = src.LightLoadEnable
+	}
+	if src.NeverPowerOff != "" {
+		p.NeverPowerOff = src.NeverPowerOff
+	}
+	if src.AntiBackflowEnable != "" {
+		p.AntiBackflowEnable = src.AntiBackflowEnable
+	}
+	if src.AntiBackflowPowerPercentage != nil {
+		p.AntiBackflowPowerPercentage = src.AntiBackflowPowerPercentage
+	}
 }
 
 func EmptyParameterPayload() ParameterPayload {
@@ -147,16 +158,15 @@ func EmptyParameterPayload() ParameterPayload {
 	dischargeLimit := 10.0
 	defaultACCouplePower := 150.0
 	var defaultMode WorkMode = WorkModeLoadFirst
+	antiBackflowPowerPercentage := 0.0
 
+	// prevent nil pointer dereference in endpoint_mqtt.debouncedParametersSubscription()
 	return ParameterPayload{
 		ChargingLimit:               &chargingLimit,
 		DischargeLimit:              &dischargeLimit,
 		DefaultACCouplePower:        &defaultACCouplePower,
 		DefaultMode:                 &defaultMode,
-		AllowGridCharging:           OFF,
-		GridConnectionControl:       OFF,
-		AcCouplePowerControl:        OFF,
-		AcCoupleEnable:              OFF,
+		AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 	}
 }
 
@@ -171,39 +181,4 @@ type NoahDevicePayload struct {
 
 type NoahDeviceBatteryPayload struct {
 	Alias string `json:"alias"`
-}
-
-type ServiceHealth struct {
-	Status      string          `json:"status"`
-	LastSuccess *time.Time      `json:"last_success,omitempty"`
-	Message     string          `json:"message,omitempty"`
-	StateLock   sync.Mutex      `json:"-"`
-	Send        map[string]bool `json:"-"`
-}
-
-func NewServiceHealth() ServiceHealth {
-	return ServiceHealth{
-		Status: "undefined",
-		Send:   make(map[string]bool),
-	}
-}
-
-func (h *ServiceHealth) UpdateSuccess(serial string) {
-	h.StateLock.Lock()
-	defer h.StateLock.Unlock()
-
-	tm := time.Now().Round(time.Second)
-	h.Send[serial] = h.Status != "ok"
-	h.Status = "ok"
-	h.LastSuccess = &tm
-	h.Message = ""
-}
-
-func (h *ServiceHealth) UpdateError(serial string, err error) {
-	h.StateLock.Lock()
-	defer h.StateLock.Unlock()
-
-	h.Status = "error"
-	h.Message = err.Error()
-	h.Send[serial] = true
 }
