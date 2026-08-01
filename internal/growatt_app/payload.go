@@ -33,12 +33,6 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 	dischargeLimit := misc.ParseFloat(n.Obj.Noah.ChargingSocLowLimit)
 	defaultACCouplePower := misc.ParseFloat(n.Obj.Noah.DefaultACCouplePower)
 	defaultMode := models.WorkModeFromString(n.Obj.Noah.DefaultMode)
-	allowGridCharging := misc.IntStringToOnOff(n.Obj.Noah.AllowGridCharging)
-	gridConnectionControl := misc.IntStringToOnOff(n.Obj.Noah.GridConnectionControl)
-	acCouplePowerControl := misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl)
-	lightLoadEnable := misc.IntStringToOnOff(n.Obj.Noah.LightLoadEnable)
-	neverPowerOff := misc.IntStringToOnOff(n.Obj.Noah.NeverPowerOff)
-	antiBackflowEnable := misc.IntStringToOnOff(n.Obj.Noah.AntiBackflowEnable)
 	antiBackflowPowerPercentage := misc.ParseFloat(n.Obj.Noah.AntiBackflowPowerPercentage)
 
 	return models.ParameterPayload{
@@ -46,12 +40,13 @@ func parameterPayload(n *NexaInfo) models.ParameterPayload {
 		DischargeLimit:              &dischargeLimit,
 		DefaultACCouplePower:        &defaultACCouplePower,
 		DefaultMode:                 &defaultMode,
-		AllowGridCharging:           allowGridCharging,
-		GridConnectionControl:       gridConnectionControl,
-		AcCouplePowerControl:        acCouplePowerControl,
-		LightLoadEnable:             lightLoadEnable,
-		NeverPowerOff:               neverPowerOff,
-		AntiBackflowEnable:          antiBackflowEnable,
+		AllowGridCharging:           misc.IntStringToOnOff(n.Obj.Noah.AllowGridCharging),
+		GridConnectionControl:       misc.IntStringToOnOff(n.Obj.Noah.GridConnectionControl),
+		AcCouplePowerControl:        misc.IntStringToOnOff(n.Obj.Noah.AcCouplePowerControl),
+		AcCoupleEnable:              misc.IntStringToOnOff(n.Obj.Noah.AcCoupleEnable),
+		LightLoadEnable:             misc.IntStringToOnOff(n.Obj.Noah.LightLoadEnable),
+		NeverPowerOff:               misc.IntStringToOnOff(n.Obj.Noah.NeverPowerOff),
+		AntiBackflowEnable:          misc.IntStringToOnOff(n.Obj.Noah.AntiBackflowEnable),
 		AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 	}
 }

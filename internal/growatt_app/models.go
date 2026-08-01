@@ -75,6 +75,7 @@ type NoahStatus struct {
 // from /noahDeviceApi/nexa/getNexaInfoBySn
 type NexaInfoObj struct {
 	Noah struct {
+		AcCoupleEnable              string   `json:"acCoupleEnable"`
 		AcCouplePowerControl        string   `json:"acCouplePowerControl"`
 		Alias                       string   `json:"alias"`
 		AllowGridCharging           string   `json:"allowGridCharging"`

@@ -58,6 +58,11 @@ func (p *MockParameterApplier) SetAcCouplePowerControl(device models.NoahDeviceP
 	return args.Error(0)
 }
 
+func (p *MockParameterApplier) SetAcCoupleEnable(device models.NoahDevicePayload, enable models.OnOff) error {
+	args := p.Called(device, enable)
+	return args.Error(0)
+}
+
 func (p *MockParameterApplier) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
 	args := p.Called(device, enable)
 	return args.Error(0)
@@ -780,3 +785,30 @@ func Test_parametersSubscription_GridConnectionControlAndAcCouplePowerControl(t 
 
 	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
 }
+
+func Test_parametersSubscription_AcCoupleEnable(t *testing.T) {
+	_, mockClient, mockApplier, endpoint, device, f1 := setup_parametersSubscription()
+
+	mockMqttMessage := MockMqttMessage{}
+	mockMqttMessage.On("Payload").
+		Return([]byte(`{"ac_couple_enable":"ON"}`))
+
+	var wg sync.WaitGroup
+
+	mockApplier.On("SetAcCoupleEnable", device, models.ON).
+		Run(func(args mock.Arguments) {
+			wg.Done()
+		}).
+		Return(nil)
+
+	wg.Add(1)
+	f1(mockClient, &mockMqttMessage)
+	wg.Wait()
+
+	mockMqttMessage.AssertExpectations(t)
+	mockApplier.AssertExpectations(t)
+	mockClient.AssertExpectations(t)
+
+	assert.Equal(t, models.ParameterPayload{}, endpoint.newParameter)
+}
+

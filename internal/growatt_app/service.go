@@ -258,6 +258,23 @@ func (g *GrowattAppService) SetAcCouplePowerControl(device models.NoahDevicePayl
 	return err
 }
 
+func (g *GrowattAppService) SetAcCoupleEnable(device models.NoahDevicePayload, enable models.OnOff) error {
+	slog.Info("trying to set ac couple enable  (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
+	if err := g.ensureParameterLogin(); err != nil {
+		slog.Error("unable to set ac couple enable (app)", slog.String("device", device.Serial))
+		g.publishHealth(device, err)
+		return err
+	}
+
+	err := g.client.SetAcCoupleEnable(device.Serial, misc.OnOffToInt(enable))
+	if err != nil {
+		slog.Error("unable to set ac couple enable (app)", slog.String("error", err.Error()))
+	}
+
+	g.publishHealth(device, err)
+	return err
+}
+
 func (g *GrowattAppService) SetLightLoadEnable(device models.NoahDevicePayload, enable models.OnOff) error {
 	slog.Info("trying to set light load enable (app)", slog.String("device", device.Serial), slog.String("enable", string(enable)))
 	if err := g.ensureParameterLogin(); err != nil {

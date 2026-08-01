@@ -214,6 +214,10 @@ func (e *Endpoint) debouncedParametersSubscription(dev models.NoahDevicePayload)
 		e.param_applier.SetAcCouplePowerControl(dev, e.lastParameter.AcCouplePowerControl)
 	}
 
+	if e.newParameter.AcCoupleEnable != "" {
+		e.param_applier.SetAcCoupleEnable(dev, e.lastParameter.AcCoupleEnable)
+	}
+
 	if e.newParameter.LightLoadEnable != "" {
 		e.param_applier.SetLightLoadEnable(dev, e.lastParameter.LightLoadEnable)
 	}

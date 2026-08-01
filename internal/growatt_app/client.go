@@ -225,6 +225,11 @@ func (h *Client) SetACCouplePowerControl(serialNumber string, _1000WEnable int) 
 	return h.nexaSet(serialNumber, "ac_couple_power_control", fmt.Sprintf("%d", _1000WEnable))
 }
 
+// "AC Couple Enable" setting
+func (h *Client) SetAcCoupleEnable(serialNumber string, enable int) error {
+	return h.nexaSet(serialNumber, "ac_couple_enable", fmt.Sprintf("%d", enable))
+}
+
 // "AC Always On" setting
 func (h *Client) SetLightLoadEnable(serialNumber string, enable int) error {
 	return h.nexaSet(serialNumber, "light_load_enable", fmt.Sprintf("%d", enable))

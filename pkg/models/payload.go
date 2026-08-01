@@ -108,6 +108,7 @@ type ParameterPayload struct {
 	AllowGridCharging           OnOff     `json:"allow_grid_charging,omitempty"`
 	GridConnectionControl       OnOff     `json:"grid_connection_control,omitempty"`
 	AcCouplePowerControl        OnOff     `json:"ac_couple_power_control,omitempty"`
+	AcCoupleEnable              OnOff     `json:"ac_couple_enable,omitempty"`
 	LightLoadEnable             OnOff     `json:"light_load_enable,omitempty"`
 	NeverPowerOff               OnOff     `json:"never_power_off,omitempty"`
 	AntiBackflowEnable          OnOff     `json:"anti_backflow_enable,omitempty"`
@@ -136,6 +137,9 @@ func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
 	if src.AcCouplePowerControl != "" {
 		p.AcCouplePowerControl = src.AcCouplePowerControl
 	}
+	if src.AcCoupleEnable != "" {
+		p.AcCoupleEnable = src.AcCoupleEnable
+	}
 }
 
 func EmptyParameterPayload() ParameterPayload {
@@ -143,18 +147,16 @@ func EmptyParameterPayload() ParameterPayload {
 	dischargeLimit := 10.0
 	defaultACCouplePower := 150.0
 	var defaultMode WorkMode = WorkModeLoadFirst
-	allowGridCharging := OFF
-	gridConnectionControl := OFF
-	acCouplePowerControl := OFF
 
 	return ParameterPayload{
-		ChargingLimit:         &chargingLimit,
-		DischargeLimit:        &dischargeLimit,
-		DefaultACCouplePower:  &defaultACCouplePower,
-		DefaultMode:           &defaultMode,
-		AllowGridCharging:     allowGridCharging,
-		GridConnectionControl: gridConnectionControl,
-		AcCouplePowerControl:  acCouplePowerControl,
+		ChargingLimit:               &chargingLimit,
+		DischargeLimit:              &dischargeLimit,
+		DefaultACCouplePower:        &defaultACCouplePower,
+		DefaultMode:                 &defaultMode,
+		AllowGridCharging:           OFF,
+		GridConnectionControl:       OFF,
+		AcCouplePowerControl:        OFF,
+		AcCoupleEnable:              OFF,
 	}
 }
 

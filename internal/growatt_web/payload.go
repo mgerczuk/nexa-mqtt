@@ -118,6 +118,7 @@ func parameterPayload(detailsData GrowattNoahListData) models.ParameterPayload {
 		AllowGridCharging:           misc.IntStringToOnOff(detailsData.AllowGridCharging),
 		GridConnectionControl:       misc.IntStringToOnOff(detailsData.GridConnectionControl),
 		AcCouplePowerControl:        misc.IntStringToOnOff(detailsData.AcCouplePowerControl),
+		AcCoupleEnable:              misc.IntStringToOnOff(detailsData.AcCoupleEnable),
 		LightLoadEnable:             misc.IntStringToOnOff(detailsData.LightLoadEnable),
 		NeverPowerOff:               misc.IntStringToOnOff(detailsData.NeverPowerOff),
 		AntiBackflowEnable:          misc.IntStringToOnOff(detailsData.AntiBackflowEnable),

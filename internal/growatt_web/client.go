@@ -235,7 +235,7 @@ func (c *Client) SetSystemOutputPower(serialNumber string, mode int, power float
 	return c.tcpset(serialNumber, "system_out_put_power", fmt.Sprintf("%d", mode), fmt.Sprintf("%.0f", val))
 }
 
-// "AC Couple Enable" setting - not used
+// "AC Couple Enable" setting
 func (c *Client) SetAcCoupleEnable(serialNumber string, enabled int) error {
 	return c.tcpset(serialNumber, "ac_couple_enable", fmt.Sprintf("%d", enabled))
 }
