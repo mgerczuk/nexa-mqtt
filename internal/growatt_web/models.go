@@ -57,6 +57,7 @@ type GrowattPlantDevices struct {
 
 // from /device/getNoahList
 type GrowattNoahListData struct {
+	AcCoupleEnable              string `json:"acCoupleEnable"`
 	AcCouplePowerControl        string `json:"acCouplePowerControl"`
 	Alias                       string `json:"alias"`
 	AllowGridCharging           string `json:"allowGridCharging"`

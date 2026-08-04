@@ -2,7 +2,6 @@ package models
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -108,6 +107,7 @@ type ParameterPayload struct {
 	AllowGridCharging           OnOff     `json:"allow_grid_charging,omitempty"`
 	GridConnectionControl       OnOff     `json:"grid_connection_control,omitempty"`
 	AcCouplePowerControl        OnOff     `json:"ac_couple_power_control,omitempty"`
+	AcCoupleEnable              OnOff     `json:"ac_couple_enable,omitempty"`
 	LightLoadEnable             OnOff     `json:"light_load_enable,omitempty"`
 	NeverPowerOff               OnOff     `json:"never_power_off,omitempty"`
 	AntiBackflowEnable          OnOff     `json:"anti_backflow_enable,omitempty"`
@@ -136,6 +136,21 @@ func (p *ParameterPayload) UpdateFrom(src ParameterPayload) {
 	if src.AcCouplePowerControl != "" {
 		p.AcCouplePowerControl = src.AcCouplePowerControl
 	}
+	if src.AcCoupleEnable != "" {
+		p.AcCoupleEnable = src.AcCoupleEnable
+	}
+	if src.LightLoadEnable != "" {
+		p.LightLoadEnable = src.LightLoadEnable
+	}
+	if src.NeverPowerOff != "" {
+		p.NeverPowerOff = src.NeverPowerOff
+	}
+	if src.AntiBackflowEnable != "" {
+		p.AntiBackflowEnable = src.AntiBackflowEnable
+	}
+	if src.AntiBackflowPowerPercentage != nil {
+		p.AntiBackflowPowerPercentage = src.AntiBackflowPowerPercentage
+	}
 }
 
 func EmptyParameterPayload() ParameterPayload {
@@ -143,18 +158,15 @@ func EmptyParameterPayload() ParameterPayload {
 	dischargeLimit := 10.0
 	defaultACCouplePower := 150.0
 	var defaultMode WorkMode = WorkModeLoadFirst
-	allowGridCharging := OFF
-	gridConnectionControl := OFF
-	acCouplePowerControl := OFF
+	antiBackflowPowerPercentage := 0.0
 
+	// prevent nil pointer dereference in endpoint_mqtt.debouncedParametersSubscription()
 	return ParameterPayload{
-		ChargingLimit:         &chargingLimit,
-		DischargeLimit:        &dischargeLimit,
-		DefaultACCouplePower:  &defaultACCouplePower,
-		DefaultMode:           &defaultMode,
-		AllowGridCharging:     allowGridCharging,
-		GridConnectionControl: gridConnectionControl,
-		AcCouplePowerControl:  acCouplePowerControl,
+		ChargingLimit:               &chargingLimit,
+		DischargeLimit:              &dischargeLimit,
+		DefaultACCouplePower:        &defaultACCouplePower,
+		DefaultMode:                 &defaultMode,
+		AntiBackflowPowerPercentage: &antiBackflowPowerPercentage,
 	}
 }
 
@@ -169,39 +181,4 @@ type NoahDevicePayload struct {
 
 type NoahDeviceBatteryPayload struct {
 	Alias string `json:"alias"`
-}
-
-type ServiceHealth struct {
-	Status      string          `json:"status"`
-	LastSuccess *time.Time      `json:"last_success,omitempty"`
-	Message     string          `json:"message,omitempty"`
-	StateLock   sync.Mutex      `json:"-"`
-	Send        map[string]bool `json:"-"`
-}
-
-func NewServiceHealth() ServiceHealth {
-	return ServiceHealth{
-		Status: "undefined",
-		Send:   make(map[string]bool),
-	}
-}
-
-func (h *ServiceHealth) UpdateSuccess(serial string) {
-	h.StateLock.Lock()
-	defer h.StateLock.Unlock()
-
-	tm := time.Now().Round(time.Second)
-	h.Send[serial] = h.Status != "ok"
-	h.Status = "ok"
-	h.LastSuccess = &tm
-	h.Message = ""
-}
-
-func (h *ServiceHealth) UpdateError(serial string, err error) {
-	h.StateLock.Lock()
-	defer h.StateLock.Unlock()
-
-	h.Status = "error"
-	h.Message = err.Error()
-	h.Send[serial] = true
 }

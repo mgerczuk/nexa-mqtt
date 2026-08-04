@@ -588,6 +588,58 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	endpoint.AssertExpectations(t)
 }
 
+func TestSetAcCoupleEnable_Ok(t *testing.T) {
+	mockHttpClient, service, device, endpoint, query := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_enable", "1", nil, SetResponse{ResponseContainerV2[any]{Result: 1}})
+	endpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk))
+	query.On("TriggerParameterPolling", device)
+
+	service.loggedIn = true
+	result := service.SetAcCoupleEnable(device, models.ON)
+
+	assert.NoError(t, result)
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+	query.AssertExpectations(t)
+}
+
+func TestSetAcCoupleEnable_LoginFail(t *testing.T) {
+	mockHttpClient, service, device, endpoint, _ := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnLogin("user", "secret", errors.New("Login fails"))
+	endpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("Login fails")))
+
+	service.loggedIn = false
+	result := service.SetAcCoupleEnable(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
+func TestSetAcCoupleEnable_Fails(t *testing.T) {
+	mockHttpClient, service, device, endpoint, _ := setupGrowattAppServiceMock(t)
+
+	mockHttpClient.OnSet1Param(device.Serial, "ac_couple_enable", "1", errors.New("SetAcCoupleEnable fails"), SetResponse{})
+	endpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("SetAcCoupleEnable fails")))
+
+	service.loggedIn = true
+	result := service.SetAcCoupleEnable(device, models.ON)
+
+	assert.Error(t, result)
+
+	mockHttpClient.AssertExpectations(t)
+	endpoint.AssertExpectations(t)
+}
+
 func TestSetLightLoadEnable_ServiceOk(t *testing.T) {
 	mockHttpClient, service, device, endpoint, query := setupGrowattAppServiceMock(t)
 

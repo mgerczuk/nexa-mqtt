@@ -312,6 +312,47 @@ func TestSetAcCouplePowerControl_Fails(t *testing.T) {
 	mockHttpClient.AssertExpectations(t)
 }
 
+func TestSetAcCoupleEnable_Ok(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_enable", "1", nil, SetResponse{Success: true})
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthOk))
+
+	err := service.SetAcCoupleEnable(device, models.ON)
+
+	assert.NoError(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAcCoupleEnable_Invalid(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("invalid ON/OFF value: invalid")))
+
+	err := service.SetAcCoupleEnable(device, models.OnOff("invalid"))
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
+func TestSetAcCoupleEnable_Fails(t *testing.T) {
+	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
+
+	mockHttpClient.OnSet1Params(device.Serial, "ac_couple_enable", "1", nil, SetResponse{Success: false, Msg: "set ac couple enable failed"})
+	mockEndpoint.On("PublishHealth",
+		device,
+		mock.MatchedBy(matchHealthError("set ac couple enable failed")))
+
+	err := service.SetAcCoupleEnable(device, models.ON)
+
+	assert.Error(t, err)
+	mockHttpClient.AssertExpectations(t)
+}
+
 func TestSetLightLoadEnable_Ok(t *testing.T) {
 	mockHttpClient, service, device, mockEndpoint := setupGrowattServiceMocks(t)
 
