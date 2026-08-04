@@ -2,32 +2,28 @@ name: goreleaser
 
 on:
   push:
-    tags:        
-      - '*'
+    tags:
+      - "*"
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      -
-        name: Login to GitHub Container registry
+      - name: Login to GitHub Container registry
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: Set up Go
+      - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '>=1.22.0'
-      -
-        name: Run GoReleaser
+          go-version: ">=1.25.0"
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
@@ -36,16 +32,15 @@ jobs:
           args: release --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      -
-        name: 'release: Trigger mgerczuk/hassio-addons build'
+      - name: "release: Trigger mgerczuk/hassio-addons build"
         if: startsWith(github.ref, 'refs/tags/') && github.event_name == 'push'
         run: |
-            TAG=${GITHUB_REF#refs/*/}
-            echo "Triggering with tag '$TAG'"
-            curl \
-              -X POST \
-              -H "Authorization: token ${{ secrets.WORKFLOW_PAT }}" \
-              -H "Accept: application/vnd.github.everest-preview+json" \
-              -H "Content-Type: application/json" \
-              https://api.github.com/repos/mgerczuk/hassio-addons/dispatches \
-              --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"${TAG:1}\"}}"
+          TAG=${GITHUB_REF#refs/*/}
+          echo "Triggering with tag '$TAG'"
+          curl \
+            -X POST \
+            -H "Authorization: token ${{ secrets.WORKFLOW_PAT }}" \
+            -H "Accept: application/vnd.github.everest-preview+json" \
+            -H "Content-Type: application/json" \
+            https://api.github.com/repos/mgerczuk/hassio-addons/dispatches \
+            --data "{\"event_type\": \"release\", \"client_payload\": { \"version\": \"${TAG:1}\"}}"

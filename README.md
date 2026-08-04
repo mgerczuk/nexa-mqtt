@@ -160,9 +160,12 @@ You can update the device's parameter settings by posting a message to the follo
    "never_power_off": "OFF", // When ON the device remains powered on and never shuts down
                              // while connected to the grid. (Always On)
                              // "allow_grid_charging" should be ON for this function
-   "anti_backflow_enable": "OFF", //When ON export to grid is limited in smart_self_use mode
+   "anti_backflow_enable": "OFF", // When ON, export to grid is limited. This requires a smart meter
    "anti_backflow_power_percentage": 20 // Seems to be max. allowed backflow in percent
                                         // of maximum output (800/1000W)
+   "ac_couple_enable": "OFF" // When ON, the NEXA2000 can be charged using excess energy from 
+                             // third-party inverters in the home. This requires one or two smart 
+                             // meters. Ensure the allow_grid_charging is also ON.
 }
 ```
 
